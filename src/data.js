@@ -12,7 +12,8 @@ class License {
     user_name,
     serial_number,
     email,
-    update
+    update,
+    link
   ) {
     this.key = key;
     this.company = company;
@@ -25,6 +26,7 @@ class License {
     this.serial_number = serial_number;
     this.email = email;
     this.update = update;
+    this.link = link;
   }
 }
 
@@ -84,8 +86,9 @@ export const dummyLisense = Array.from({ length: 100 }, (_, index) => {
     `hospital_name${index}`,
     `user_name${index}`,
     `serial_number${index}`,
-    `email${index}`,
-    dayjs().add(index, "day").format("YYYY-MM-DD HH:mm:ss")
+    `email${index}@example.com`,
+    dayjs().add(index, "day").format("YYYY-MM-DD HH:mm:ss"),
+    `link${index}`
   );
 });
 

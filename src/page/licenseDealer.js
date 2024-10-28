@@ -19,7 +19,7 @@ import UpdateLicense from "../modal/expire";
 
 const { Header, Content, Footer } = Layout;
 
-const License = () => {
+const LicenseDealer = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
@@ -158,27 +158,6 @@ const License = () => {
       width: 50,
     },
     {
-      title: "Company",
-      dataIndex: "company",
-      key: "company",
-      fixed: "left",
-      width: 150,
-
-      ...getColumnSearchProps("company"),
-      sorter: (a, b) => {
-        return a.company.localeCompare(b.company);
-      },
-
-      render: (text) => (
-        <Space>
-          {text}
-          <Tooltip placement="top" title={getCompanyCode(text)}>
-            <InfoCircleOutlined />
-          </Tooltip>
-        </Space>
-      ),
-    },
-    {
       title: "Activate Date Time",
       dataIndex: "activate_date_time",
       key: "activate_date_time",
@@ -233,19 +212,15 @@ const License = () => {
       key: "user_name",
     },
     {
-      title: "S/N",
-      dataIndex: "serial_number",
-      key: "serial_number",
-    },
-    {
       title: "Email",
       dataIndex: "email",
       key: "email",
     },
     {
-      title: "Update",
-      dataIndex: "update",
-      key: "update",
+      title: "Link",
+      dataIndex: "link",
+      key: "link",
+      width: 150,
     },
   ];
 
@@ -272,21 +247,17 @@ const License = () => {
       <Space size={"large"} direction="vertical" className="w-full">
         <AdvancedSearchForm onSearch={(filter) => setSearchFilters(filter)} />
         <Table
-          rowSelection={rowSelection}
+          // rowSelection={rowSelection}
           title={() => (
-            // <Button
-            //   type="primary"
-            //   disabled={!hasSelected}
-            //   onClick={() => console.log(selectedRowKeys)}
-            // >
-            //   Update License
-            // </Button>
-            <UpdateLicense
-              type="primary"
-              disabled={!hasSelected}
-              title="Update License"
-              data={dummyLisense.find((c) => c.key === selectedRowKeys[0])}
-            />
+            <Space
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                width: "100%",
+              }}
+            >
+              <Col style={{ textAlign: "right" }}>{`License No. / `}</Col>
+            </Space>
           )}
           pagination={{
             defaultCurrent: 1,
@@ -343,13 +314,6 @@ const AdvancedSearchForm = (props) => {
   const getFields = () => {
     const children = [];
     children.push(
-      <Col span={8} key={"company"}>
-        <Form.Item name={`company`} label={`Company`}>
-          <Input placeholder="search..." />
-        </Form.Item>
-      </Col>
-    );
-    children.push(
       <Col span={8} key={"country"}>
         <Form.Item name={`country`} label={`Country`}>
           <Input placeholder="search..." />
@@ -366,7 +330,10 @@ const AdvancedSearchForm = (props) => {
     children.push(
       <Col span={8} key={"expire_date"}>
         <Form.Item name={`expire_date`} label={`Expire Date`}>
-          <DatePicker.RangePicker placeholder={["Start Date", "End Date"]} />
+          <DatePicker.RangePicker
+            className="w-full"
+            placeholder={["Start Date", "End Date"]}
+          />
         </Form.Item>
       </Col>
     );
@@ -419,4 +386,4 @@ const AdvancedSearchForm = (props) => {
   );
 };
 
-export default License;
+export default LicenseDealer;

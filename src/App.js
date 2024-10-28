@@ -13,6 +13,7 @@ import {
 import { Footer, Header } from "antd/es/layout/layout";
 import { useLocation, useNavigate } from "react-router-dom";
 import Company from "./page/company";
+import LicenseDealer from "./page/licenseDealer";
 
 const items = [
   {
@@ -67,7 +68,7 @@ function App({ page }) {
               }}
             />
           </Col>
-          <Col span={12} style={{ textAlign: "right" }}>
+          <Col span={12} direction style={{ textAlign: "right" }}>
             {isLoggedIn ? (
               <Button
                 onClick={() => {
@@ -105,7 +106,10 @@ function App({ page }) {
           </div>
         ) : (
           <>
-            {page === "license" && <License />}
+            {page === "license" && (
+              <License />
+              // <LicenseDealer />
+            )}
             {page === "company" && <Company />}
           </>
         )}
@@ -114,7 +118,7 @@ function App({ page }) {
             textAlign: "center",
           }}
         >
-          ©2024 Created by RediSen
+          ©2024 Created by RadiSen
         </Footer>
       </Space>
     </Layout>

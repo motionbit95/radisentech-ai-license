@@ -274,7 +274,9 @@ const SignUp = () => {
                 </Button>
               </Col>
               <Col span={12}>
-                <Button className="w-full">Cancel</Button>
+                <Button className="w-full" onClick={() => navigate("/login")}>
+                  Cancel
+                </Button>
               </Col>
             </Row>
           </Form.Item>
