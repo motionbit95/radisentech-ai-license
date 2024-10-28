@@ -24,5 +24,5 @@ yarn-debug.log*
 yarn-error.log*
 
 # aws
-/lambda-express/node_modules
-/lambda-express/package-lock.json
+/lambda-api/node_modules
+/lambda-api/package-lock.json

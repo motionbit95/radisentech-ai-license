@@ -1,70 +1,77 @@
-# Getting Started with Create React App
+본 문서는 `MAC OS` 기준으로 서술되었습니다.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# AWS IAM 설정 방법
 
-## Available Scripts
+## 사용자 생성
 
-In the project directory, you can run:
+1. AWS 서비스에서 `IAM` 콘솔에 접속합니다.
+2. 액세스 관리 > 사용자 탭을 선택합니다.
+3. 사용자를 생성합니다.
+4. 아래 권한을 추가합니다.
+   > AWSLambda_FullAccess<br/>
+   > AWSLambdaBasicExecutionRole<br/>
+   > AWSLambdaVPCAccessExecutionRole<br/>
+5. 사용자를 생성하면 aws access key와 aws secret key가 생성됩니다. aws secret key는 해당 페이지에서 한번만 노출되니 안전한 곳에 보관해주세요.
 
-### `npm start`
+## 역할 생성
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+1. AWS 서비스에서 `IAM` 콘솔에 접속합니다.
+2. 액세스 관리 > 역할 탭을 선택합니다.
+3. 역할을 생성합니다.
+4. 신뢰할 수 있는 엔터티 유형 `AWS 서비스`, 사용 사례 `Lambda`를 선택합니다.
+5. 아래 권한을 추가합니다.
+   > AWSLambda_FullAccess<br/>
+   > AWSLambdaBasicExecutionRole<br/>
+   > AWSLambdaVPCAccessExecutionRole<br/>
+6. 역할 인스턴스의 ARN을 복사해둡니다.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+# AWS Lambda - node.js 연동 방법
 
-### `npm test`
+## AWS 설정
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### AWS 설치
 
-### `npm run build`
+```bash
+brew install awscli
+aws --version
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### AWS 구성
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+aws configure
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+`AWS Access Key ID`와 `AWS Secret Access Key`를 입력합니다.
+`Default region name`을 입력해주세요.
 
-### `npm run eject`
+> AWS Access Key ID [****************LYH2]<br/>
+> AWS Secret Access Key [****************C21p]<br/>
+> Default region name [us-east-1]<br/>
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Lambda 함수 코드 zip 업로드 방법
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 함수 생성
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+```bash
+aws lambda create-function \
+  --function-name [함수 이름] \
+  --runtime nodejs18.x \
+  --role [역할 ARN] \
+  --handler index.handler \
+  --zip-file fileb://[파일 이름].zip
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 함수 업데이트
 
-## Learn More
+```bash
+aws lambda update-function-code \
+  --function-name [함수 이름] \
+  --zip-file fileb://[파일 이름].zip
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 함수 삭제
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```bash
+aws lambda delete-function --function-name [함수이름]
+```
