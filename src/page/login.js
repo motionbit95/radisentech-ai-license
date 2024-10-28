@@ -1,10 +1,25 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Checkbox, Form, Input, Flex, Space, Row, Col } from "antd";
+import {
+  Button,
+  Checkbox,
+  Form,
+  Input,
+  Flex,
+  Space,
+  Row,
+  Col,
+  Alert,
+  message,
+} from "antd";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useForm } from "antd/es/form/Form";
 const LoginForm = () => {
+  const [form] = useForm();
   const navigate = useNavigate();
+  const [messageApi, contextHolder] = message.useMessage();
+
   const onFinish = (values) => {
     console.log(
       "Received values of form: ",
@@ -25,15 +40,21 @@ const LoginForm = () => {
         localStorage.setItem("token", JSON.stringify(result.token));
         navigate("/license", { state: { isLoggedIn: true } });
       })
-      .catch((error) => console.error(error));
+      .catch((error) => {
+        form.resetFields();
+        messageApi.open({
+          type: "error",
+          content: "Login failed. Please try again.",
+          duration: 3, // 3초 동안 표시
+        });
+      });
   };
+
   return (
     <div className="center">
       <Form
+        form={form}
         name="login"
-        initialValues={{
-          remember: true,
-        }}
         style={{
           minWidth: 360,
         }}
@@ -85,7 +106,7 @@ const LoginForm = () => {
             </Col>
           </Row>
         </Form.Item>
-
+        <div>{contextHolder}</div>
         <Form.Item>
           <Col span={24}>
             <Flex justify="flex-end" align="center">
