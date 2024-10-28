@@ -2,13 +2,30 @@ import React from "react";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Form, Input, Flex, Space, Row, Col } from "antd";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 const LoginForm = () => {
   const navigate = useNavigate();
   const onFinish = (values) => {
-    console.log("Received values of form: ", values);
+    console.log(
+      "Received values of form: ",
+      values,
+      JSON.stringify({
+        username: values.userId,
+        password: values.password,
+      })
+    );
 
-    // 로그인에 성공하면 라이센스 페이지로 이동
-    navigate("/license", { state: { isLoggedIn: true } });
+    axios
+      .post(`${process.env.REACT_APP_SERVER_URL}/auth/login`, {
+        username: values.userId,
+        password: values.password,
+      })
+      .then((result) => {
+        // 로그인 성공
+        localStorage.setItem("token", JSON.stringify(result.token));
+        navigate("/license", { state: { isLoggedIn: true } });
+      })
+      .catch((error) => console.error(error));
   };
   return (
     <div className="center">
