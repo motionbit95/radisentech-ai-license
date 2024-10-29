@@ -23,11 +23,11 @@ const LoginForm = () => {
   const onFinish = (values) => {
     console.log(
       "Received values of form: ",
-      values,
-      JSON.stringify({
-        username: values.user_id,
-        password: values.password,
-      })
+      values
+      // JSON.stringify({
+      //   username: values.user_id,
+      //   password: values.password,
+      // })
     );
 
     axios
