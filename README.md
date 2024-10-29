@@ -51,6 +51,12 @@ aws configure
 
 ## Lambda 함수 코드 zip 업로드 방법
 
+### zip 생성
+
+```bash
+zip -r api .
+```
+
 ### 함수 생성
 
 ```bash
@@ -74,4 +80,41 @@ aws lambda update-function-code \
 
 ```bash
 aws lambda delete-function --function-name [함수이름]
+```
+
+# AWS RDS(MySQL) - node.js 연동 방법
+
+## AWS RDS 생성 방법
+
+1. AWS 서비스에서 RDS를 선택합니다.
+2. 데이터베이스 생성을 선택합니다.
+3. 아래와 같이 옵션을 선택합니다.
+   > 데이터베이스 생성 방식 선택 : 표준 생성<br/>
+   > 엔진 옵션 : MySQL<br/>
+   > 엔진 버전 : MySQL 8.0.28<br/>
+   > 템플릿 : 프리 티어<br/>
+   > DB 인스턴스 식별자, 마스터 사용자 이름, 마스터 암호 : 원하는 대로<br/>
+   > 인스턴스 구성 : 버스터블 클래스, db.t3.micro<br/>
+   > 스토리지 유형 : 범용 SSD(gp2)<br/>
+   > 할당된 스토리지 : 20<br/>
+   > 최대 스토리지 임계값 : 100<br/>
+   > 컴퓨팅 리소스 : EC2 컴퓨팅 리소스에 연결 안 함<br/>
+   > 네트워크 유형 : IPv4<br/>
+   > 퍼블릭 액세스 : 예 (가능)<br/>
+   > VPC 보안 그룹(방화벽) : 위에서 만든 보안그룹 선택<br/>
+   > 데이터베이스 인증 옵션 : 암호 인증<br/>
+4. 데이터 베이스를 생성합니다.
+
+## VS Code에서 Database Client 사용하기
+
+1. VS Code에 MySQL 확장 프로그램(Weijan Chen)을 설치합니다.
+2. Hostname과 옵션에서 설정했던 마스터 사용자 이름과 암호를 입력합니다.
+3. Connect 합니다.
+
+## node.js에 MySQL 연동하기
+
+1. MySQL 설치
+
+```bash
+npm install mysql2
 ```
