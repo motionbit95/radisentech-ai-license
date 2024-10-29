@@ -1,7 +1,7 @@
 import { Button, Col, Form, Input, Space } from "antd";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { MailOutlined, UserOutlined } from "@ant-design/icons";
+import { MailOutlined, UserOutlined, UnlockOutlined } from "@ant-design/icons";
 
 const ForgotPw = () => {
   const navigate = useNavigate();
@@ -59,17 +59,18 @@ const ForgotPw = () => {
         </Form.Item>
 
         {openCodeInput && (
-          <>
-            <h1>Check your email!</h1>
-            <Form.Item>
-              <PinInput
-                length={6}
-                onComplete={(code) => {
-                  console.log("Code: ", code);
-                }}
-              />
-            </Form.Item>
-          </>
+          <Form.Item
+            name="code"
+            //   label="Code"
+            rules={[
+              {
+                required: true,
+                message: "Please input your code!",
+              },
+            ]}
+          >
+            <Input prefix={<UnlockOutlined />} placeholder="Code" />
+          </Form.Item>
         )}
         <Form.Item>
           <Button block type="primary" htmlType="submit">
@@ -82,50 +83,3 @@ const ForgotPw = () => {
 };
 
 export default ForgotPw;
-
-const PinInput = ({ length, onComplete }) => {
-  const [values, setValues] = useState(Array(length).fill(""));
-
-  const handleChange = (value, index) => {
-    const newValues = [...values];
-    newValues[index] = value;
-    setValues(newValues);
-
-    if (value) {
-      // 다음 필드로 포커스 이동
-      if (index < length - 1) {
-        document.getElementById(`pin-input-${index + 1}`).focus();
-      }
-    } else {
-      // 값이 삭제될 때 이전 필드로 포커스 이동
-      if (index > 0) {
-        document.getElementById(`pin-input-${index - 1}`).focus();
-      }
-    }
-
-    // 모든 입력이 완료되었을 때 onComplete 호출
-    if (newValues.every((v) => v !== "")) {
-      onComplete && onComplete(newValues.join(""));
-    }
-  };
-
-  return (
-    <Space>
-      {values.map((_, index) => (
-        <Input
-          key={index}
-          id={`pin-input-${index}`}
-          value={values[index]}
-          onChange={(e) => handleChange(e.target.value, index)}
-          maxLength={1}
-          style={{
-            width: 40,
-            height: 40,
-            textAlign: "center",
-            fontSize: "1.2em",
-          }}
-        />
-      ))}
-    </Space>
-  );
-};

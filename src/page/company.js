@@ -298,8 +298,8 @@ const Company = () => {
       {error ? (
         <Result
           status="403"
-          title="403"
-          subTitle="Sorry, you are not authorized to access this page."
+          title={error.code}
+          subTitle={error.message}
           extra={
             <Button type="primary" onClick={() => navigate("/login")}>
               Login Account
