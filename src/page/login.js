@@ -108,7 +108,7 @@ const LoginForm = () => {
         <Form.Item>
           <Col span={24}>
             <Flex justify="flex-end" align="center">
-              <a href="">Forgot password</a>
+              <a href="/forgot">Forgot password</a>
             </Flex>
           </Col>
         </Form.Item>

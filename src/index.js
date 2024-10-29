@@ -7,6 +7,7 @@ import reportWebVitals from "./reportWebVitals";
 import LoginForm from "./page/login";
 import SignUp from "./page/signup";
 import { Button, Result } from "antd";
+import ForgotPw from "./page/forgotPw";
 
 const router = createBrowserRouter([
   {
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
   {
     path: "/signup",
     element: <SignUp />,
+  },
+  {
+    path: "/forgot",
+    element: <ForgotPw />,
   },
   {
     path: "/",
