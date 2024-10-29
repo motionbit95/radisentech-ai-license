@@ -315,6 +315,7 @@ const Company = () => {
           <Space size={"large"} direction="vertical" className="w-full">
             <Table
               rowSelection={rowSelection}
+              loading={loading}
               title={() => (
                 <Row justify={"space-between"}>
                   <GenerateModal
