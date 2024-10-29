@@ -11,9 +11,6 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 
 // 라우터 설정
-const authRouter = require("./authRouter");
-app.use("/auth", authRouter);
-
 const companyRouter = require("./companyRouter");
 app.use("/company", companyRouter);
 

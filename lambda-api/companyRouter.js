@@ -203,4 +203,38 @@ router.put("/update/:user_id", async (req, res) => {
   }
 });
 
+// user_id 중복 체크 엔드포인트 생성
+router.get("/check-user-id/:user_id", async (req, res) => {
+  const userId = req.params.user_id; // URL에서 user_id를 가져옵니다.
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // user_id 존재 여부 확인
+    const [results] = await connection.execute(
+      "SELECT * FROM company WHERE user_id = ?",
+      [userId]
+    );
+
+    // user_id가 존재하는 경우
+    if (results.length > 0) {
+      return res
+        .status(200)
+        .json({ exists: true, message: "User ID already exists" });
+    } else {
+      // user_id가 존재하지 않는 경우
+      return res
+        .status(200)
+        .json({ exists: false, message: "User ID is available" });
+    }
+  } catch (error) {
+    console.error("Error checking user ID:", error);
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    if (connection) await connection.end(); // 연결 종료
+  }
+});
+
 module.exports = router;
