@@ -55,11 +55,33 @@ const SignUp = () => {
   const [form] = Form.useForm();
   const [isRegistered, setIsRegistered] = useState(false);
   const [ischeckedId, setIsCheckedId] = useState(false);
+  const [messageApi, contextHolder] = message.useMessage();
   const onFinish = (values) => {
     console.log("Received values of form: ", values);
 
-    // 데이터를 모두 받았으면 결과 UI 노출 -> 로그인 유도
-    setIsRegistered(true);
+    if (!ischeckedId) {
+      message.error("Please check the ID before submitting.");
+      return;
+    }
+
+    axios
+      .post(`${process.env.REACT_APP_SERVER_URL}/company/add`, values)
+      .then((result) => {
+        // 회원가입 성공
+        console.log(result);
+        setIsRegistered(true);
+
+        if (result.status === "success") {
+          messageApi.open({
+            type: "error",
+            content: "Sign up failed. Please try again.",
+            duration: 3, // 3초 동안 표시
+          });
+        }
+      })
+      .catch((error) => {});
+
+    // setIsRegistered(true);
   };
 
   // ID 중복 체크
@@ -177,7 +199,7 @@ const SignUp = () => {
           >
             <Row gutter={8}>
               <Col span={16}>
-                <Input />
+                <Input onChange={() => setIsCheckedId(false)} />
               </Col>
               <Col span={8}>
                 <Button
@@ -337,6 +359,7 @@ const SignUp = () => {
               I have read the <a href="">agreement</a>
             </Checkbox>
           </Form.Item>
+          <div>{contextHolder}</div>
 
           <Form.Item {...tailFormItemLayout}>
             <Row gutter={8}>
