@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const mysql = require("mysql2/promise"); // mysql2 패키지 불러오기
-
+const bcrypt = require("bcrypt"); // 비밀번호 해싱을 위한 패키지 불러오기
 const bodyParser = require("body-parser"); // json 파싱
 
 const router = express.Router();
@@ -38,6 +38,9 @@ router.post("/add", async (req, res) => {
   const { user_id, password, email, company_name, user_name, address, phone } =
     req.body;
 
+  // 비밀번호 해싱
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   // 필수 필드가 누락된 경우 에러 응답
   if (!user_id || !password || !email || !company_name || !user_name) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -55,7 +58,7 @@ router.post("/add", async (req, res) => {
       `;
     const [result] = await connection.execute(query, [
       user_id,
-      password,
+      hashedPassword,
       email,
       company_name,
       user_name,
