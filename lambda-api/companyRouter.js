@@ -3,6 +3,7 @@ const express = require("express");
 const mysql = require("mysql2/promise"); // mysql2 패키지 불러오기
 const bcrypt = require("bcrypt"); // 비밀번호 해싱을 위한 패키지 불러오기
 const bodyParser = require("body-parser"); // json 파싱
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 const cors = require("cors"); // cors 패키지 불러오기
@@ -10,12 +11,33 @@ const { message } = require("antd");
 router.use(cors());
 router.use(bodyParser.json());
 
+// .env 파일에서 비밀 키 및 포트 가져오기
+const JWT_SECRET = process.env.JWT_SECRET;
+
 // MySQL 연결 설정
 const dbConfig = {
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
+};
+
+// JWT 검증 미들웨어
+const verifyToken = (req, res, next) => {
+  // 따옴표 제거
+  const token = req.headers.authorization?.split(" ")[1].replaceAll('"', "");
+
+  if (!token) return res.status(401).json({ message: "Access token missing" });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      console.error("JWT verification error:", err);
+      return res.status(401).json({ message: "Authentication failed" });
+    }
+
+    req.userId = decoded.userId; // 사용자 ID를 요청 객체에 저장
+    next(); // 다음 미들웨어로 이동
+  });
 };
 
 // 로그인 처리 함수
@@ -48,11 +70,17 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid user_id or password" });
     }
 
+    // JWT 생성
+    const token = jwt.sign({ user_id }, JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
     // 로그인 성공
     res.json({
       status: "success",
       message: "Login successful",
       userId: user.id,
+      token: token,
     });
   } catch (error) {
     console.error("Database error:", error);
@@ -63,7 +91,7 @@ router.post("/login", async (req, res) => {
 });
 
 // company table list를 불러오는 함수
-router.get("/list", async (req, res) => {
+router.get("/list", verifyToken, async (req, res) => {
   let connection;
   try {
     connection = await mysql.createConnection(dbConfig);
@@ -77,7 +105,7 @@ router.get("/list", async (req, res) => {
   }
 });
 
-function generateRandomCode(length = 12) {
+async function generateRandomCode(length = 12) {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // 사용할 문자 집합
   let code = "";
 
@@ -369,6 +397,7 @@ router.post("/copy-user/:id", async (req, res) => {
       "user_id",
       userData.user_id
     );
+    userData.unique_code = await generateRandomCode();
 
     // 새로운 행 삽입 쿼리 작성
     const columns = Object.keys(userData).join(", ");

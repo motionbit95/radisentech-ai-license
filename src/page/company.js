@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Input, Layout, Row, Space, Table } from "antd";
+import { Button, Input, Layout, Result, Row, Space, Table } from "antd";
 import { dummyCompany } from "../data";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
@@ -7,10 +7,12 @@ import ButtonGroup from "antd/es/button/button-group";
 import GenerateModal from "../modal/generate";
 import CompanyEdit from "../modal/drawer";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const { Content } = Layout;
 
 const Company = () => {
+  const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
@@ -19,6 +21,7 @@ const Company = () => {
 
   const [selectedCompany, setSelectedCompany] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
@@ -26,9 +29,14 @@ const Company = () => {
   }, []);
 
   const updateList = () => {
-    // DB 데이터를 가지고 옴
+    // DB 데이터를 가지고 옴 - 유효한 토큰을 가지는 사용자만 접근 가능
     axios
-      .get(`${process.env.REACT_APP_SERVER_URL}/company/list`)
+      .get(`${process.env.REACT_APP_SERVER_URL}/company/list`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      })
       .then((result) => {
         if (result.status === 200) {
           setList(result.data.map((item) => ({ ...item, key: item.user_id })));
@@ -36,6 +44,7 @@ const Company = () => {
       })
       .catch((error) => {
         console.log(error);
+        setError(error);
       });
   };
 
@@ -270,64 +279,79 @@ const Company = () => {
   const hasSelected = selectedRowKeys.length > 0;
 
   return (
-    <Content
-      style={{
-        padding: "48px",
-      }}
-    >
-      <Space size={"large"} direction="vertical" className="w-full">
-        <Table
-          rowSelection={rowSelection}
-          title={() => (
-            <Row justify={"space-between"}>
-              <GenerateModal
-                title="Generate License"
-                type="primary"
-                data={selectedCompany}
-                disabled={!hasSelected}
-                onComplete={(data) => {
-                  updateList();
-                  setSelectedCompany(data);
-                }}
-              />
-              <ButtonGroup>
-                <Button disabled={!hasSelected} onClick={copyUser}>
-                  Copy
-                </Button>
-                <Button
-                  disabled={!hasSelected}
-                  onClick={() => setSelectedRowKeys([])}
-                >
-                  Cancel
-                </Button>
-                <CompanyEdit
-                  disabled={!hasSelected}
-                  data={selectedCompany}
-                  onComplete={(data) => {
-                    updateList();
-                    setSelectedCompany(data);
-                  }}
-                />
-                <Button disabled={!hasSelected} onClick={deleteUser}>
-                  Delete
-                </Button>
-              </ButtonGroup>
-            </Row>
-          )}
-          pagination={{
-            defaultCurrent: 1,
-            defaultPageSize: 10,
-            showSizeChanger: true,
-          }}
-          columns={companyColumns}
-          dataSource={list}
-          scroll={{
-            x: "max-content",
-          }}
-          onChange={handleChange}
+    <>
+      {error ? (
+        <Result
+          status="403"
+          title="403"
+          subTitle="Sorry, you are not authorized to access this page."
+          extra={
+            <Button type="primary" onClick={() => navigate("/login")}>
+              Login Account
+            </Button>
+          }
         />
-      </Space>
-    </Content>
+      ) : (
+        <Content
+          style={{
+            padding: "48px",
+          }}
+        >
+          <Space size={"large"} direction="vertical" className="w-full">
+            <Table
+              rowSelection={rowSelection}
+              title={() => (
+                <Row justify={"space-between"}>
+                  <GenerateModal
+                    title="Generate License"
+                    type="primary"
+                    data={selectedCompany}
+                    disabled={!hasSelected}
+                    onComplete={(data) => {
+                      updateList();
+                      setSelectedCompany(data);
+                    }}
+                  />
+                  <ButtonGroup>
+                    <Button disabled={!hasSelected} onClick={copyUser}>
+                      Copy
+                    </Button>
+                    <Button
+                      disabled={!hasSelected}
+                      onClick={() => setSelectedRowKeys([])}
+                    >
+                      Cancel
+                    </Button>
+                    <CompanyEdit
+                      disabled={!hasSelected}
+                      data={selectedCompany}
+                      onComplete={(data) => {
+                        updateList();
+                        setSelectedCompany(data);
+                      }}
+                    />
+                    <Button disabled={!hasSelected} onClick={deleteUser}>
+                      Delete
+                    </Button>
+                  </ButtonGroup>
+                </Row>
+              )}
+              pagination={{
+                defaultCurrent: 1,
+                defaultPageSize: 10,
+                showSizeChanger: true,
+              }}
+              columns={companyColumns}
+              dataSource={list}
+              scroll={{
+                x: "max-content",
+              }}
+              onChange={handleChange}
+            />
+          </Space>
+        </Content>
+      )}
+    </>
   );
 };
 

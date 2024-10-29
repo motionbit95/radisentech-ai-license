@@ -34,7 +34,8 @@ const LoginForm = () => {
       .post(`${process.env.REACT_APP_SERVER_URL}/company/login`, values)
       .then((result) => {
         // 로그인 성공
-        localStorage.setItem("token", JSON.stringify(result.token));
+        console.log(result);
+        localStorage.setItem("token", JSON.stringify(result.data.token));
         navigate("/license", { state: { isLoggedIn: true } });
       })
       .catch((error) => {
