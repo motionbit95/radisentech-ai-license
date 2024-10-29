@@ -77,6 +77,18 @@ router.get("/list", async (req, res) => {
   }
 });
 
+function generateRandomCode(length = 12) {
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // 사용할 문자 집합
+  let code = "";
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    code += characters[randomIndex];
+  }
+
+  return code;
+}
+
 // POST 요청을 받아 데이터를 삽입하는 엔드포인트 생성
 router.post("/add", async (req, res) => {
   const { user_id, password, email, company_name, user_name, address, phone } =
@@ -97,8 +109,8 @@ router.post("/add", async (req, res) => {
 
     // 데이터 삽입 쿼리 실행
     const query = `
-        INSERT INTO company (user_id, password, email, company_name, user_name, address, phone)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO company (user_id, password, email, company_name, user_name, address, phone, unique_code)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `;
     const [result] = await connection.execute(query, [
       user_id,
@@ -108,6 +120,7 @@ router.post("/add", async (req, res) => {
       user_name,
       address,
       phone,
+      generateRandomCode(),
     ]);
 
     // 성공 응답

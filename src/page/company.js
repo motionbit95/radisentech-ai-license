@@ -1,26 +1,14 @@
-import React, { useMemo, useRef, useState } from "react";
-import {
-  Button,
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  Layout,
-  Row,
-  Space,
-  Table,
-  theme,
-  Tooltip,
-} from "antd";
-import { countryCodes, dummyCompany, dummyLisense } from "../data";
+import React, { useEffect, useRef, useState } from "react";
+import { Button, Input, Layout, Row, Space, Table } from "antd";
+import { dummyCompany } from "../data";
 import Highlighter from "react-highlight-words";
-import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
-import { type } from "@testing-library/user-event/dist/type";
+import { SearchOutlined } from "@ant-design/icons";
 import ButtonGroup from "antd/es/button/button-group";
 import GenerateModal from "../modal/generate";
 import CompanyEdit from "../modal/drawer";
+import axios from "axios";
 
-const { Header, Content, Footer } = Layout;
+const { Content } = Layout;
 
 const Company = () => {
   const [searchText, setSearchText] = useState("");
@@ -30,6 +18,27 @@ const Company = () => {
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
   const [selectedFilters, setSelectedFilters] = useState([]);
+
+  const [list, setList] = useState([]);
+
+  useEffect(() => {
+    // 페이지를 로드할 때 실행
+    updateList();
+  }, []);
+
+  const updateList = () => {
+    // DB 데이터를 가지고 옴
+    axios
+      .get(`${process.env.REACT_APP_SERVER_URL}/company/list`)
+      .then((result) => {
+        if (result.status === 200) {
+          setList(result.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -190,8 +199,8 @@ const Company = () => {
     },
     {
       title: "Code",
-      dataIndex: "key",
-      key: "key",
+      dataIndex: "unique_code",
+      key: "unique_code",
     },
     {
       title: "User Name",
@@ -250,7 +259,7 @@ const Company = () => {
                 </Button>
                 <CompanyEdit
                   disabled={!hasSelected}
-                  data={dummyCompany.find((c) => c.key === selectedRowKeys[0])}
+                  data={list.find((c) => c.key === selectedRowKeys[0])}
                 />
                 <Button disabled={!hasSelected}>Delete</Button>
               </ButtonGroup>
@@ -262,7 +271,7 @@ const Company = () => {
             showSizeChanger: true,
           }}
           columns={companyColumns}
-          dataSource={dummyCompany}
+          dataSource={list}
           scroll={{
             x: "max-content",
           }}

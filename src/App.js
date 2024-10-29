@@ -36,7 +36,9 @@ function App({ page }) {
   const location = useLocation();
 
   // 로그인 페이지에서 라이센스 페이지로 이동할 때 로그인 플래그를 받습니다.
-  const [isLoggedIn, setIsLoggedIn] = useState(location.state?.isLoggedIn);
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    /*location.state?.isLoggedIn*/ true
+  );
 
   useEffect(() => {
     // 로그인 된 사용자의 경우 lisecse 페이지로 리다이렉트
