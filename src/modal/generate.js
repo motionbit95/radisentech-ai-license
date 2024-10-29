@@ -29,7 +29,7 @@ const GenerateModal = (props) => {
 
         form.resetFields();
         setModalOpen(false);
-        onComplete();
+        onComplete(values);
       })
       .catch((error) => {
         console.log(error);

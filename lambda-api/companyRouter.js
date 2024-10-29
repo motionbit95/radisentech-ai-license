@@ -142,10 +142,10 @@ router.post("/add", async (req, res) => {
 });
 
 // PUT 요청을 받아 데이터 수정하는 엔드포인트 생성
-router.put("/update/:user_id", async (req, res) => {
-  const userId = req.params.user_id; // URL에서 user_id를 가져옵니다.
+router.put("/update/:id", async (req, res) => {
+  const id = req.params.id; // URL에서 row id를 가져옵니다.
   const {
-    password,
+    user_id,
     email,
     company_name,
     user_name,
@@ -154,6 +154,8 @@ router.put("/update/:user_id", async (req, res) => {
     unique_code,
   } = req.body;
 
+  console.log(req.body);
+
   let connection;
   try {
     // 데이터베이스 연결
@@ -161,8 +163,8 @@ router.put("/update/:user_id", async (req, res) => {
 
     // 수정할 데이터가 있는지 확인
     const [existingUser] = await connection.execute(
-      "SELECT * FROM company WHERE user_id = ?",
-      [userId]
+      "SELECT * FROM company WHERE id = ?",
+      [id]
     );
     if (existingUser.length === 0) {
       return res.status(404).json({ error: "User not found" });
@@ -172,23 +174,25 @@ router.put("/update/:user_id", async (req, res) => {
     const query = `
         UPDATE company 
         SET 
+          user_id = COALESCE(?, user_id),
           email = COALESCE(?, email), 
           company_name = COALESCE(?, company_name), 
           user_name = COALESCE(?, user_name), 
           address = COALESCE(?, address), 
           phone = COALESCE(?, phone), 
           unique_code = COALESCE(?, unique_code) 
-        WHERE user_id = ?
+        WHERE id = ?
       `;
 
     await connection.execute(query, [
+      user_id,
       email,
       company_name,
       user_name,
       address,
       phone,
       unique_code,
-      userId,
+      id,
     ]);
 
     // 성공 응답
@@ -279,6 +283,107 @@ router.put("/update-license/:user_id", async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating license count:", error);
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    if (connection) await connection.end(); // 연결 종료
+  }
+});
+
+// id로 행을 삭제하는 엔드포인트 생성
+router.delete("/delete/:id", async (req, res) => {
+  const id = req.params.id; // URL에서 id를 가져옵니다.
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // id 존재 여부 확인
+    const [existingUser] = await connection.execute(
+      "SELECT * FROM company WHERE id = ?",
+      [id]
+    );
+    if (existingUser.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // id로 행 삭제
+    await connection.execute("DELETE FROM company WHERE id = ?", [id]);
+
+    // 성공 응답
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    if (connection) await connection.end(); // 연결 종료
+  }
+});
+
+// user_id의 복사본 고유 값을 생성하는 함수
+async function generateUniqueCopyValue(connection, columnName, baseValue) {
+  let newValue = `${baseValue}_copy`;
+  let suffix = 1;
+
+  // 동일한 패턴을 가진 항목들을 조회
+  const [existingCopies] = await connection.execute(
+    `SELECT ${columnName} FROM company WHERE ${columnName} LIKE ?`,
+    [`${baseValue}_copy%`]
+  );
+
+  // 동일한 복사본의 개수를 카운팅하여 새로운 suffix를 생성
+  const existingValues = existingCopies.map((row) => row[columnName]);
+  while (existingValues.includes(newValue)) {
+    suffix++;
+    newValue = `${baseValue}_copy${suffix}`;
+  }
+
+  return newValue;
+}
+
+// 특정 id의 행을 복사하는 엔드포인트 생성
+router.post("/copy-user/:id", async (req, res) => {
+  const id = req.params.id; // URL에서 id를 가져옵니다.
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // 기존 행 조회
+    const [existingUser] = await connection.execute(
+      "SELECT * FROM company WHERE id = ?",
+      [id]
+    );
+    if (existingUser.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // 기존 행 데이터에서 ID를 제외하고 복사할 데이터 준비
+    const userData = existingUser[0];
+    delete userData.id; // 자동 증가 컬럼 id는 제거
+
+    // 고유한 user_id와 email 값을 생성
+    userData.user_id = await generateUniqueCopyValue(
+      connection,
+      "user_id",
+      userData.user_id
+    );
+
+    // 새로운 행 삽입 쿼리 작성
+    const columns = Object.keys(userData).join(", ");
+    const placeholders = Object.keys(userData)
+      .map(() => "?")
+      .join(", ");
+    const values = Object.values(userData);
+
+    const insertQuery = `INSERT INTO company (${columns}) VALUES (${placeholders})`;
+    await connection.execute(insertQuery, values);
+
+    // 성공 응답
+    res.status(201).json({ message: "User copied successfully" });
+  } catch (error) {
+    console.error("Error copying user:", error);
     res.status(500).json({ error: "Database error" });
   } finally {
     if (connection) await connection.end(); // 연결 종료

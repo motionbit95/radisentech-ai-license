@@ -37,8 +37,37 @@ const Company = () => {
       .catch((error) => {
         console.log(error);
       });
+  };
 
-    setSelectedCompany(null);
+  const deleteUser = () => {
+    axios
+      .delete(
+        `${process.env.REACT_APP_SERVER_URL}/company/delete/${selectedCompany?.id}`
+      )
+      .then((result) => {
+        if (result.status === 200) {
+          updateList();
+          setSelectedCompany(null);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const copyUser = () => {
+    axios
+      .post(
+        `${process.env.REACT_APP_SERVER_URL}/company/copy-user/${selectedCompany?.id}`
+      )
+      .then((result) => {
+        if (result.status === 201) {
+          updateList();
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -256,10 +285,15 @@ const Company = () => {
                 type="primary"
                 data={selectedCompany}
                 disabled={!hasSelected}
-                onComplete={updateList}
+                onComplete={(data) => {
+                  updateList();
+                  setSelectedCompany(data);
+                }}
               />
               <ButtonGroup>
-                <Button disabled={!hasSelected}>Copy</Button>
+                <Button disabled={!hasSelected} onClick={copyUser}>
+                  Copy
+                </Button>
                 <Button
                   disabled={!hasSelected}
                   onClick={() => setSelectedRowKeys([])}
@@ -269,9 +303,14 @@ const Company = () => {
                 <CompanyEdit
                   disabled={!hasSelected}
                   data={selectedCompany}
-                  onComplete={updateList}
+                  onComplete={(data) => {
+                    updateList();
+                    setSelectedCompany(data);
+                  }}
                 />
-                <Button disabled={!hasSelected}>Delete</Button>
+                <Button disabled={!hasSelected} onClick={deleteUser}>
+                  Delete
+                </Button>
               </ButtonGroup>
             </Row>
           )}

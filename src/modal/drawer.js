@@ -17,9 +17,10 @@ const CompanyEdit = (props) => {
   };
 
   const onFinish = (values) => {
+    console.log("Received values of form: ", values, data);
     axios
       .put(
-        `${process.env.REACT_APP_SERVER_URL}/company/update/${data?.user_id}`,
+        `${process.env.REACT_APP_SERVER_URL}/company/update/${data?.id}`,
         values
       )
       .then((result) => {
@@ -28,7 +29,7 @@ const CompanyEdit = (props) => {
 
         // form.resetFields();
         setOpen(false);
-        onComplete();
+        onComplete(values);
       })
       .catch((error) => {
         console.log(error);
