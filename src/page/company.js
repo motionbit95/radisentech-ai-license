@@ -1,9 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-<<<<<<< HEAD
-import { Button, Input, Layout, Result, Row, Space, Table } from "antd";
-=======
-import { Button, Input, Layout, Popconfirm, Row, Space, Table } from "antd";
->>>>>>> eeae36573835bac960f9cc4934caeda10dc0fe62
+import {
+  Button,
+  Input,
+  Layout,
+  Result,
+  Popconfirm,
+  Row,
+  Space,
+  Table,
+} from "antd";
 import { dummyCompany } from "../data";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
@@ -25,12 +30,9 @@ const Company = () => {
 
   const [selectedCompany, setSelectedCompany] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
-<<<<<<< HEAD
   const [error, setError] = useState(null);
-=======
   // 로딩 플래그
   const [loading, setLoading] = useState(false);
->>>>>>> eeae36573835bac960f9cc4934caeda10dc0fe62
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
@@ -292,7 +294,6 @@ const Company = () => {
   const hasSelected = selectedRowKeys.length > 0;
 
   return (
-<<<<<<< HEAD
     <>
       {error ? (
         <Result
@@ -304,71 +305,6 @@ const Company = () => {
               Login Account
             </Button>
           }
-=======
-    <Content
-      style={{
-        padding: "48px",
-      }}
-    >
-      <Space size={"large"} direction="vertical" className="w-full">
-        <Table
-          loading={loading}
-          rowSelection={rowSelection}
-          title={() => (
-            <Row justify={"space-between"}>
-              <GenerateModal
-                title="Generate License"
-                type="primary"
-                data={selectedCompany}
-                disabled={!hasSelected}
-                onComplete={(data) => {
-                  updateList();
-                  setSelectedCompany(data);
-                }}
-              />
-              <ButtonGroup>
-                <Button disabled={!hasSelected} onClick={copyUser}>
-                  Copy
-                </Button>
-                <Button
-                  disabled={!hasSelected}
-                  onClick={() => setSelectedRowKeys([])}
-                >
-                  Cancel
-                </Button>
-                <CompanyEdit
-                  disabled={!hasSelected}
-                  data={selectedCompany}
-                  onComplete={(data) => {
-                    updateList();
-                    setSelectedCompany(data);
-                  }}
-                />
-                <Popconfirm
-                  title="Delete the task"
-                  description="Are you sure to delete this task?"
-                  onConfirm={deleteUser} // 삭제 작업을 실행하는 confirm 핸들러
-                  onCancel={() => console.log("cancel")}
-                  okText="Yes"
-                  cancelText="No"
-                >
-                  <Button disabled={!hasSelected}>Delete</Button>
-                </Popconfirm>
-              </ButtonGroup>
-            </Row>
-          )}
-          pagination={{
-            defaultCurrent: 1,
-            defaultPageSize: 10,
-            showSizeChanger: true,
-          }}
-          columns={companyColumns}
-          dataSource={list}
-          scroll={{
-            x: "max-content",
-          }}
-          onChange={handleChange}
->>>>>>> eeae36573835bac960f9cc4934caeda10dc0fe62
         />
       ) : (
         <Content
