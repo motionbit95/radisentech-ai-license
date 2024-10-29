@@ -37,6 +37,8 @@ const Company = () => {
       .catch((error) => {
         console.log(error);
       });
+
+    setSelectedCompany(null);
   };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
