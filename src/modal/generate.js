@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Button, Form, Input, InputNumber, Modal } from "antd";
+import axios from "axios";
 const GenerateModal = (props) => {
-  const { title, type, disabled } = props;
+  const { title, type, disabled, data, onComplete } = props;
   const [modalOpen, setModalOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -17,10 +18,22 @@ const GenerateModal = (props) => {
   };
 
   const onFinish = (values) => {
-    console.log("Received values of form: ", values);
+    axios
+      .put(
+        `${process.env.REACT_APP_SERVER_URL}/company/update-license/${data?.user_id}`,
+        values
+      )
+      .then((result) => {
+        // 업데이트에 성공하면 아래 구문 실행
+        console.log(result);
 
-    form.resetFields();
-    setModalOpen(false);
+        form.resetFields();
+        setModalOpen(false);
+        onComplete();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
@@ -53,15 +66,16 @@ const GenerateModal = (props) => {
           {...formItemLayout}
         >
           <Form.Item
-            name="company"
+            initialValue={data?.company_name}
+            name="company_name"
             label="Company"
             rules={[{ required: true, message: "Please input company" }]}
           >
-            <Input placeholder="Company" />
+            <Input disabled placeholder="Company" />
           </Form.Item>
           <Form.Item
             label="License No."
-            name="license_no"
+            name="license_cnt"
             rules={[{ required: true, message: "Please input license number" }]}
           >
             <InputNumber className="w-full" placeholder="License No. Input" />

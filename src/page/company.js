@@ -254,8 +254,9 @@ const Company = () => {
               <GenerateModal
                 title="Generate License"
                 type="primary"
+                data={selectedCompany}
                 disabled={!hasSelected}
-                // onClick={() => console.log(selectedRowKeys)}
+                onComplete={updateList}
               />
               <ButtonGroup>
                 <Button disabled={!hasSelected}>Copy</Button>
@@ -268,10 +269,7 @@ const Company = () => {
                 <CompanyEdit
                   disabled={!hasSelected}
                   data={selectedCompany}
-                  onComplete={() => {
-                    console.log("complete");
-                    updateList();
-                  }}
+                  onComplete={updateList}
                 />
                 <Button disabled={!hasSelected}>Delete</Button>
               </ButtonGroup>

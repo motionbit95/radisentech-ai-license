@@ -237,4 +237,54 @@ router.get("/check-user-id/:user_id", async (req, res) => {
   }
 });
 
+// user_id의 license_cnt 값을 기존 값에 합산하여 변경하는 엔드포인트 생성
+router.put("/update-license/:user_id", async (req, res) => {
+  const userId = req.params.user_id; // URL에서 user_id를 가져옵니다.
+  const { license_cnt } = req.body; // body에서 license_cnt 값을 가져옵니다.
+
+  // 필수 필드가 누락된 경우 에러 응답
+  if (license_cnt === undefined) {
+    return res
+      .status(400)
+      .json({ error: "Missing required field: license_cnt" });
+  }
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // user_id 존재 여부 확인
+    const [existingUser] = await connection.execute(
+      "SELECT license_cnt FROM company WHERE user_id = ?",
+      [userId]
+    );
+    if (existingUser.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // 기존 license_cnt 값 가져오기
+    const currentLicenseCnt = existingUser[0].license_cnt;
+
+    // 새로운 license_cnt 계산
+    const updatedLicenseCnt =
+      parseInt(currentLicenseCnt) + parseInt(license_cnt);
+
+    // license_cnt 수정 쿼리 실행
+    const query = "UPDATE company SET license_cnt = ? WHERE user_id = ?";
+    await connection.execute(query, [updatedLicenseCnt, userId]);
+
+    // 성공 응답
+    res.status(200).json({
+      message: "License count updated successfully",
+      updatedLicenseCnt,
+    });
+  } catch (error) {
+    console.error("Error updating license count:", error);
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    if (connection) await connection.end(); // 연결 종료
+  }
+});
+
 module.exports = router;
