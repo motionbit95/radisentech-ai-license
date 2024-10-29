@@ -88,6 +88,11 @@ const LoginForm = () => {
         <Form.Item>
           <Row gutter={8}>
             <Col span={12}>
+              <Button block type="primary" htmlType="submit">
+                Login
+              </Button>
+            </Col>
+            <Col span={12}>
               {/* 회원가입 페이지로 이동 */}
               <Button
                 block
@@ -95,11 +100,6 @@ const LoginForm = () => {
                 onClick={() => navigate("/signup")}
               >
                 Join
-              </Button>
-            </Col>
-            <Col span={12}>
-              <Button block type="primary" htmlType="submit">
-                Login
               </Button>
             </Col>
           </Row>
