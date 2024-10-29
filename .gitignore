@@ -26,3 +26,5 @@ yarn-error.log*
 # aws
 /lambda-api/node_modules
 /lambda-api/package-lock.json
+/lambda-api/.env
+/lambda-api/api.zip
