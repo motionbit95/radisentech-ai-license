@@ -18,6 +18,50 @@ const dbConfig = {
   database: process.env.DB_NAME,
 };
 
+// 로그인 처리 함수
+router.post("/login", async (req, res) => {
+  const { user_id, password } = req.body;
+
+  if (!user_id || !password) {
+    return res.status(400).json({ error: "user_id and password are required" });
+  }
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // user_id로 사용자 검색
+    const query = "SELECT * FROM company WHERE user_id = ?";
+    const [rows] = await connection.execute(query, [user_id]);
+
+    // 사용자가 없는 경우
+    if (rows.length === 0) {
+      return res.status(401).json({ error: "Invalid user_id or password" });
+    }
+
+    const user = rows[0];
+
+    // 비밀번호 비교
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid user_id or password" });
+    }
+
+    // 로그인 성공
+    res.json({
+      status: "success",
+      message: "Login successful",
+      userId: user.id,
+    });
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ status: "error", error: "Database error" });
+  } finally {
+    if (connection) await connection.end(); // 연결 종료
+  }
+});
+
 // company table list를 불러오는 함수
 router.get("/list", async (req, res) => {
   let connection;
@@ -67,14 +111,18 @@ router.post("/add", async (req, res) => {
     ]);
 
     // 성공 응답
-    res
-      .status(201)
-      .json({ message: "User added successfully", user_id: result.insertId });
+    res.status(201).json({
+      status: "success",
+      message: "User added successfully",
+      user_id: result.insertId,
+    });
   } catch (error) {
     console.error("Error inserting data:", error);
-    res
-      .status(500)
-      .json({ error: "Database error", message: error.sqlMessage });
+    res.status(500).json({
+      status: "error",
+      error: "Database error",
+      message: error.sqlMessage,
+    });
   } finally {
     if (connection) await connection.end(); // 연결 종료
   }
