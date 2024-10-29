@@ -8,6 +8,7 @@ import {
   Result,
   Row,
   Space,
+  Spin,
   Typography,
 } from "antd";
 import { Footer, Header } from "antd/es/layout/layout";
@@ -62,7 +63,7 @@ function App({ page }) {
             <Menu
               theme="dark"
               mode="horizontal"
-              defaultSelectedKeys={[page]}
+              defaultSelectedKeys={page ? [page] : ["license"]}
               items={items}
               style={{ flex: 1, minWidth: 0 }}
               onClick={({ key }) => {
@@ -109,8 +110,10 @@ function App({ page }) {
         ) : (
           <>
             {page === "license" && (
-              <License />
-              // <LicenseDealer />
+              <>
+                <License />
+                {/* <LicenseDealer /> */}
+              </>
             )}
             {page === "company" && <Company />}
           </>
@@ -128,3 +131,18 @@ function App({ page }) {
 }
 
 export default App;
+
+export const LoadingScreen = () => {
+  return (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        // height: "100vh",
+      }}
+    >
+      <Spin size="large" />
+    </div>
+  );
+};

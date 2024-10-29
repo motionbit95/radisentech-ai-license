@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Input, Layout, Row, Space, Table } from "antd";
+import { Button, Input, Layout, Popconfirm, Row, Space, Table } from "antd";
 import { dummyCompany } from "../data";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
@@ -19,6 +19,8 @@ const Company = () => {
 
   const [selectedCompany, setSelectedCompany] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
+  // 로딩 플래그
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
@@ -27,6 +29,7 @@ const Company = () => {
 
   const updateList = () => {
     // DB 데이터를 가지고 옴
+    setLoading(true);
     axios
       .get(`${process.env.REACT_APP_SERVER_URL}/company/list`)
       .then((result) => {
@@ -36,6 +39,9 @@ const Company = () => {
       })
       .catch((error) => {
         console.log(error);
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -277,6 +283,7 @@ const Company = () => {
     >
       <Space size={"large"} direction="vertical" className="w-full">
         <Table
+          loading={loading}
           rowSelection={rowSelection}
           title={() => (
             <Row justify={"space-between"}>
@@ -308,9 +315,16 @@ const Company = () => {
                     setSelectedCompany(data);
                   }}
                 />
-                <Button disabled={!hasSelected} onClick={deleteUser}>
-                  Delete
-                </Button>
+                <Popconfirm
+                  title="Delete the task"
+                  description="Are you sure to delete this task?"
+                  onConfirm={deleteUser} // 삭제 작업을 실행하는 confirm 핸들러
+                  onCancel={() => console.log("cancel")}
+                  okText="Yes"
+                  cancelText="No"
+                >
+                  <Button disabled={!hasSelected}>Delete</Button>
+                </Popconfirm>
               </ButtonGroup>
             </Row>
           )}
