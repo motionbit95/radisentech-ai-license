@@ -31,10 +31,7 @@ const LoginForm = () => {
     );
 
     axios
-      .post(`${process.env.REACT_APP_SERVER_URL}/auth/login`, {
-        username: values.user_id,
-        password: values.password,
-      })
+      .post(`${process.env.REACT_APP_SERVER_URL}/company/login`, values)
       .then((result) => {
         // 로그인 성공
         localStorage.setItem("token", JSON.stringify(result.token));
