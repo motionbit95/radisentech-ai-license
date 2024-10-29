@@ -12,6 +12,7 @@ import {
   Row,
   Select,
   Space,
+  message,
 } from "antd";
 import { SmileOutlined } from "@ant-design/icons";
 import { countryCodes } from "../data";
@@ -52,12 +53,38 @@ const SignUp = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [isRegistered, setIsRegistered] = useState(false);
+  const [ischeckedId, setIsCheckedId] = useState(false);
   const onFinish = (values) => {
     console.log("Received values of form: ", values);
 
     // 데이터를 모두 받았으면 결과 UI 노출 -> 로그인 유도
     setIsRegistered(true);
   };
+
+  // ID 중복 체크
+  const handleCheckDuplicateId = async () => {
+    // userId 필드가 유효할 때만 중복 체크 실행
+    const isValid = await form
+      .validateFields(["userId"])
+      .then(() => true)
+      .catch(() => false);
+
+    if (!isValid) {
+      return setIsCheckedId(false); // 유효하지 않으면 함수 종료
+    }
+
+    const userId = form.getFieldValue("userId");
+
+    // 임시 중복 확인: userId가 'user'인 경우 중복으로 처리
+    if (userId === "user") {
+      message.error("This ID is already taken.");
+      setIsCheckedId(false);
+    } else {
+      message.success("This ID is available.");
+      setIsCheckedId(true);
+    }
+  };
+
   // const prefixSelector = (
   //   <Form.Item name="prefix" noStyle>
   //     <Select
@@ -89,6 +116,7 @@ const SignUp = () => {
     label: website,
     value: website,
   }));
+
   return (
     <div className="center">
       {isRegistered ? (
@@ -125,6 +153,25 @@ const SignUp = () => {
                 message: "Please input your id!",
                 whitespace: true,
               },
+              {
+                max: 20, // 최대 길이
+                message: "ID cannot be longer than 20 characters.",
+              },
+              {
+                validator: (_, value) => {
+                  if (!value || value.length < 4) {
+                    return Promise.reject(
+                      new Error("ID must be at least 4 characters long.")
+                    );
+                  }
+                  if (!/^[a-zA-Z0-9]+$/.test(value)) {
+                    return Promise.reject(
+                      new Error("ID must contain only letters and numbers.")
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
             ]}
           >
             <Row gutter={8}>
@@ -132,7 +179,14 @@ const SignUp = () => {
                 <Input />
               </Col>
               <Col span={8}>
-                <Button className="w-full">Check ID</Button>
+                <Button
+                  className="w-full"
+                  onClick={handleCheckDuplicateId}
+                  style={ischeckedId && { borderColor: "#52c41a" }}
+                >
+                  Check ID
+                  {ischeckedId && <SmileOutlined style={{ marginLeft: 3 }} />}
+                </Button>
               </Col>
             </Row>
           </Form.Item>
@@ -144,6 +198,23 @@ const SignUp = () => {
               {
                 required: true,
                 message: "Please input your password!",
+              },
+              {
+                validator: (_, value) => {
+                  if (!value || value.length < 8) {
+                    return Promise.reject(
+                      new Error("Password must be at least 8 characters long.")
+                    );
+                  }
+                  if (!/[!@#$%^&*]/.test(value)) {
+                    return Promise.reject(
+                      new Error(
+                        "Password must contain at least one special character."
+                      )
+                    );
+                  }
+                  return Promise.resolve();
+                },
               },
             ]}
             hasFeedback
@@ -274,7 +345,10 @@ const SignUp = () => {
                 </Button>
               </Col>
               <Col span={12}>
-                <Button className="w-full" onClick={() => navigate("/login")}>
+                <Button
+                  className="w-full"
+                  onClick={() => window.history.back()}
+                >
                   Cancel
                 </Button>
               </Col>
