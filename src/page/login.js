@@ -25,14 +25,14 @@ const LoginForm = () => {
       "Received values of form: ",
       values,
       JSON.stringify({
-        username: values.userId,
+        username: values.user_id,
         password: values.password,
       })
     );
 
     axios
       .post(`${process.env.REACT_APP_SERVER_URL}/auth/login`, {
-        username: values.userId,
+        username: values.user_id,
         password: values.password,
       })
       .then((result) => {
@@ -61,7 +61,7 @@ const LoginForm = () => {
         onFinish={onFinish}
       >
         <Form.Item
-          name="userId"
+          name="user_id"
           rules={[
             {
               required: true,

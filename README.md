@@ -118,3 +118,6 @@ aws lambda delete-function --function-name [함수이름]
 ```bash
 npm install mysql2
 ```
+
+2. env 변수 설정
+   .env 파일에 AWS RDS DB 변수를 설정합니다.

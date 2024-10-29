@@ -17,6 +17,7 @@ import {
 import { SmileOutlined } from "@ant-design/icons";
 import { countryCodes } from "../data";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 const { Option } = Select;
 
 const formItemLayout = {
@@ -144,7 +145,7 @@ const SignUp = () => {
           scrollToFirstError
         >
           <Form.Item
-            name="userId"
+            name="user_id"
             label="ID"
             tooltip="You need to check for ID duplicates."
             rules={[

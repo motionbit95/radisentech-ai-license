@@ -32,17 +32,17 @@ class License {
 
 class Company {
   constructor(
-    key,
-    id,
-    password,
-    email,
-    company_name,
-    user_name,
-    address,
-    phone
+    key, // pk
+    user_id, // login id
+    password, // login password
+    email, // company email
+    company_name, // company name
+    user_name, // company user name
+    address, // company address
+    phone // company phone
   ) {
     this.key = key; // 회사코드
-    this.id = id;
+    this.user_id = user_id;
     this.password = password;
     this.email = email;
     this.company_name = company_name;
@@ -95,7 +95,7 @@ export const dummyLisense = Array.from({ length: 100 }, (_, index) => {
 export const dummyCompany = Array.from({ length: 100 }, (_, index) => {
   return new Company(
     generateRandomCode(),
-    `id${index}`,
+    `user_id${index}`,
     `password${index}`,
     `email${index}@email.com`,
     `company${index}`,

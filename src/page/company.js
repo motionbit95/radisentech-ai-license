@@ -158,14 +158,14 @@ const Company = () => {
     },
     {
       title: "ID",
-      dataIndex: "id",
-      key: "id",
+      dataIndex: "user_id",
+      key: "user_id",
       fixed: "left",
       width: 150,
 
-      ...getColumnSearchProps("id"),
+      ...getColumnSearchProps("user_id"),
       sorter: (a, b) => {
-        return a.id.localeCompare(b.id);
+        return a.user_id.localeCompare(b.user_id);
       },
     },
     {

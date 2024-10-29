@@ -64,7 +64,7 @@ const CompanyEdit = (props) => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item
-                name="id"
+                name="user_id"
                 label="ID"
                 rules={[
                   {
