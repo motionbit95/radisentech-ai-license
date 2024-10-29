@@ -14,11 +14,10 @@ const Company = () => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
-  const [searchFilters, setSearchFilters] = useState(null);
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
-  const [selectedFilters, setSelectedFilters] = useState([]);
 
+  const [selectedCompany, setSelectedCompany] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
 
   useEffect(() => {
@@ -32,7 +31,7 @@ const Company = () => {
       .get(`${process.env.REACT_APP_SERVER_URL}/company/list`)
       .then((result) => {
         if (result.status === 200) {
-          setList(result.data);
+          setList(result.data.map((item) => ({ ...item, key: item.user_id })));
         }
       })
       .catch((error) => {
@@ -216,6 +215,11 @@ const Company = () => {
       dataIndex: "phone",
       key: "phone",
     },
+    {
+      title: "License",
+      dataIndex: "license_cnt",
+      key: "license_cnt",
+    },
   ];
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
@@ -223,6 +227,8 @@ const Company = () => {
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
+    console.log(list.find((c) => c.key === newSelectedRowKeys[0]));
+    setSelectedCompany(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 
   const rowSelection = {
@@ -259,7 +265,11 @@ const Company = () => {
                 </Button>
                 <CompanyEdit
                   disabled={!hasSelected}
-                  data={list.find((c) => c.key === selectedRowKeys[0])}
+                  data={selectedCompany}
+                  onComplete={() => {
+                    console.log("complete");
+                    updateList();
+                  }}
                 />
                 <Button disabled={!hasSelected}>Delete</Button>
               </ButtonGroup>

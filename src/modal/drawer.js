@@ -1,30 +1,38 @@
-import React, { useEffect, useState } from "react";
-import { PlusOutlined } from "@ant-design/icons";
-import {
-  Button,
-  Col,
-  DatePicker,
-  Drawer,
-  Form,
-  Input,
-  Row,
-  Select,
-  Space,
-} from "antd";
-const { Option } = Select;
+import React, { useState } from "react";
+import { Button, Col, Drawer, Form, Input, Popconfirm, Row, Space } from "antd";
+import axios from "axios";
 const CompanyEdit = (props) => {
-  const { disabled, data } = props;
+  const { disabled, data, onComplete } = props;
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
 
-  const [company, setCompany] = useState({});
   const showDrawer = () => {
     setOpen(true);
 
-    setCompany(data);
+    // drawer가 열리면 필드값을 업데이트합니다.
+    form.setFieldsValue({ ...data });
   };
   const onClose = () => {
     setOpen(false);
+  };
+
+  const onFinish = (values) => {
+    axios
+      .put(
+        `${process.env.REACT_APP_SERVER_URL}/company/update/${data?.user_id}`,
+        values
+      )
+      .then((result) => {
+        // 업데이트에 성공하면 아래 구문 실행
+        console.log(result);
+
+        // form.resetFields();
+        setOpen(false);
+        onComplete();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
@@ -44,7 +52,19 @@ const CompanyEdit = (props) => {
         }}
         extra={
           <Space>
-            <Button onClick={onClose}>Cancel</Button>
+            <Popconfirm
+              title="Delete the task"
+              description="Are you sure to delete this task?"
+              onConfirm={() => {
+                form.resetFields();
+                onClose();
+              }}
+              onCancel={() => {}}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button>Cancel</Button>
+            </Popconfirm>
             <Button type="primary" onClick={() => form.submit()}>
               Submit
             </Button>
@@ -54,13 +74,26 @@ const CompanyEdit = (props) => {
         <Form
           layout="vertical"
           hideRequiredMark
-          initialValues={company}
+          initialValues={data}
           form={form}
-          onFinish={(values) => {
-            console.log(values);
-            onClose();
-          }}
+          onFinish={onFinish}
         >
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name="unique_code"
+                label="Unique Code"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter company code",
+                  },
+                ]}
+              >
+                <Input placeholder="Please enter company code" />
+              </Form.Item>
+            </Col>
+          </Row>
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item

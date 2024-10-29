@@ -141,4 +141,64 @@ router.post("/add", async (req, res) => {
   }
 });
 
+// PUT 요청을 받아 데이터 수정하는 엔드포인트 생성
+router.put("/update/:user_id", async (req, res) => {
+  const userId = req.params.user_id; // URL에서 user_id를 가져옵니다.
+  const {
+    password,
+    email,
+    company_name,
+    user_name,
+    address,
+    phone,
+    unique_code,
+  } = req.body;
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // 수정할 데이터가 있는지 확인
+    const [existingUser] = await connection.execute(
+      "SELECT * FROM company WHERE user_id = ?",
+      [userId]
+    );
+    if (existingUser.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // 데이터 수정 쿼리 실행
+    const query = `
+        UPDATE company 
+        SET 
+          email = COALESCE(?, email), 
+          company_name = COALESCE(?, company_name), 
+          user_name = COALESCE(?, user_name), 
+          address = COALESCE(?, address), 
+          phone = COALESCE(?, phone), 
+          unique_code = COALESCE(?, unique_code) 
+        WHERE user_id = ?
+      `;
+
+    await connection.execute(query, [
+      email,
+      company_name,
+      user_name,
+      address,
+      phone,
+      unique_code,
+      userId,
+    ]);
+
+    // 성공 응답
+    res.status(200).json({ message: "User updated successfully" });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    if (connection) await connection.end(); // 연결 종료
+  }
+});
+
 module.exports = router;
