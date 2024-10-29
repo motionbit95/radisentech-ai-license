@@ -127,7 +127,7 @@ router.post("/add", async (req, res) => {
     res.status(201).json({
       status: "success",
       message: "User added successfully",
-      user_id: result.insertId,
+      id: result.insertId,
     });
   } catch (error) {
     console.error("Error inserting data:", error);
@@ -145,7 +145,7 @@ router.post("/add", async (req, res) => {
 router.put("/update/:user_id", async (req, res) => {
   const userId = req.params.user_id; // URL에서 user_id를 가져옵니다.
   const {
-    user_id,
+    password,
     email,
     company_name,
     user_name,
@@ -172,7 +172,6 @@ router.put("/update/:user_id", async (req, res) => {
     const query = `
         UPDATE company 
         SET 
-          user_id = COALESCE(?, user_id),
           email = COALESCE(?, email), 
           company_name = COALESCE(?, company_name), 
           user_name = COALESCE(?, user_name), 
@@ -183,7 +182,6 @@ router.put("/update/:user_id", async (req, res) => {
       `;
 
     await connection.execute(query, [
-      user_id,
       email,
       company_name,
       user_name,
