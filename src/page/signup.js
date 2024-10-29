@@ -68,20 +68,15 @@ const SignUp = () => {
       .post(`${process.env.REACT_APP_SERVER_URL}/company/add`, values)
       .then((result) => {
         // 회원가입 성공
-        console.log(result);
-        setIsRegistered(true);
+        console.log(result.data, result.status);
 
-        if (result.status === "success") {
-          messageApi.open({
-            type: "error",
-            content: "Sign up failed. Please try again.",
-            duration: 3, // 3초 동안 표시
-          });
+        if (result.data.status === "success") {
+          setIsRegistered(true);
+        } else if (result.data.status === "fail") {
+          message.error("Registration failed. Please try again.");
         }
       })
       .catch((error) => {});
-
-    // setIsRegistered(true);
   };
 
   // ID 중복 체크

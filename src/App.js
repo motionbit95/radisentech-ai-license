@@ -62,7 +62,7 @@ function App({ page }) {
             <Menu
               theme="dark"
               mode="horizontal"
-              defaultSelectedKeys={["license"]}
+              defaultSelectedKeys={[page]}
               items={items}
               style={{ flex: 1, minWidth: 0 }}
               onClick={({ key }) => {
