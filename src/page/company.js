@@ -31,8 +31,7 @@ const Company = () => {
   const [selectedCompany, setSelectedCompany] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
   const [error, setError] = useState(null);
-  // 로딩 플래그
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // 로딩 플래그
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
