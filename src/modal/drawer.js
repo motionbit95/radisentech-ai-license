@@ -18,7 +18,7 @@ const CompanyEdit = (props) => {
 
   const onFinish = (values) => {
     console.log("Received values of form: ", values, data);
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("token");
     axios
       .put(
         `${process.env.REACT_APP_SERVER_URL}/company/update/${data?.id}`,

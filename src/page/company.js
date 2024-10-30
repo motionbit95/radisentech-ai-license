@@ -65,7 +65,12 @@ const Company = () => {
   const deleteUser = () => {
     axios
       .delete(
-        `${process.env.REACT_APP_SERVER_URL}/company/delete/${selectedCompany?.id}`
+        `${process.env.REACT_APP_SERVER_URL}/company/delete/${selectedCompany?.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
+          },
+        }
       )
       .then((result) => {
         if (result.status === 200) {
@@ -79,9 +84,16 @@ const Company = () => {
   };
 
   const copyUser = () => {
+    console.log(localStorage.getItem("token"));
     axios
       .post(
-        `${process.env.REACT_APP_SERVER_URL}/company/copy-user/${selectedCompany?.id}`
+        `${process.env.REACT_APP_SERVER_URL}/company/copy-user/${selectedCompany?.id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
+          },
+        }
       )
       .then((result) => {
         if (result.status === 201) {

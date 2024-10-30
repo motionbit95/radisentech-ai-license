@@ -31,6 +31,7 @@ const dbConfig = {
 
 // JWT 검증
 const verifyToken = (req, res, next) => {
+  console.log(req.headers);
   // 따옴표 제거
   const token = req.headers.authorization?.split(" ")[1].replaceAll('"', "");
 
@@ -443,15 +444,15 @@ router.put("/update/:id", verifyToken, async (req, res) => {
 
     // 데이터 수정 쿼리 실행
     const query = `
-        UPDATE company
-        SET
+        UPDATE company 
+        SET 
           user_id = COALESCE(?, user_id),
-          email = COALESCE(?, email),
-          company_name = COALESCE(?, company_name),
-          user_name = COALESCE(?, user_name),
-          address = COALESCE(?, address),
-          phone = COALESCE(?, phone),
-          unique_code = COALESCE(?, unique_code)
+          email = COALESCE(?, email), 
+          company_name = COALESCE(?, company_name), 
+          user_name = COALESCE(?, user_name), 
+          address = COALESCE(?, address), 
+          phone = COALESCE(?, phone), 
+          unique_code = COALESCE(?, unique_code) 
         WHERE id = ?
       `;
 
