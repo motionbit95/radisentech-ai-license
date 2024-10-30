@@ -4,6 +4,7 @@ const mysql = require("mysql2/promise"); // mysql2 패키지 불러오기
 const bcrypt = require("bcrypt"); // 비밀번호 해싱을 위한 패키지 불러오기
 const bodyParser = require("body-parser"); // json 파싱
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 
 const router = express.Router();
 const cors = require("cors"); // cors 패키지 불러오기
@@ -551,12 +552,16 @@ router.get("/check-user-id/:user_id", async (req, res) => {
  *           type: string
  *         example: user1
  *       - in: body
- *         name: license_cnt
- *         description: license_cnt
+ *         name: body
+ *         description: body
  *         required: true
  *         schema:
- *           type: integer
- *           example: 1
+ *           type: object
+ *           properties:
+ *             license_cnt:
+ *               type: integer
+ *               description: license_cnt
+ *               example: 5
  *     responses:
  *       200:
  *         description: 라이센스 수량 변경
@@ -750,6 +755,248 @@ router.post("/copy-user/:id", verifyToken, async (req, res) => {
   } catch (error) {
     console.error("Error copying user:", error);
     res.status(500).json({ error: "Database error" });
+  } finally {
+    if (connection) await connection.end(); // 연결 종료
+  }
+});
+
+// Nodemailer 설정
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER, // 발신자 이메일
+    pass: process.env.EMAIL_PASS, // 발신자 이메일 비밀번호
+  },
+});
+
+/**
+ * @swagger
+ * /company/request-reset-code:
+ *   post:
+ *     tags: [Company]
+ *     summary: 인증 코드 발송
+ *     description: 인증 코드 발송
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         description: 인증 코드 저장 및 발송
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             user_id:
+ *               type: string
+ *             email:
+ *               type: string
+ *               format: email
+ *     responses:
+ *       200:
+ *         description: 인증 코드 저장 및 발송
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Invalid user ID or email
+ *       500:
+ *         description: Database error
+ * */
+router.post("/request-reset-code", async (req, res) => {
+  const { user_id, email } = req.body;
+
+  // 필수 필드 확인
+  if (!user_id || !email) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // 사용자 조회
+    const [rows] = await connection.execute(
+      "SELECT * FROM company WHERE user_id = ? AND email = ?",
+      [user_id, email]
+    );
+
+    // 사용자 없음
+    if (rows.length === 0) {
+      return res.status(401).json({ error: "Invalid user ID or email" });
+    }
+
+    // 인증 코드 생성
+    const authCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 랜덤 숫자
+    const hashedCode = await bcrypt.hash(authCode, 10); // 해시하여 저장
+
+    // 인증 코드의 만료 시간을 설정 (예: 10분 후)
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    // 인증 코드 DB에 저장
+    await connection.execute(
+      "INSERT INTO auth_codes (user_id, code, expires_at) VALUES (?, ?, ?)",
+      [user_id, hashedCode, expiresAt]
+    );
+
+    // 이메일로 인증 코드 전송
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER, // 발신자 이름 및 이메일
+      to: email, // 수신자 이메일
+      subject: "Your Authentication Code", // 이메일 제목
+      text: `Your authentication code is ${authCode}`, // 이메일 본문
+    });
+
+    // 성공 응답
+    res.status(200).json({ message: "Authentication code sent to email" });
+  } catch (error) {
+    console.error("Error requesting reset code:", error);
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    if (connection) await connection.end(); // 연결 종료
+  }
+});
+
+/**
+ * @swagger
+ * /company/verify-code:
+ *   post:
+ *     tags: [Company]
+ *     summary: 인증 코드 확인
+ *     description: 인증 코드 확인
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         description: 인증 코드 확인
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             user_id:
+ *               type: string
+ *             auth_code:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: 인증 코드 확인
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Invalid authentication code
+ *       500:
+ *         description: Database error
+ * */
+router.post("/verify-code", async (req, res) => {
+  const { user_id, auth_code } = req.body;
+
+  // 필수 필드 확인
+  if (!user_id || !auth_code) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // DB에서 인증 코드 조회
+    const [rows] = await connection.execute(
+      "SELECT * FROM auth_codes WHERE user_id = ?",
+      [user_id]
+    );
+
+    // 인증 코드가 없는 경우
+    if (rows.length === 0) {
+      return res
+        .status(401)
+        .json({ error: "Invalid or expired authentication code" });
+    }
+
+    const { code: hashedCode, expires_at } = rows[0];
+
+    // 만료된 인증 코드인지 확인
+    if (new Date() > new Date(expires_at)) {
+      return res.status(401).json({ error: "Authentication code expired" });
+    }
+
+    // 입력한 코드와 저장된 해시된 코드 비교
+    const isValid = await bcrypt.compare(auth_code, hashedCode);
+
+    if (!isValid) {
+      return res.status(401).json({ error: "Invalid authentication code" });
+    }
+
+    // 인증 성공, JWT 발급
+    const token = jwt.sign({ user_id }, process.env.JWT_SECRET, {
+      expiresIn: "1h",
+    });
+
+    res.status(200).json({ token });
+  } catch (error) {
+    console.error("Error verifying reset code:", error);
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    if (connection) await connection.end(); // 연결 종료
+  }
+});
+
+/**
+ * @swagger
+ * /company/reset-password:
+ *   post:
+ *     tags: [Company]
+ *     summary: 비밀번호 변경
+ *     description: 비밀번호 변경
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         description: Bearer [Access Token]
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: body
+ *         name: body
+ *         description: 비밀번호 변경
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             user_id:
+ *               type: string
+ *             new_password:
+ *               type: string
+ *     responses:
+ *       200:
+ *         description: 비밀번호 변경
+ *       400:
+ *         description: Missing required fields
+ *       500:
+ *         description: Database error
+ * */
+router.post("/reset-password", verifyToken, async (req, res) => {
+  const { user_id, new_password } = req.body;
+
+  // 필수 필드 확인
+  if (!user_id || !new_password) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // 비밀번호 해싱
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    // 사용자 ID로 비밀번호 업데이트 (req.user에 user_id가 포함되어 있다고 가정)
+    await connection.execute(
+      "UPDATE company SET password = ? WHERE user_id = ?",
+      [hashedPassword, user_id]
+    );
+
+    // 성공 응답
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ error: "Error resetting password" });
   } finally {
     if (connection) await connection.end(); // 연결 종료
   }
