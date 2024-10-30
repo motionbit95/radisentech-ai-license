@@ -11,7 +11,8 @@ const ForgotPw = () => {
   const [loading, setLoading] = useState(false);
   const [expirationTime, setExpirationTime] = useState(300); // 5분 (300초)
   const [timerActive, setTimerActive] = useState(false);
-  const [resetpwForm, setResetpwForm] = useState(true);
+  const [resetpwForm, setResetpwForm] = useState(false);
+  const [savedUserId, setSavedUserId] = useState("");
 
   //타이머
   const startTimer = () => {
@@ -42,13 +43,14 @@ const ForgotPw = () => {
 
   const onFinish = async (values) => {
     if (!openCodeInput) {
-      // 1. 이메일로 코드 발송
+      // 1. 유저ID, 이메일의 유무 확인 이후 이메일 발송
       setLoading(true);
       try {
         const response = await axios.post(
-          `${process.env.REACT_APP_SERVER_URL}/mailer/sendEmail`,
+          `${process.env.REACT_APP_SERVER_URL}/company/request-reset-code`,
           {
-            to: values.email,
+            user_id: values.user_id,
+            email: values.email,
           }
         );
 
@@ -60,27 +62,65 @@ const ForgotPw = () => {
       } catch (error) {
         console.error("Error sending email: ", error);
         message.error("Failed to send code. Please try again.");
+        setLoading(false);
+        form.resetFields();
       }
-    } else {
+    } else if (!resetpwForm) {
       // 2. 코드가 일치하는지 확인
+      setLoading(true);
       try {
         const response = await axios.post(
-          `${process.env.REACT_APP_SERVER_URL}/mailer/validateCode`,
+          `${process.env.REACT_APP_SERVER_URL}/company/verify-code`,
           {
-            email: values.email,
-            code: values.code,
+            user_id: values.user_id,
+            authCode: values.code,
           }
         );
 
         if (response.status === 200) {
+          const token = response.data.token;
+          localStorage.setItem("authToken", token); // JWT 토큰 저장
+          setSavedUserId(values.user_id);
+
           message.success("Code is correct. Please set your new password.");
+          setLoading(false);
           setResetpwForm(true);
         }
       } catch (error) {
         message.error("Code is incorrect. Please try again.");
+        setLoading(false);
+      }
+    } else {
+      // 3. 새로운 비밀번호 제출
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("authToken");
+        const response = await axios.post(
+          `${process.env.REACT_APP_SERVER_URL}/company/reset-password`,
+          {
+            user_id: savedUserId,
+            new_password: values.new,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`, // JWT 토큰 추가
+            },
+          }
+        );
+
+        if (response.status === 200) {
+          message.success("Password updated successfully.");
+          navigate("/login"); // 비밀번호 변경 후 로그인 페이지로 이동
+        }
+      } catch (error) {
+        message.error("Failed to reset password. Please try again.");
+        console.error("Error resetting password:", error);
+      } finally {
+        setLoading(false);
       }
     }
   };
+
   return (
     <div className="center">
       {!resetpwForm ? (
@@ -94,8 +134,7 @@ const ForgotPw = () => {
         >
           {loading && <Spin size="large" />}
           <Form.Item
-            name="user_name"
-            //   label="User Name"
+            name="user_id"
             rules={[
               {
                 required: true,
@@ -104,7 +143,7 @@ const ForgotPw = () => {
               },
             ]}
           >
-            <Input prefix={<UserOutlined />} placeholder="User Name" />
+            <Input prefix={<UserOutlined />} placeholder="User ID" />
           </Form.Item>
           <Form.Item
             name="email"
@@ -152,102 +191,53 @@ const ForgotPw = () => {
           </Form.Item>
         </Form>
       ) : (
-        <ResetpwForm />
+        <Form
+          form={form}
+          name="reset_pw"
+          style={{
+            minWidth: 360,
+          }}
+          onFinish={onFinish}
+        >
+          <Form.Item
+            name="new"
+            label="New Password"
+            rules={[
+              {
+                required: true,
+                message: "Please input your password!",
+              },
+              {
+                validator: (_, value) => {
+                  if (!value || value.length < 8) {
+                    return Promise.reject(
+                      new Error("Password must be at least 8 characters long.")
+                    );
+                  }
+                  if (!/[!@#$%^&*]/.test(value)) {
+                    return Promise.reject(
+                      new Error(
+                        "Password must contain at least one special character."
+                      )
+                    );
+                  }
+                  return Promise.resolve();
+                },
+              },
+            ]}
+            hasFeedback
+          >
+            <Input.Password />
+          </Form.Item>
+          <Form.Item>
+            <Button block type="primary" htmlType="submit">
+              Submit
+            </Button>
+          </Form.Item>
+        </Form>
       )}
     </div>
   );
 };
 
 export default ForgotPw;
-
-const ResetpwForm = () => {
-  const [form] = Form.useForm();
-
-  const onFinish = (values) => {
-    console.log("Received values of form: ", values);
-  };
-
-  return (
-    <Form
-      form={form}
-      name="reset_pw"
-      style={{
-        minWidth: 360,
-      }}
-      onFinish={onFinish}
-    >
-      <Form.Item
-        name="current"
-        label="Current Password"
-        rules={[
-          {
-            required: true,
-            message: "Please input your password!",
-          },
-        ]}
-        hasFeedback
-      >
-        <Input.Password />
-      </Form.Item>
-      <Form.Item
-        name="confirm"
-        label="Confirm Password"
-        dependencies={["password"]}
-        hasFeedback
-        rules={[
-          {
-            required: true,
-            message: "Please confirm your password!",
-          },
-          ({ getFieldValue }) => ({
-            validator(_, value) {
-              if (!value || getFieldValue("password") === value) {
-                return Promise.resolve();
-              }
-              return Promise.reject(
-                new Error("The new password that you entered do not match!")
-              );
-            },
-          }),
-        ]}
-      >
-        <Input.Password />
-      </Form.Item>
-      <Form.Item
-        name="new"
-        label="New Password"
-        rules={[
-          {
-            required: true,
-            message: "Please input your password!",
-          },
-          {
-            validator: (_, value) => {
-              if (!value || value.length < 8) {
-                return Promise.reject(
-                  new Error("Password must be at least 8 characters long.")
-                );
-              }
-              if (!/[!@#$%^&*]/.test(value)) {
-                return Promise.reject(
-                  new Error(
-                    "Password must contain at least one special character."
-                  )
-                );
-              }
-              return Promise.resolve();
-            },
-          },
-        ]}
-        hasFeedback
-      >
-        <Input.Password />
-      </Form.Item>
-      <Form.Item>
-        <Button block type="primary" htmlType="submit">
-          Submit
-        </Button>
-      </Form.Item>
-    </Form>
-  );
-};
