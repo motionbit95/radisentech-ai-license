@@ -1,8 +1,9 @@
-import { Button, Col, Form, Input, Space, Spin, message } from "antd";
+import { Button, Col, Form, Input, Result, Space, Spin, message } from "antd";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MailOutlined, UserOutlined, UnlockOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { SmileOutlined } from "@ant-design/icons";
 
 const ForgotPw = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const ForgotPw = () => {
   const [timerActive, setTimerActive] = useState(false);
   const [resetpwForm, setResetpwForm] = useState(false);
   const [savedUserId, setSavedUserId] = useState("");
+  const [isResetPW, setIsResetPW] = useState(false);
 
   //타이머
   const startTimer = () => {
@@ -110,7 +112,8 @@ const ForgotPw = () => {
 
         if (response.status === 200) {
           message.success("Password updated successfully.");
-          navigate("/login"); // 비밀번호 변경 후 로그인 페이지로 이동
+          setIsResetPW(true);
+          setLoading(false);
         }
       } catch (error) {
         message.error("Failed to reset password. Please try again.");
@@ -123,118 +126,174 @@ const ForgotPw = () => {
 
   return (
     <div className="center">
-      {!resetpwForm ? (
-        <Form
-          form={form}
-          name="forgot_pw"
-          style={{
-            minWidth: 360,
-          }}
-          onFinish={onFinish}
-        >
-          {loading && <Spin size="large" />}
-          <Form.Item
-            name="user_id"
-            rules={[
-              {
-                required: true,
-                message: "Please input your name!",
-                whitespace: true,
-              },
-            ]}
-          >
-            <Input prefix={<UserOutlined />} placeholder="User ID" />
-          </Form.Item>
-          <Form.Item
-            name="email"
-            //   label="E-mail"
-            rules={[
-              {
-                type: "email",
-                message: "The input is not valid E-mail!",
-              },
-              {
-                required: true,
-                message: "Please input your E-mail!",
-              },
-            ]}
-          >
-            <Input prefix={<MailOutlined />} placeholder="E-mail" />
-          </Form.Item>
-
-          {openCodeInput && (
-            <Form.Item
-              name="code"
-              //   label="Code"
-              rules={[
-                {
-                  required: true,
-                  message: "Please input your code!",
-                },
-              ]}
-            >
-              <Input
-                prefix={<UnlockOutlined />}
-                placeholder="Code"
-                suffix={
-                  <div type="danger" style={{ marginLeft: 10, opacity: 0.4 }}>
-                    {timerActive ? `${formatTime(expirationTime)}` : "0:00"}
-                  </div>
-                }
-              />
-            </Form.Item>
-          )}
-          <Form.Item>
-            <Button block type="primary" htmlType="submit">
-              {openCodeInput ? "Submit" : "Get Code"}
+      {isResetPW ? (
+        <Result
+          icon={<SmileOutlined />}
+          title="Successfully changed password!"
+          extra={
+            <Button type="primary" onClick={() => navigate("/login")}>
+              Login
             </Button>
-          </Form.Item>
-        </Form>
+          }
+        />
       ) : (
-        <Form
-          form={form}
-          name="reset_pw"
-          style={{
-            minWidth: 360,
-          }}
-          onFinish={onFinish}
-        >
-          <Form.Item
-            name="new"
-            label="New Password"
-            rules={[
-              {
-                required: true,
-                message: "Please input your password!",
-              },
-              {
-                validator: (_, value) => {
-                  if (!value || value.length < 8) {
-                    return Promise.reject(
-                      new Error("Password must be at least 8 characters long.")
-                    );
-                  }
-                  if (!/[!@#$%^&*]/.test(value)) {
-                    return Promise.reject(
-                      new Error(
-                        "Password must contain at least one special character."
-                      )
-                    );
-                  }
-                  return Promise.resolve();
-                },
-              },
-            ]}
-            hasFeedback
-          >
-            <Input.Password />
-          </Form.Item>
-          <Form.Item>
-            <Button block type="primary" htmlType="submit">
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
+        <>
+          {!resetpwForm ? (
+            <Form
+              form={form}
+              name="forgot_pw"
+              style={{
+                minWidth: 360,
+              }}
+              onFinish={onFinish}
+            >
+              <Spin
+                size="large"
+                spinning={loading}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 999,
+                }}
+              />
+              <Form.Item
+                name="user_id"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input your name!",
+                    whitespace: true,
+                  },
+                ]}
+              >
+                <Input prefix={<UserOutlined />} placeholder="User ID" />
+              </Form.Item>
+              <Form.Item
+                name="email"
+                //   label="E-mail"
+                rules={[
+                  {
+                    type: "email",
+                    message: "The input is not valid E-mail!",
+                  },
+                  {
+                    required: true,
+                    message: "Please input your E-mail!",
+                  },
+                ]}
+              >
+                <Input prefix={<MailOutlined />} placeholder="E-mail" />
+              </Form.Item>
+
+              {openCodeInput && (
+                <Form.Item
+                  name="code"
+                  //   label="Code"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please input your code!",
+                    },
+                  ]}
+                >
+                  <Input
+                    prefix={<UnlockOutlined />}
+                    placeholder="Code"
+                    suffix={
+                      <div
+                        type="danger"
+                        style={{ marginLeft: 10, opacity: 0.4 }}
+                      >
+                        {timerActive ? `${formatTime(expirationTime)}` : "0:00"}
+                      </div>
+                    }
+                  />
+                </Form.Item>
+              )}
+              <Form.Item>
+                <Button block type="primary" htmlType="submit">
+                  {openCodeInput ? "Submit" : "Get Code"}
+                </Button>
+              </Form.Item>
+            </Form>
+          ) : (
+            <Form
+              layout="vertical"
+              form={form}
+              name="reset_pw"
+              style={{
+                minWidth: 360,
+              }}
+              onFinish={onFinish}
+            >
+              <Form.Item
+                name="new"
+                label="New Password"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input your password!",
+                  },
+                  {
+                    validator: (_, value) => {
+                      if (!value || value.length < 8) {
+                        return Promise.reject(
+                          new Error(
+                            "Password must be at least 8 characters long."
+                          )
+                        );
+                      }
+                      if (!/[!@#$%^&*]/.test(value)) {
+                        return Promise.reject(
+                          new Error(
+                            "Password must contain at least one special character."
+                          )
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+                hasFeedback
+              >
+                <Input.Password />
+              </Form.Item>
+              <Form.Item
+                name="confirm"
+                label="Confirm Password"
+                dependencies={["new"]}
+                hasFeedback
+                rules={[
+                  {
+                    required: true,
+                    message: "Please confirm your password!",
+                  },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue("new") === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(
+                        new Error(
+                          "The new password that you entered do not match!"
+                        )
+                      );
+                    },
+                  }),
+                ]}
+              >
+                <Input.Password />
+              </Form.Item>
+              <Form.Item>
+                <Button block type="primary" htmlType="submit">
+                  Submit
+                </Button>
+              </Form.Item>
+            </Form>
+          )}
+        </>
       )}
     </div>
   );

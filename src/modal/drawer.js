@@ -18,10 +18,16 @@ const CompanyEdit = (props) => {
 
   const onFinish = (values) => {
     console.log("Received values of form: ", values, data);
+    const token = localStorage.getItem("token");
     axios
       .put(
         `${process.env.REACT_APP_SERVER_URL}/company/update/${data?.id}`,
-        values
+        values,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // JWT 토큰 추가
+          },
+        }
       )
       .then((result) => {
         // 업데이트에 성공하면 아래 구문 실행

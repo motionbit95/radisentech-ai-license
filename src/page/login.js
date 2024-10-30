@@ -35,7 +35,7 @@ const LoginForm = () => {
       .then((result) => {
         // 로그인 성공
         console.log(result);
-        localStorage.setItem("token", JSON.stringify(result.data.token));
+        localStorage.setItem("token", result.data.token);
         navigate("/license", { state: { isLoggedIn: true } });
       })
       .catch((error) => {

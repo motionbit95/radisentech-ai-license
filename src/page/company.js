@@ -31,8 +31,7 @@ const Company = () => {
   const [selectedCompany, setSelectedCompany] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
   const [error, setError] = useState(null);
-  // 로딩 플래그
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // 로딩 플래그
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
@@ -66,7 +65,12 @@ const Company = () => {
   const deleteUser = () => {
     axios
       .delete(
-        `${process.env.REACT_APP_SERVER_URL}/company/delete/${selectedCompany?.id}`
+        `${process.env.REACT_APP_SERVER_URL}/company/delete/${selectedCompany?.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
+          },
+        }
       )
       .then((result) => {
         if (result.status === 200) {
@@ -80,9 +84,16 @@ const Company = () => {
   };
 
   const copyUser = () => {
+    console.log(localStorage.getItem("token"));
     axios
       .post(
-        `${process.env.REACT_APP_SERVER_URL}/company/copy-user/${selectedCompany?.id}`
+        `${process.env.REACT_APP_SERVER_URL}/company/copy-user/${selectedCompany?.id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
+          },
+        }
       )
       .then((result) => {
         if (result.status === 201) {
