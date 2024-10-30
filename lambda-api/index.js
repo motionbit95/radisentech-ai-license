@@ -14,6 +14,10 @@ app.use(cors());
 const companyRouter = require("./companyRouter");
 app.use("/company", companyRouter);
 
+// mailer
+const mailerRouter = require("./mailerRouter");
+app.use("/mailer", mailerRouter);
+
 // 로컬에서 실행될 때를 위한 서버 설정 (Lambda 배포 시에는 불필요)
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
