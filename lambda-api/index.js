@@ -29,9 +29,6 @@ app.use(cors());
 const companyRouter = require("./companyRouter");
 app.use("/company", companyRouter);
 
-// mailer
-const mailerRouter = require("./mailerRouter");
-app.use("/mailer", mailerRouter);
 const licenseRouter = require("./licenseRouter");
 app.use("/license", licenseRouter);
 

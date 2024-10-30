@@ -54,7 +54,7 @@ aws configure
 ### zip 생성
 
 ```bash
-zip -r api .
+zip -r license-node-api .
 ```
 
 ### 함수 생성
