@@ -7,9 +7,15 @@ const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 const cors = require("cors"); // cors 패키지 불러오기
-const { message } = require("antd");
 router.use(cors());
 router.use(bodyParser.json());
+
+/**
+ * @swagger
+ * tags:
+ *   name: Company
+ *   description: 회사 정보 관련 API
+ */
 
 // .env 파일에서 비밀 키 및 포트 가져오기
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -22,7 +28,7 @@ const dbConfig = {
   database: process.env.DB_NAME,
 };
 
-// JWT 검증 미들웨어
+// JWT 검증
 const verifyToken = (req, res, next) => {
   // 따옴표 제거
   const token = req.headers.authorization?.split(" ")[1].replaceAll('"', "");
@@ -40,7 +46,78 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-// 로그인 처리 함수
+// 랜덤 Unique Code 생성 - temp
+async function generateRandomCode(length = 12) {
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // 사용할 문자 집합
+  let code = "";
+
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    code += characters[randomIndex];
+  }
+
+  return code;
+}
+
+// user_id의 복사본 고유 값을 생성하는 함수
+async function generateUniqueCopyValue(connection, columnName, baseValue) {
+  let newValue = `${baseValue}_copy`;
+  let suffix = 1;
+
+  // 동일한 패턴을 가진 항목들을 조회
+  const [existingCopies] = await connection.execute(
+    `SELECT ${columnName} FROM company WHERE ${columnName} LIKE ?`,
+    [`${baseValue}_copy%`]
+  );
+
+  // 동일한 복사본의 개수를 카운팅하여 새로운 suffix를 생성
+  const existingValues = existingCopies.map((row) => row[columnName]);
+  while (existingValues.includes(newValue)) {
+    suffix++;
+    newValue = `${baseValue}_copy${suffix}`;
+  }
+
+  return newValue;
+}
+
+/**
+ * @swagger
+ * /company/login:
+ *   post:
+ *     tags: [Company]
+ *     summary: 로그인
+ *     description: 사용자 로그인 후 JWT 토큰을 반환합니다.
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         name: user
+ *         description: 로그인 자격 증명
+ *         required: true
+ *         schema:
+ *           type: object
+ *           required:
+ *             - user_id
+ *             - password
+ *           properties:
+ *             user_id:
+ *               type: string
+ *               description: 로그인 ID
+ *             password:
+ *               type: string
+ *               description: 로그인 비밀번호
+ *     responses:
+ *       200:
+ *         description: 로그인 성공, JWT 토큰 반환
+ *         schema:
+ *           type: object
+ *           properties:
+ *             token:
+ *               type: string
+ *               description: JWT 토큰
+ *       401:
+ *         description: 로그인 실패 (유효하지 않은 자격 증명)
+ */
 router.post("/login", async (req, res) => {
   const { user_id, password } = req.body;
 
@@ -90,7 +167,65 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// company table list를 불러오는 함수
+/**
+ * @swagger
+ * /company/list:
+ *   get:
+ *     tags: [Company]
+ *     summary: Company 조회
+ *     description: company table list를 조회
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: 인증 토큰 헤더(Bearer [Access Token])
+ *     responses:
+ *       200:
+ *         description: company table list를 조회
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: integer
+ *                 description: company ID
+ *               user_id:
+ *                 type: string
+ *                 description: user ID
+ *               password:
+ *                 type: string
+ *                 description: password
+ *               email:
+ *                 type: string
+ *                 description: email
+ *               company_name:
+ *                 type: string
+ *                 description: company_name
+ *               user_name:
+ *                 type: string
+ *                 description: user_name
+ *               address:
+ *                 type: string
+ *                 description: address
+ *               phone:
+ *                 type: string
+ *                 description: phone
+ *               created_at:
+ *                 type: string
+ *                 description: created_at
+ *               updated_at:
+ *                 type: string
+ *                 description: updated_at
+ *       500:
+ *         description: MySQL query error
+ *       401:
+ *         description: Unauthorized
+ * */
 router.get("/list", verifyToken, async (req, res) => {
   let connection;
   try {
@@ -105,25 +240,72 @@ router.get("/list", verifyToken, async (req, res) => {
   }
 });
 
-async function generateRandomCode(length = 12) {
-  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; // 사용할 문자 집합
-  let code = "";
-
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    code += characters[randomIndex];
-  }
-
-  return code;
-}
-
-// POST 요청을 받아 데이터를 삽입하는 엔드포인트 생성
+/**
+ * @swagger
+ * /company/add:
+ *   post:
+ *     tags: [Company]
+ *     summary: 회원가입
+ *     description: company table data 삽입
+ *     consumes:
+ *       - application/json
+ *     parameters:
+ *       - in: body
+ *         name: company
+ *         description: company data 삽입
+ *         required: true
+ *         schema:
+ *           type: object
+ *           required:
+ *             - user_id
+ *             - password
+ *             - email
+ *             - company_name
+ *             - user_name
+ *             - address
+ *             - phone
+ *           properties:
+ *             user_id:
+ *               type: string
+ *               description: user_id
+ *             password:
+ *               type: string
+ *               description:	password
+ *             email:
+ *               type: string
+ *               description: email
+ *             company_name:
+ *               type: string
+ *               description: company_name
+ *             user_name:
+ *               type: string
+ *               description: user_name
+ *             address:
+ *               type: string
+ *               description: address
+ *             phone:
+ *               type: string
+ *               description: phone
+ *     responses:
+ *       200:
+ *         description: company table data 삽입
+ *       400:
+ *         description: Missing required fields
+ *       500:
+ *         description: Database error
+ *       401:
+ *         description: Unauthorized
+ * */
 router.post("/add", async (req, res) => {
   const { user_id, password, email, company_name, user_name, address, phone } =
     req.body;
 
+  console.log(req.body);
+
   // 비밀번호 해싱
   const hashedPassword = await bcrypt.hash(password, 10);
+
+  const unique_code = await generateRandomCode();
 
   // 필수 필드가 누락된 경우 에러 응답
   if (!user_id || !password || !email || !company_name || !user_name) {
@@ -148,11 +330,11 @@ router.post("/add", async (req, res) => {
       user_name,
       address,
       phone,
-      generateRandomCode(),
+      unique_code,
     ]);
 
     // 성공 응답
-    res.status(201).json({
+    res.status(200).json({
       status: "success",
       message: "User added successfully",
       id: result.insertId,
@@ -169,8 +351,68 @@ router.post("/add", async (req, res) => {
   }
 });
 
-// PUT 요청을 받아 데이터 수정하는 엔드포인트 생성
-router.put("/update/:id", async (req, res) => {
+/**
+ * @swagger
+ * /company/update/{id}:
+ *   put:
+ *     tags: [Company]
+ *     summary: 회사정보 수정
+ *     description: company table data 변경
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: 인증 토큰 헤더(Bearer [Access Token])
+ *       - in: path
+ *         name: id
+ *         description: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: 1
+ *       - in: body
+ *         name: company
+ *         description: company data 변경
+ *         required: true
+ *         schema:
+ *           type: object
+ *           required:
+ *             - id
+ *           properties:
+ *             user_id:
+ *               type: string
+ *               description: user_id
+ *             email:
+ *               type: string
+ *               description: email
+ *             company_name:
+ *               type: string
+ *               description: company_name
+ *             user_name:
+ *               type: string
+ *               description: user_name
+ *             address:
+ *               type: string
+ *               description: address
+ *             phone:
+ *               type: string
+ *               description: phone
+ *             unique_code:
+ *               type: string
+ *               description: unique_code
+ *     responses:
+ *       200:
+ *         description: company table data 변경
+ *       400:
+ *         description: Missing required fields
+ *       500:
+ *         description: Database error
+ *       401:
+ *         description: Unauthorized
+ * */
+router.put("/update/:id", verifyToken, async (req, res) => {
   const id = req.params.id; // URL에서 row id를 가져옵니다.
   const {
     user_id,
@@ -233,7 +475,27 @@ router.put("/update/:id", async (req, res) => {
   }
 });
 
-// user_id 중복 체크 엔드포인트 생성
+/**
+ * @swagger
+ * /company/check-user-id/{user_id}:
+ *   get:
+ *     tags: [Company]
+ *     summary: 사용자 ID 존재 확인
+ *     description: user_id 존재 확인
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         description: user_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: user1
+ *     responses:
+ *       200:
+ *         description: 사용자 ID 존재 확인
+ *       500:
+ *         description: Database error
+ * */
 router.get("/check-user-id/:user_id", async (req, res) => {
   const userId = req.params.user_id; // URL에서 user_id를 가져옵니다.
 
@@ -267,8 +529,45 @@ router.get("/check-user-id/:user_id", async (req, res) => {
   }
 });
 
-// user_id의 license_cnt 값을 기존 값에 합산하여 변경하는 엔드포인트 생성
-router.put("/update-license/:user_id", async (req, res) => {
+/**
+ * @swagger
+ * /company/update-license/{user_id}:
+ *   put:
+ *     tags: [Company]
+ *     summary: 라이센스 수량 생성
+ *     description: company table data 변경(라이센스 수량 생성)
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: 인증 토큰 헤더(Bearer [Access Token])
+ *       - in: path
+ *         name: user_id
+ *         description: user_id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: user1
+ *       - in: body
+ *         name: license_cnt
+ *         description: license_cnt
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: 라이센스 수량 변경
+ *       400:
+ *         description: Missing required field [license_cnt]
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Database error
+ * */
+router.put("/update-license/:user_id", verifyToken, async (req, res) => {
   const userId = req.params.user_id; // URL에서 user_id를 가져옵니다.
   const { license_cnt } = req.body; // body에서 license_cnt 값을 가져옵니다.
 
@@ -276,7 +575,7 @@ router.put("/update-license/:user_id", async (req, res) => {
   if (license_cnt === undefined) {
     return res
       .status(400)
-      .json({ error: "Missing required field: license_cnt" });
+      .json({ error: "Missing required field [license_cnt]" });
   }
 
   let connection;
@@ -317,8 +616,36 @@ router.put("/update-license/:user_id", async (req, res) => {
   }
 });
 
-// id로 행을 삭제하는 엔드포인트 생성
-router.delete("/delete/:id", async (req, res) => {
+/**
+ * @swagger
+ * /company/delete/{id}:
+ *   delete:
+ *     tags: [Company]
+ *     summary: 사용자 삭제
+ *     description: company table data 삭제
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: 인증 토큰 헤더(Bearer [Access Token])
+ *       - in: path
+ *         name: id
+ *         description: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: 사용자 삭제
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Database error
+ * */
+router.delete("/delete/:id", verifyToken, async (req, res) => {
   const id = req.params.id; // URL에서 id를 가져옵니다.
 
   let connection;
@@ -348,29 +675,36 @@ router.delete("/delete/:id", async (req, res) => {
   }
 });
 
-// user_id의 복사본 고유 값을 생성하는 함수
-async function generateUniqueCopyValue(connection, columnName, baseValue) {
-  let newValue = `${baseValue}_copy`;
-  let suffix = 1;
-
-  // 동일한 패턴을 가진 항목들을 조회
-  const [existingCopies] = await connection.execute(
-    `SELECT ${columnName} FROM company WHERE ${columnName} LIKE ?`,
-    [`${baseValue}_copy%`]
-  );
-
-  // 동일한 복사본의 개수를 카운팅하여 새로운 suffix를 생성
-  const existingValues = existingCopies.map((row) => row[columnName]);
-  while (existingValues.includes(newValue)) {
-    suffix++;
-    newValue = `${baseValue}_copy${suffix}`;
-  }
-
-  return newValue;
-}
-
-// 특정 id의 행을 복사하는 엔드포인트 생성
-router.post("/copy-user/:id", async (req, res) => {
+/**
+ * @swagger
+ * /company/copy-user/{id}:
+ *   post:
+ *     tags: [Company]
+ *     summary: 사용자 복사
+ *     description: company table data 복사
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: 인증 토큰 헤더(Bearer [Access Token])
+ *       - in: path
+ *         name: id
+ *         description: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: 사용자 복사
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Database error
+ * */
+router.post("/copy-user/:id", verifyToken, async (req, res) => {
   const id = req.params.id; // URL에서 id를 가져옵니다.
 
   let connection;
@@ -410,7 +744,9 @@ router.post("/copy-user/:id", async (req, res) => {
     await connection.execute(insertQuery, values);
 
     // 성공 응답
-    res.status(201).json({ message: "User copied successfully" });
+    res
+      .status(201)
+      .json({ message: "User copied successfully", data: userData });
   } catch (error) {
     console.error("Error copying user:", error);
     res.status(500).json({ error: "Database error" });

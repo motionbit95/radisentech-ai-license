@@ -5,6 +5,21 @@ const serverless = require("serverless-http"); // serverless-http 패키지 불�
 const mysql = require("mysql2/promise"); // mysql2 패키지 불러오기
 const app = express();
 
+const swaggerJsDoc = require("swagger-jsdoc");
+const swaggerUi = require("swagger-ui-express");
+
+const swaggerOptions = {
+  swaggerDefinition: {
+    info: {
+      title: "Radisen AI License API",
+      version: "1.0.0",
+    },
+  },
+  apis: ["./companyRouter.js", "./licenseRouter.js"],
+};
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
 const PORT = process.env.PORT || 3000;
 
 // CORS 설정
@@ -17,6 +32,8 @@ app.use("/company", companyRouter);
 // mailer
 const mailerRouter = require("./mailerRouter");
 app.use("/mailer", mailerRouter);
+const licenseRouter = require("./licenseRouter");
+app.use("/license", licenseRouter);
 
 // 로컬에서 실행될 때를 위한 서버 설정 (Lambda 배포 시에는 불필요)
 if (process.env.NODE_ENV !== "production") {
