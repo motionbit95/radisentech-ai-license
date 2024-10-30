@@ -83,7 +83,7 @@ const SignUp = () => {
   const handleCheckDuplicateId = async () => {
     // userId 필드가 유효할 때만 중복 체크 실행
     const isValid = await form
-      .validateFields(["userId"])
+      .validateFields(["user_id"])
       .then(() => true)
       .catch(() => false);
 
@@ -91,15 +91,24 @@ const SignUp = () => {
       return setIsCheckedId(false); // 유효하지 않으면 함수 종료
     }
 
-    const userId = form.getFieldValue("userId");
+    const userId = form.getFieldValue("user_id");
 
-    // 임시 중복 확인: userId가 'user'인 경우 중복으로 처리
-    if (userId === "user") {
-      message.error("This ID is already taken.");
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_SERVER_URL}/company/check-user-id/${userId}`
+      );
+
+      if (response.data.exists) {
+        message.error(response.data.message);
+        setIsCheckedId(false);
+      } else {
+        message.success(response.data.message);
+        setIsCheckedId(true);
+      }
+    } catch (error) {
+      console.error("Error checking ID:", error);
+      message.error("Failed to check ID. Please try again.");
       setIsCheckedId(false);
-    } else {
-      message.success("This ID is available.");
-      setIsCheckedId(true);
     }
   };
 
@@ -200,7 +209,7 @@ const SignUp = () => {
                 <Button
                   className="w-full"
                   onClick={handleCheckDuplicateId}
-                  style={ischeckedId && { borderColor: "#52c41a" }}
+                  style={ischeckedId ? { borderColor: "#52c41a" } : {}}
                 >
                   Check ID
                   {ischeckedId && <SmileOutlined style={{ marginLeft: 3 }} />}

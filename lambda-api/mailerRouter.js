@@ -17,7 +17,14 @@ router.get("/", (req, res) => {
 const codes = {}; // 이메일 코드 임시 저장소
 // 이메일 설정
 const transporter = nodemailer.createTransport({
-  service: "gmail", // "gmail" 또는 다른 이메일 서비스
+  // Gmail로 발송하는 경우 //
+  service: "gmail", // "gmail"
+
+  // 사내 도메인으로 사용하는 경우
+  //   host: 'smtp.yourcompany.com', // 사내 SMTP 서버 주소
+  //   port: 587, // 포트 번호 (25, 587, 465 중 선택)
+  //   secure: false, // true는 SSL 사용, false는 사용 안 함
+
   auth: {
     user: process.env.EMAIL_USER, // .env 파일에 이메일 주소 입력
     pass: process.env.EMAIL_PASS, // .env 파일에 비밀번호 입력
