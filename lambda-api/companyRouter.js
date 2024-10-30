@@ -825,23 +825,22 @@ router.post("/request-reset-code", async (req, res) => {
 
     // 인증 코드 생성
     const authCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 랜덤 숫자
-    const hashedCode = await bcrypt.hash(authCode, 10); // 해시하여 저장
 
     // 인증 코드의 만료 시간을 설정 (예: 10분 후)
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    // 인증 코드 DB에 저장
+    // 인증 코드 DB에 저장 (기존의 코드를 업데이트하거나 새로 삽입)
     await connection.execute(
-      "INSERT INTO auth_codes (user_id, code, expires_at) VALUES (?, ?, ?)",
-      [user_id, hashedCode, expiresAt]
+      "INSERT INTO auth_codes (user_id, code, expires_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE code = ?, expires_at = ?",
+      [user_id, authCode, expiresAt, authCode, expiresAt]
     );
 
     // 이메일로 인증 코드 전송
     await transporter.sendMail({
-      from: process.env.EMAIL_USER, // 발신자 이름 및 이메일
-      to: email, // 수신자 이메일
-      subject: "Your Authentication Code", // 이메일 제목
-      text: `Your authentication code is ${authCode}`, // 이메일 본문
+      from: `"Your Company" <${process.env.EMAIL}>`,
+      to: email,
+      subject: "Your Authentication Code",
+      text: `Your authentication code is ${authCode}`,
     });
 
     // 성공 응답
@@ -871,7 +870,7 @@ router.post("/request-reset-code", async (req, res) => {
  *           properties:
  *             user_id:
  *               type: string
- *             auth_code:
+ *             authCode:
  *               type: string
  *     responses:
  *       200:
@@ -884,10 +883,10 @@ router.post("/request-reset-code", async (req, res) => {
  *         description: Database error
  * */
 router.post("/verify-code", async (req, res) => {
-  const { user_id, auth_code } = req.body;
+  const { user_id, authCode } = req.body;
 
   // 필수 필드 확인
-  if (!user_id || !auth_code) {
+  if (!user_id || !authCode) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
@@ -909,17 +908,15 @@ router.post("/verify-code", async (req, res) => {
         .json({ error: "Invalid or expired authentication code" });
     }
 
-    const { code: hashedCode, expires_at } = rows[0];
+    const { code: savedCode, expires_at } = rows[0];
 
     // 만료된 인증 코드인지 확인
     if (new Date() > new Date(expires_at)) {
       return res.status(401).json({ error: "Authentication code expired" });
     }
 
-    // 입력한 코드와 저장된 해시된 코드 비교
-    const isValid = await bcrypt.compare(auth_code, hashedCode);
-
-    if (!isValid) {
+    // 입력한 코드와 저장된 코드 비교
+    if (authCode !== savedCode) {
       return res.status(401).json({ error: "Invalid authentication code" });
     }
 
