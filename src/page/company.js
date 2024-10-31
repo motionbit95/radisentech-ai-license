@@ -51,6 +51,8 @@ const Company = () => {
       .then((result) => {
         if (result.status === 200) {
           setList(result.data.map((item) => ({ ...item, key: item.user_id })));
+        } else if (result.status === 401) {
+          navigate("/login");
         }
       })
       .catch((error) => {
@@ -63,6 +65,7 @@ const Company = () => {
   };
 
   const deleteUser = () => {
+    setLoading(true);
     axios
       .delete(
         `${process.env.REACT_APP_SERVER_URL}/company/delete/${selectedCompany?.id}`,
@@ -76,6 +79,8 @@ const Company = () => {
         if (result.status === 200) {
           updateList();
           setSelectedCompany(null);
+        } else if (result.status === 401) {
+          navigate("/login");
         }
       })
       .catch((error) => {
@@ -85,6 +90,7 @@ const Company = () => {
 
   const copyUser = () => {
     console.log(localStorage.getItem("token"));
+    setLoading(true);
     axios
       .post(
         `${process.env.REACT_APP_SERVER_URL}/company/copy-user/${selectedCompany?.id}`,
@@ -98,6 +104,8 @@ const Company = () => {
       .then((result) => {
         if (result.status === 201) {
           updateList();
+        } else if (result.status === 401) {
+          navigate("/login");
         }
       })
       .catch((error) => {
@@ -285,6 +293,7 @@ const Company = () => {
       title: "License",
       dataIndex: "license_cnt",
       key: "license_cnt",
+      fixed: "right",
     },
   ];
 
@@ -337,6 +346,7 @@ const Company = () => {
                     onComplete={(data) => {
                       updateList();
                       setSelectedCompany(data);
+                      setSelectedRowKeys([]);
                     }}
                   />
                   <ButtonGroup>
@@ -355,11 +365,20 @@ const Company = () => {
                       onComplete={(data) => {
                         updateList();
                         setSelectedCompany(data);
+                        setSelectedRowKeys([]);
                       }}
+                      setLoading={setLoading}
                     />
-                    <Button disabled={!hasSelected} onClick={deleteUser}>
-                      Delete
-                    </Button>
+                    <Popconfirm
+                      title="Delete the Account?"
+                      description="Are you sure to delete this account?"
+                      onConfirm={deleteUser}
+                      onCancel={() => {}}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <Button disabled={!hasSelected}>Delete</Button>
+                    </Popconfirm>
                   </ButtonGroup>
                 </Row>
               )}

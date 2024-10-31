@@ -21,7 +21,12 @@ const GenerateModal = (props) => {
     axios
       .put(
         `${process.env.REACT_APP_SERVER_URL}/company/update-license/${data?.user_id}`,
-        values
+        values,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
+          },
+        }
       )
       .then((result) => {
         // 업데이트에 성공하면 아래 구문 실행

@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { Button, Col, Drawer, Form, Input, Popconfirm, Row, Space } from "antd";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 const CompanyEdit = (props) => {
-  const { disabled, data, onComplete } = props;
+  const navigate = useNavigate();
+  const { disabled, data, onComplete, setLoading } = props;
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
-
   const showDrawer = () => {
     setOpen(true);
 
@@ -19,6 +20,7 @@ const CompanyEdit = (props) => {
   const onFinish = (values) => {
     console.log("Received values of form: ", values, data);
     const token = localStorage.getItem("token");
+    setLoading(true);
     axios
       .put(
         `${process.env.REACT_APP_SERVER_URL}/company/update/${data?.id}`,
@@ -30,12 +32,12 @@ const CompanyEdit = (props) => {
         }
       )
       .then((result) => {
-        // 업데이트에 성공하면 아래 구문 실행
-        console.log(result);
-
-        // form.resetFields();
-        setOpen(false);
-        onComplete(values);
+        if (result.status === 200) {
+          setOpen(false);
+          onComplete(values);
+        } else if (result.status === 401) {
+          navigate("/login");
+        }
       })
       .catch((error) => {
         console.log(error);
