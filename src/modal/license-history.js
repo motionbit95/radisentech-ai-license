@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Button, Modal, Table } from "antd";
+import { Button, Col, Modal, Table } from "antd";
 const LicenseHistoryModal = (props) => {
   const { title, history } = props;
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,7 +14,17 @@ const LicenseHistoryModal = (props) => {
   };
   return (
     <>
-      <a onClick={showModal}>{title}</a>
+      <Col
+        style={{
+          cursor: "pointer",
+          color: "#1890ff",
+          fontWeight: "bold",
+          textDecoration: "underline",
+        }}
+        onClick={showModal}
+      >
+        {title}
+      </Col>
       <Modal
         title="License History"
         open={isModalOpen}

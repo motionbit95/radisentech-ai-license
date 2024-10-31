@@ -3,29 +3,32 @@ import dayjs from "dayjs";
 class License {
   constructor(
     key,
-    company,
+    Company,
+    DealerCompany,
+    Country,
+    DetectorSerialNumber,
+    UserEmail,
+    AIType,
+    Hospital,
+    UpdatedAt,
+
     activate_date_time,
     expire_date,
-    country,
-    ai_type,
-    hospital_name,
     user_name,
-    serial_number,
-    email,
-    update,
     link
   ) {
     this.key = key;
-    this.company = company;
+    this.company = Company;
+    this.dealer_company = DealerCompany;
     this.activate_date_time = activate_date_time;
     this.expire_date = expire_date;
-    this.country = country;
-    this.ai_type = ai_type;
-    this.hospital_name = hospital_name;
+    this.country = Country;
+    this.ai_type = AIType;
+    this.hospital_name = Hospital;
     this.user_name = user_name;
-    this.serial_number = serial_number;
-    this.email = email;
-    this.update = update;
+    this.serial_number = DetectorSerialNumber;
+    this.email = UserEmail;
+    this.update = UpdatedAt;
     this.link = link;
   }
 }

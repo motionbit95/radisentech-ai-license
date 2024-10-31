@@ -65,6 +65,7 @@ const Company = () => {
       });
   };
 
+  // user delete
   const deleteUser = () => {
     setLoading(true);
     axios
@@ -90,6 +91,7 @@ const Company = () => {
       });
   };
 
+  // user copy
   const copyUser = () => {
     console.log(localStorage.getItem("token"));
     setLoading(true);
@@ -357,9 +359,16 @@ const Company = () => {
                     setLoading={setLoading}
                   />
                   <ButtonGroup>
-                    <Button disabled={!hasSelected} onClick={copyUser}>
-                      Copy
-                    </Button>
+                    <Popconfirm
+                      title="Copy the Account?"
+                      description="Are you sure to copy this account?"
+                      onConfirm={copyUser}
+                      onCancel={() => {}}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <Button disabled={!hasSelected}>Copy</Button>
+                    </Popconfirm>
                     <Button
                       disabled={!hasSelected}
                       onClick={() => setSelectedRowKeys([])}

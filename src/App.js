@@ -16,25 +16,31 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Company from "./page/company";
 import LicenseDealer from "./page/licenseDealer";
 
-const items = [
-  {
-    key: "license",
-    label: "License List",
-  },
-  {
-    key: "company",
-    label: "Company List",
-  },
-  {
-    key: "statistics",
-    label: "Statistics",
-    disabled: true,
-  },
-];
-
 function App({ page }) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const items = [
+    // Admin 계정 일 경우 License, Company, Statistics
+    // Delear 일 경우 LicenseDealer, Statistics
+    {
+      key: "license",
+      label: "License List",
+    },
+    ...(true
+      ? [
+          {
+            key: "company",
+            label: "Company List",
+          },
+        ]
+      : []),
+    {
+      key: "statistics",
+      label: "Statistics",
+      disabled: true,
+    },
+  ];
 
   // 로그인 페이지에서 라이센스 페이지로 이동할 때 로그인 플래그를 받습니다.
   const [isLoggedIn, setIsLoggedIn] = useState(

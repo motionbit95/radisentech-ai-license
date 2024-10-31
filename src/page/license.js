@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Button,
   Col,
@@ -17,10 +17,14 @@ import Highlighter from "react-highlight-words";
 import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import UpdateLicense from "../modal/expire";
 import UpdateHistoryModal from "../modal/update-history";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
 
 const { Header, Content, Footer } = Layout;
 
 const License = () => {
+  const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
@@ -28,6 +32,44 @@ const License = () => {
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
   const [selectedFilters, setSelectedFilters] = useState([]);
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // 페이지를 로드할 때 실행
+    updateLicenseList();
+  }, []);
+
+  const updateLicenseList = () => {
+    setLoading(true);
+    axios
+      .get(`${process.env.REACT_APP_SERVER_URL}/license/list`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
+        },
+      })
+      .then((result) => {
+        if (result.status === 200) {
+          setList(result.data.data);
+          console.log(result.data.data);
+
+          const active = new Date(result.data.data[0].UTCActivateStartDate);
+          const expire = new Date(result.data.data[0].UTCTerminateDate);
+
+          // result.data.data.map((item) => {
+          //   console.log(item);
+          // });
+          setLoading(false);
+        } else if (result.status === 401) {
+          navigate("/login");
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        // setError(error);
+      });
+  };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -160,73 +202,71 @@ const License = () => {
     },
     {
       title: "Company",
-      dataIndex: "company",
-      key: "company",
+      dataIndex: "Company",
+      key: "Company",
       fixed: "left",
-      width: 150,
+      // ...getColumnSearchProps("Company"),
+      //     sorter: (a, b) => {
+      //       return a.Company.localeCompare(b.Company);
+      //     },
 
-      ...getColumnSearchProps("company"),
-      sorter: (a, b) => {
-        return a.company.localeCompare(b.company);
-      },
-
-      render: (text) => (
-        <Space>
-          {text}
-          <Tooltip placement="top" title={getCompanyCode(text)}>
-            <InfoCircleOutlined />
-          </Tooltip>
-        </Space>
-      ),
+      // render: (text) => (
+      //   <Space>
+      //     {text}
+      //     <Tooltip placement="top" title={getCompanyCode(text)}>
+      //       <InfoCircleOutlined />
+      //     </Tooltip>
+      //   </Space>
+      // ),
     },
     {
       title: "Activate Date Time",
-      dataIndex: "activate_date_time",
-      key: "activate_date_time",
-
-      sorter: (a, b) => {
-        return new Date(a.activate_date_time) - new Date(b.activate_date_time);
-      },
+      dataIndex: "UTCActivateStartDate",
+      key: "UTCActivateStartDate",
+      render: (text) => (text ? dayjs(text).format("YYYY-MM-DD HH:mm:ss") : ""),
+      // sorter: (a, b) => {
+      //   return new Date(a.activate_date_time) - new Date(b.activate_date_time);
+      // },
     },
     {
       title: "Expire Date",
-      dataIndex: "expire_date",
-      key: "expire_date",
-
-      sorter: (a, b) => {
-        return new Date(a.expire_date) - new Date(b.expire_date);
-      },
+      dataIndex: "UTCTerminateDate",
+      key: "UTCTerminateDate",
+      render: (text) => (text ? dayjs(text).format("YYYY-MM-DD HH:mm:ss") : ""),
+      // sorter: (a, b) => {
+      //   return new Date(a.expire_date) - new Date(b.expire_date);
+      // },
     },
     {
       title: "Country",
-      dataIndex: "country",
-      key: "country",
+      dataIndex: "Country",
+      key: "Country",
 
-      filters: Array.from({ length: countryCodes.length }, (_, index) => {
-        return {
-          text: countryCodes[index]?.country,
-          value: countryCodes[index]?.country,
-        };
-      }),
-      ...getColumnFilterProps("country"),
+      // filters: Array.from({ length: countryCodes.length }, (_, index) => {
+      //   return {
+      //     text: countryCodes[index]?.country,
+      //     value: countryCodes[index]?.country,
+      //   };
+      // }),
+      // ...getColumnFilterProps("country"),
 
-      sorter: (a, b) => {
-        return a.country.localeCompare(b.country);
-      },
+      // sorter: (a, b) => {
+      //   return a.country.localeCompare(b.country);
+      // },
     },
     {
       title: "AI Type",
-      dataIndex: "ai_type",
-      key: "ai_type",
+      dataIndex: "AIType",
+      key: "AIType",
 
-      sorter: (a, b) => {
-        return a.ai_type.localeCompare(b.ai_type);
-      },
+      // sorter: (a, b) => {
+      //   return a.ai_type.localeCompare(b.ai_type);
+      // },
     },
     {
       title: "Hospital Name",
-      dataIndex: "hospital_name",
-      key: "hospital_name",
+      dataIndex: "Hospital",
+      key: "Hospital",
     },
     {
       title: "User Name",
@@ -235,18 +275,19 @@ const License = () => {
     },
     {
       title: "S/N",
-      dataIndex: "serial_number",
-      key: "serial_number",
+      dataIndex: "DetectorSerialNumber",
+      key: "DetectorSerialNumber",
     },
     {
       title: "Email",
-      dataIndex: "email",
-      key: "email",
+      dataIndex: "UserEmail",
+      key: "UserEmail",
     },
     {
       title: "Update",
-      dataIndex: "update",
-      key: "update",
+      dataIndex: "UpdatedAt",
+      key: "UpdatedAt",
+      fixed: "right",
       render: (text, record, index) => (
         <UpdateHistoryModal history={[]} title={text} />
       ),
@@ -277,6 +318,7 @@ const License = () => {
         <AdvancedSearchForm onSearch={(filter) => setSearchFilters(filter)} />
         <Table
           rowSelection={rowSelection}
+          loading={loading}
           title={() => (
             // <Button
             //   type="primary"
@@ -289,7 +331,7 @@ const License = () => {
               type="primary"
               disabled={!hasSelected}
               title="Update License"
-              data={dummyLisense.find((c) => c.key === selectedRowKeys[0])}
+              data={list.find((c) => c.key === selectedRowKeys[0])}
             />
           )}
           pagination={{
@@ -300,24 +342,22 @@ const License = () => {
           columns={licenseColumns}
           dataSource={
             searchFilters
-              ? dummyLisense.filter((item) => {
+              ? list.filter((item) => {
                   if (
-                    searchFilters.expire_date
-                      ? new Date(searchFilters.expire_date[0]) <
-                          new Date(item.expire_date) &&
-                        new Date(searchFilters.expire_date[1]) >
-                          new Date(item.expire_date)
+                    searchFilters.UTCTerminateDate
+                      ? new Date(searchFilters.UTCTerminateDate[0]) <
+                          new Date(item.UTCTerminateDate) &&
+                        new Date(searchFilters.UTCTerminateDate[1]) >
+                          new Date(item.UTCTerminateDate)
                       : true &&
-                        item.company.includes(searchFilters.company || "") &&
-                        item.country.includes(searchFilters.country || "") &&
-                        item.hospital_name.includes(
-                          searchFilters.hospital_name || ""
-                        )
+                        item.Company.includes(searchFilters.Company || "") &&
+                        item.Country.includes(searchFilters.Country || "") &&
+                        item.Hospital.includes(searchFilters.Hospital || "")
                   ) {
                     return item;
                   }
                 })
-              : dummyLisense
+              : list
           }
           scroll={{
             x: "max-content",
