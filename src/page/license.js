@@ -16,6 +16,7 @@ import { countryCodes, dummyCompany, dummyLisense } from "../data";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import UpdateLicense from "../modal/expire";
+import UpdateHistoryModal from "../modal/update-history";
 
 const { Header, Content, Footer } = Layout;
 
@@ -246,6 +247,9 @@ const License = () => {
       title: "Update",
       dataIndex: "update",
       key: "update",
+      render: (text, record, index) => (
+        <UpdateHistoryModal history={[]} title={text} />
+      ),
     },
   ];
 

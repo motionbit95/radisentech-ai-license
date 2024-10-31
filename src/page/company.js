@@ -16,7 +16,8 @@ import ButtonGroup from "antd/es/button/button-group";
 import GenerateModal from "../modal/generate";
 import CompanyEdit from "../modal/drawer";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import LicenseHistoryModal from "../modal/license-history";
 
 const { Content } = Layout;
 
@@ -294,6 +295,9 @@ const Company = () => {
       dataIndex: "license_cnt",
       key: "license_cnt",
       fixed: "right",
+      render: (text, record, index) => (
+        <LicenseHistoryModal history={[]} title={text} />
+      ),
     },
   ];
 
