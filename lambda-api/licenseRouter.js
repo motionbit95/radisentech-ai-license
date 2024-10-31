@@ -444,7 +444,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
     `;
     await connection.execute(insertHistoryQuery, [
       pk,
-      localTerminateDate,
+      formatDateToYYYYMMDD(currentExpireDate),
       utcTerminateDate,
     ]);
 
@@ -458,6 +458,70 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
     res.status(200).json({
       message: "Subscription updated successfully",
     });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    // 데이터베이스 연결 종료
+    if (connection) {
+      await connection.end();
+      console.log("Connection closed");
+    }
+  }
+});
+
+/**
+ * @swagger
+ * /license/license-history/{pk}:
+ *   get:
+ *     summary: license_history
+ *     description: 특정 license_pk의 변경 이력 조회
+ *     tags: [License]
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: 인증 토큰 헤더(Bearer [Access Token])
+ *       - in: path
+ *         name: pk
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: license_history pk
+ *     responses:
+ *       200:
+ *         description: SUCCESS
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Database error
+ *       404:
+ *         description: license_history NOT FOUND
+ */
+router.get("/license-history/:pk", verifyToken, async (req, res) => {
+  const { pk } = req.params;
+
+  let connection;
+
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // license_history에서 특정 license_pk의 변경 이력 조회
+    const [historyRows] = await connection.execute(
+      "SELECT * FROM license_history WHERE license_pk = ? ORDER BY update_date DESC",
+      [pk]
+    );
+
+    if (historyRows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No history found for this license." });
+    }
+
+    res.status(200).json(historyRows);
   } catch (err) {
     console.error("Database error:", err);
     res.status(500).json({ error: "Database error" });
