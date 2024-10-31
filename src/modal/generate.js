@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button, Form, Input, InputNumber, Modal } from "antd";
 import axios from "axios";
 const GenerateModal = (props) => {
-  const { title, type, disabled, data, onComplete } = props;
+  const { title, type, disabled, data, onComplete, setLoading } = props;
   const [modalOpen, setModalOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -18,6 +18,7 @@ const GenerateModal = (props) => {
   };
 
   const onFinish = (values) => {
+    setLoading(true);
     axios
       .put(
         `${process.env.REACT_APP_SERVER_URL}/company/update-license/${data?.user_id}`,

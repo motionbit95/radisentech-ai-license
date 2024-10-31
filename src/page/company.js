@@ -80,6 +80,7 @@ const Company = () => {
         if (result.status === 200) {
           updateList();
           setSelectedCompany(null);
+          setSelectedRowKeys([]);
         } else if (result.status === 401) {
           navigate("/login");
         }
@@ -105,6 +106,7 @@ const Company = () => {
       .then((result) => {
         if (result.status === 201) {
           updateList();
+          setSelectedRowKeys([]);
         } else if (result.status === 401) {
           navigate("/login");
         }
@@ -352,6 +354,7 @@ const Company = () => {
                       setSelectedCompany(data);
                       setSelectedRowKeys([]);
                     }}
+                    setLoading={setLoading}
                   />
                   <ButtonGroup>
                     <Button disabled={!hasSelected} onClick={copyUser}>
