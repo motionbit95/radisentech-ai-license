@@ -9,15 +9,14 @@ import {
   Space,
   Table,
 } from "antd";
-import { dummyCompany } from "../data";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
 import ButtonGroup from "antd/es/button/button-group";
 import GenerateModal from "../modal/generate";
 import CompanyEdit from "../modal/drawer";
-import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import LicenseHistoryModal from "../modal/license-history";
+import { AxiosDelete, AxiosGet, AxiosPost } from "../api";
 
 const { Content } = Layout;
 
@@ -36,86 +35,70 @@ const Company = () => {
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
-    updateList();
+    fetchCompanyList();
   }, []);
 
-  const updateList = () => {
-    // DB 데이터를 가지고 옴 - 유효한 토큰을 가지는 사용자만 접근 가능
+  const fetchCompanyList = async () => {
     setLoading(true);
-    axios
-      .get(`${process.env.REACT_APP_SERVER_URL}/company/list`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      })
-      .then((result) => {
-        if (result.status === 200) {
-          setList(result.data.map((item) => ({ ...item, key: item.user_id })));
-        } else if (result.status === 401) {
-          navigate("/login");
-        }
-      })
-      .catch((error) => {
-        console.log(error);
+
+    try {
+      const result = await AxiosGet("/company/list");
+
+      if (result.status === 200) {
+        setList(result.data.map((item) => ({ ...item, key: item.user_id })));
+      } else {
+        throw new Error("Unauthorized");
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        navigate("/login");
+      } else {
+        console.error("Error:", error.message);
         setError(error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // user delete
-  const deleteUser = () => {
+  const handleDeleteCompany = async () => {
     setLoading(true);
-    axios
-      .delete(
-        `${process.env.REACT_APP_SERVER_URL}/company/delete/${selectedCompany?.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
-          },
-        }
-      )
-      .then((result) => {
-        if (result.status === 200) {
-          updateList();
-          setSelectedCompany(null);
-          setSelectedRowKeys([]);
-        } else if (result.status === 401) {
-          navigate("/login");
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+
+    try {
+      await AxiosDelete(`/company/delete/${selectedCompany?.id}`);
+      await fetchCompanyList(); // 데이터 갱신 후 로딩 해제
+      setSelectedCompany(null);
+      setSelectedRowKeys([]);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        navigate("/login");
+      } else {
+        console.error("Error:", error.message);
+      }
+    } finally {
+      setLoading(false); // fetchCompanyList가 완료된 후 로딩 해제
+    }
   };
 
-  // user copy
-  const copyUser = () => {
-    console.log(localStorage.getItem("token"));
+  const copyUser = async () => {
     setLoading(true);
-    axios
-      .post(
-        `${process.env.REACT_APP_SERVER_URL}/company/copy-user/${selectedCompany?.id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
-          },
-        }
-      )
-      .then((result) => {
-        if (result.status === 201) {
-          updateList();
-          setSelectedRowKeys([]);
-        } else if (result.status === 401) {
-          navigate("/login");
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+
+    try {
+      const result = await AxiosPost(
+        `/company/copy-user/${selectedCompany?.id}`
+      );
+
+      if (result.status === 201) {
+        await fetchCompanyList(); // 데이터 갱신이 완료된 후 로딩 해제
+        setSelectedRowKeys([]);
+      } else if (result.status === 401) {
+        navigate("/login");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    } finally {
+      setLoading(false); // fetchCompanyList가 완료된 후 로딩 해제
+    }
   };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -352,7 +335,7 @@ const Company = () => {
                     data={selectedCompany}
                     disabled={!hasSelected}
                     onComplete={(data) => {
-                      updateList();
+                      fetchCompanyList();
                       setSelectedCompany(data);
                       setSelectedRowKeys([]);
                     }}
@@ -379,7 +362,7 @@ const Company = () => {
                       disabled={!hasSelected}
                       data={selectedCompany}
                       onComplete={(data) => {
-                        updateList();
+                        fetchCompanyList();
                         setSelectedCompany(data);
                         setSelectedRowKeys([]);
                       }}
@@ -388,7 +371,7 @@ const Company = () => {
                     <Popconfirm
                       title="Delete the Account?"
                       description="Are you sure to delete this account?"
-                      onConfirm={deleteUser}
+                      onConfirm={handleDeleteCompany}
                       onCancel={() => {}}
                       okText="Yes"
                       cancelText="No"
