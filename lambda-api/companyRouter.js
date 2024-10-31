@@ -1000,4 +1000,8 @@ router.post("/reset-password", verifyToken, async (req, res) => {
   }
 });
 
+//# sjpark - 10.31
+// 회사 정보 Edit 버그(ID 변경, Submit 후 갱신 X)
+// 권한 설정(Radisen / Dealer)
+
 module.exports = router;
