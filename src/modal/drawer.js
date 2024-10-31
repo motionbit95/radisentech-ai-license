@@ -1,5 +1,16 @@
 import React, { useState } from "react";
-import { Button, Col, Drawer, Form, Input, Popconfirm, Row, Space } from "antd";
+import {
+  Button,
+  Col,
+  Drawer,
+  Form,
+  Input,
+  Popconfirm,
+  Row,
+  Space,
+  Switch,
+  Typography,
+} from "antd";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 const CompanyEdit = (props) => {
@@ -189,7 +200,30 @@ const CompanyEdit = (props) => {
                   },
                 ]}
               >
-                <Input className="w-full" />
+                <Input
+                  className="w-full"
+                  placeholder="Please enter phone number"
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={24}>
+              <Form.Item
+                name="permission_flag"
+                label="Supervisor"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter country",
+                  },
+                ]}
+              >
+                <Switch
+                  checkedChildren="Admin"
+                  unCheckedChildren="Dealer"
+                  defaultChecked={data?.permission_flag === "Y" ? true : false}
+                />
               </Form.Item>
             </Col>
           </Row>

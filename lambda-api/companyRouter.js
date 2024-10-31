@@ -442,6 +442,20 @@ router.put("/update/:id", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    // permission_flag가 Y인 사용자 수 조회
+    const [userCountRows] = await connection.execute(
+      "SELECT COUNT(*) AS count FROM company WHERE permission_flag = 'Y'"
+    );
+    const userCount = userCountRows[0].count;
+
+    // permission_flag가 Y인 사용자가 1명 이하인 경우 수정 불가능
+    if (userCount <= 1) {
+      return res.status(403).json({
+        error:
+          "Cannot modify user! Permission flag 'Y' user count is 1 or less.",
+      });
+    }
+
     // 데이터 수정 쿼리 실행
     const query = `
         UPDATE company 
@@ -666,6 +680,20 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
     );
     if (existingUser.length === 0) {
       return res.status(404).json({ error: "User not found" });
+    }
+
+    // permission_flag가 Y인 사용자 수 조회
+    const [userCountRows] = await connection.execute(
+      "SELECT COUNT(*) AS count FROM company WHERE permission_flag = 'Y'"
+    );
+    const userCount = userCountRows[0].count;
+
+    // permission_flag가 Y인 사용자가 1명 이하인 경우 삭제 불가능
+    if (userCount <= 1) {
+      return res.status(403).json({
+        error:
+          "Cannot delete user! Permission flag 'Y' user count is 1 or less.",
+      });
     }
 
     // id로 행 삭제

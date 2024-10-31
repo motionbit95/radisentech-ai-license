@@ -39,7 +39,8 @@ class Company {
     company_name, // company name
     user_name, // company user name
     address, // company address
-    phone // company phone
+    phone, // company phone
+    permission_flag = "N" // permission flag
   ) {
     this.key = key; // 회사코드
     this.user_id = user_id;
@@ -49,6 +50,7 @@ class Company {
     this.user_name = user_name;
     this.address = address;
     this.phone = phone;
+    this.permission_flag = permission_flag;
   }
 }
 
