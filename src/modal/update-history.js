@@ -14,7 +14,7 @@ const UpdateHistoryModal = (props) => {
   };
   return (
     <>
-      <a onClick={showModal}>{title}</a>
+      <a onClick={showModal}>{title}not Data</a>
       <Modal
         title="Update History"
         open={isModalOpen}

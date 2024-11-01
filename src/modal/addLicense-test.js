@@ -1,6 +1,6 @@
 import { Button, DatePicker, Form, Input, Modal, message } from "antd";
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const ADDLicense = () => {
   const [addModalOpen, setAddModalOpen] = useState(false);
@@ -8,10 +8,9 @@ const ADDLicense = () => {
 
   // 라이선스 추가 요청 함수
   const addLicense = async (values) => {
-    // localStorage에서 토큰 가져오기
     try {
       await axios.post(
-        "/license/add",
+        `${process.env.REACT_APP_SERVER_URL}/license/add`,
         {
           ...values,
           LocalActivateStartDate: values.LocalActivateStartDate.format(

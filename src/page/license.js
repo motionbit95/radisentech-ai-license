@@ -206,7 +206,6 @@ const License = () => {
       dataIndex: "Company",
       key: "Company",
       fixed: "left",
-      // ...getColumnSearchProps("Company"),
       sorter: (a, b) => {
         return a.Company.localeCompare(b.Company);
       },
@@ -245,17 +244,9 @@ const License = () => {
       dataIndex: "Country",
       key: "Country",
 
-      // filters: Array.from({ length: countryCodes.length }, (_, index) => {
-      //   return {
-      //     text: countryCodes[index]?.country,
-      //     value: countryCodes[index]?.country,
-      //   };
-      // }),
-      // ...getColumnFilterProps("country"),
-
-      // sorter: (a, b) => {
-      //   return a.country.localeCompare(b.country);
-      // },
+      sorter: (a, b) => {
+        return a.Country.localeCompare(b.Country);
+      },
     },
     {
       title: "AI Type",
@@ -265,6 +256,8 @@ const License = () => {
       sorter: (a, b) => {
         return a.AIType.localeCompare(b.AIType);
       },
+
+      ...getColumnSearchProps("AIType"),
     },
     {
       title: "Hospital Name",
@@ -279,16 +272,22 @@ const License = () => {
       title: "User Name",
       dataIndex: "user_name",
       key: "user_name",
+
+      ...getColumnSearchProps("user_name"),
     },
     {
       title: "S/N",
       dataIndex: "DetectorSerialNumber",
       key: "DetectorSerialNumber",
+
+      ...getColumnSearchProps("DetectorSerialNumber"),
     },
     {
       title: "Email",
       dataIndex: "UserEmail",
       key: "UserEmail",
+
+      ...getColumnSearchProps("UserEmail"),
     },
     {
       title: "Update",
