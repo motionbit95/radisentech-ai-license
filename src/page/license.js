@@ -68,13 +68,13 @@ const License = () => {
             console.log(item);
           });
           setLoading(false);
-        } else if (result.status === 401) {
-          navigate("/login");
         }
       })
       .catch((error) => {
         console.log(error);
-        // setError(error);
+        if (error.status === 401) {
+          navigate("/login");
+        }
       });
   };
 

@@ -406,18 +406,6 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
       WHERE pk = ?
     `;
 
-    // license_history 테이블 존재 여부 확인 및 생성
-    const createTableQuery = `
-      CREATE TABLE IF NOT EXISTS license_history (
-          id INT PRIMARY KEY AUTO_INCREMENT,
-          license_pk INT,
-          update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          previous_expire_date DATE,
-          new_expire_date DATE
-      );
-    `;
-    await connection.execute(createTableQuery);
-
     // 현재 ExpireDate 가져오기
     const [currentRows] = await connection.execute(
       "SELECT LocalTerminateDate, ActivateCount FROM LicenseManagement WHERE pk = ?",
