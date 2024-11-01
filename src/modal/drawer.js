@@ -11,8 +11,8 @@ import {
   Switch,
   Typography,
 } from "antd";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { AxiosPut } from "../api";
 const CompanyEdit = (props) => {
   const navigate = useNavigate();
   const { disabled, data, onComplete, setLoading } = props;
@@ -28,30 +28,21 @@ const CompanyEdit = (props) => {
     setOpen(false);
   };
 
-  const onFinish = (values) => {
+  const onFinish = async (values) => {
     console.log("Received values of form: ", values, data);
-    const token = localStorage.getItem("token");
     setLoading(true);
-    axios
-      .put(
-        `${process.env.REACT_APP_SERVER_URL}/company/update/${data?.id}`,
-        values,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // JWT 토큰 추가
-          },
-        }
-      )
+
+    await AxiosPut(`/company/update/${data?.id}`, values)
       .then((result) => {
         if (result.status === 200) {
           setOpen(false);
           onComplete(values);
-        } else if (result.status === 401) {
-          navigate("/login");
         }
       })
       .catch((error) => {
-        console.log(error);
+        if (error.status === 401) {
+          navigate("/login");
+        }
       });
   };
 

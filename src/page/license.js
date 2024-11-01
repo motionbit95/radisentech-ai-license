@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
   Col,
@@ -12,7 +12,6 @@ import {
   theme,
   Tooltip,
 } from "antd";
-import { countryCodes, dummyCompany, dummyLisense } from "../data";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import UpdateLicense from "../modal/expire";
