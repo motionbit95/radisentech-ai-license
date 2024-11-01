@@ -1,21 +1,9 @@
 import React, { useEffect, useState } from "react";
 import License from "./page/license";
-import {
-  Button,
-  Col,
-  Layout,
-  Menu,
-  Result,
-  Row,
-  Space,
-  Spin,
-  Typography,
-} from "antd";
+import { Button, Col, Layout, Menu, Result, Space, Spin } from "antd";
 import { Footer, Header } from "antd/es/layout/layout";
 import { useLocation, useNavigate } from "react-router-dom";
 import Company from "./page/company";
-import LicenseDealer from "./page/licenseDealer";
-import axios from "axios";
 
 function App({ page }) {
   const navigate = useNavigate();

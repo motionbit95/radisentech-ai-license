@@ -137,6 +137,7 @@ router.get("/list", verifyToken, async (req, res) => {
     // 결과를 클라이언트에 JSON 형식으로 반환
     res.status(200).json({
       status: "success",
+      message: "Data fetched successfully",
       data: rows,
     });
   } catch (error) {
@@ -152,97 +153,25 @@ router.get("/list", verifyToken, async (req, res) => {
   }
 });
 
-/**
- * @swagger
- * /license/add:
- *   post:
- *     tags: [License]
- *     summary: License 추가(테스트)
- *     description: LicenseManagement 테이블에 데이터 삽입
- *     produces:
- *       - application/json
- *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: 인증 토큰 헤더(Bearer [Access Token])
- *       - in: body
- *         name: body
- *         description: LicenseManagement 테이블에 데이터 삽입
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             DealerCompany:
- *               type: string
- *               description: DealerCompany
- *             Company:
- *               type: string
- *               description: Company
- *             Country:
- *               type: string
- *               description: Country
- *             AIType:
- *               type: string
- *               description: AIType
- *             Hospital:
- *               type: string
- *               description: Hospital
- *             UserEmail:
- *               type: string
- *               description: UserEmail
- *             HardWareInfo:
- *               type: string
- *               description: HardWareInfo
- *             DetectorSerialNumber:
- *               type: string
- *               description: DetectorSerialNumber
- *             LocalActivateStartDate:
- *               type: string
- *               description: LocalActivateStartDate
- *             LocalTerminateDate:
- *               type: string
- *               description: LocalTerminateDate
- *             UTCActivateStartDate:
- *               type: string
- *               description: UTCActivateStartDate
- *             UTCTerminateDate:
- *               type: string
- *               description: UTCTerminateDate
- *             ActivateCount:
- *               type: number
- *               description: ActivateCount
- *             UniqueCode:
- *               type: string
- *               description: UniqueCode
- *         example:
- *           DealerCompany: "Example Dealer"
- *           Company: "Example Company"
- *           Country: "Example Country"
- *           AIType: "Example AIType"
- *           Hospital: "Example Hospital"
- *           UserEmail: "user@example.com"
- *           HardWareInfo: "Example Hardware Info"
- *           DetectorSerialNumber: "SN123456789"
- *           LocalActivateStartDate: "2024-09-30T23:00:00.000Z"
- *           LocalTerminateDate: "2025-09-30T15:00:00.000Z"
- *           UTCActivateStartDate: "2024-09-30T15:00:00.000Z"
- *           UTCTerminateDate: "2025-09-30T15:00:00.000Z"
- *           ActivateCount: 5
- *           UniqueCode: "UNIQUECODE123"
- *     responses:
- *       200:
- *         description: LicenseManagement 테이블에 데이터 삽입
- *       500:
- *         description: Database error
- *       400:
- *         description: Missing required fields
- *       401:
- *         description: Unauthorized
- */
 router.post("/add", verifyToken, async (req, res) => {
+  /*
+  DealerCompany: 'Radisen',
+  Company: 'FastFive',
+  Country: 'Korea',
+  AIType: 'Chest',
+  Hospital: 'Hospital',
+  UserEmail: 'test@example.com',
+  UserName: 'name',
+  HardWareInfo: '1234',
+  DetectorSerialNumber: '1234',
+  date_range: [ '2024-11-01T06:28:50.925Z', '2024-11-29T15:00:00.000Z' ],
+  UniqueCode: 'Code',
+  LocalActivateStartDate: '2024-11-01',
+  LocalTerminateDate: '2024-11-30',
+  UTCActivateStartDate: '2024-11-01T06:28:50.925Z',
+  UTCTerminateDate: '2024-11-29T15:00:00.000Z'
+  */
+
   const {
     DealerCompany,
     Company,
@@ -250,70 +179,69 @@ router.post("/add", verifyToken, async (req, res) => {
     AIType,
     Hospital,
     UserEmail,
+    UserName,
     HardWareInfo,
     DetectorSerialNumber,
+    UniqueCode,
     LocalActivateStartDate,
     LocalTerminateDate,
     UTCActivateStartDate,
     UTCTerminateDate,
-    ActivateCount,
-    UniqueCode,
   } = req.body;
+
+  // 필수 필드 확인
+  if (
+    !DealerCompany ||
+    !Company ||
+    !Country ||
+    !AIType ||
+    !Hospital ||
+    !UniqueCode ||
+    !LocalActivateStartDate ||
+    !LocalTerminateDate ||
+    !UTCActivateStartDate ||
+    !UTCTerminateDate
+  ) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
 
   let connection;
   try {
-    // 필수 필드가 누락된 경우 에러 반환
-    if (
-      !DealerCompany ||
-      !Company ||
-      !Country ||
-      !AIType ||
-      !Hospital ||
-      !LocalActivateStartDate ||
-      !LocalTerminateDate ||
-      !UTCActivateStartDate ||
-      !UTCTerminateDate ||
-      !ActivateCount
-    ) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
-
     // 데이터베이스 연결
     connection = await mysql.createConnection(dbConfig);
 
-    // 데이터 삽입 쿼리 실행
-    const query = `
-        INSERT INTO LicenseManagement (
-          DealerCompany, Company, Country, AIType, Hospital, 
-          UserEmail, HardWareInfo, DetectorSerialNumber, 
-          LocalActivateStartDate, LocalTerminateDate, 
-          UTCActivateStartDate, UTCTerminateDate, 
-          ActivateCount, UniqueCode
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
+    // LicenseManagement 테이블에 데이터 추가하는 쿼리
+    const insertQuery = `
+      INSERT INTO LicenseManagement
+      (DealerCompany, Company, Country, AIType, Hospital, UserEmail, UserName, HardWareInfo, DetectorSerialNumber, LocalActivateStartDate, LocalTerminateDate, UTCActivateStartDate, UTCTerminateDate, UniqueCode)
+      VALUES
+      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-    const [result] = await connection.execute(query, [
+    const parameters = [
       DealerCompany,
       Company,
       Country,
       AIType,
       Hospital,
-      UserEmail,
-      HardWareInfo,
-      DetectorSerialNumber,
+      UserEmail || null, // null로 처리
+      UserName || null, // null로 처리
+      HardWareInfo || null, // null로 처리
+      DetectorSerialNumber || null, // null로 처리
       LocalActivateStartDate,
       LocalTerminateDate,
       UTCActivateStartDate,
       UTCTerminateDate,
-      ActivateCount,
       UniqueCode,
-    ]);
+    ].map((param) => (param === undefined ? null : param)); // undefined를 null로 변경
 
-    // 삽입 성공 응답
-    res.status(201).json({
+    const [result] = await connection.execute(insertQuery, parameters);
+
+    console.log("Rows inserted:", result.affectedRows);
+    res.status(200).json({
       status: "success",
-      message: "Data inserted successfully",
-      id: result.insertId,
+      message: "Data added successfully",
+      data: result,
     });
   } catch (error) {
     console.error("Error inserting data:", error);

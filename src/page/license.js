@@ -360,7 +360,7 @@ const License = () => {
                 }}
               />
               {/* Lisence 추가 테스트용 */}
-              <ADDLicense />
+              <ADDLicense onAddFinish={() => updateLicenseList()} />
             </Row>
           )}
           pagination={{
