@@ -51,6 +51,10 @@ const Company = () => {
       })
       .then((result) => {
         if (result.status === 200) {
+          console.log(
+            result.data,
+            result.data.map((item) => item.permission_flag)
+          );
           setList(result.data.map((item) => ({ ...item, key: item.user_id })));
         }
       })

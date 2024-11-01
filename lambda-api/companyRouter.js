@@ -687,12 +687,16 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
     const userCount = userCountRows[0].count;
 
     // permission_flag가 Y인 사용자가 1명 이하인 경우 삭제 불가능
-    if (userCount <= 1) {
-      return res.status(403).json({
-        error:
-          "Cannot delete user! Permission flag 'Y' user count is 1 or less.",
-      });
-    }
+
+    // coment - permission_flag가 D인 사용자를 삭제하는 경우 D가 1명일땐 삭제 안되게 수정
+    // 현재 Y가 1명일 경우 유저 삭제를 막는 것으로 설정되어있음
+
+    // if (userCount <= 1) {
+    //   return res.status(403).json({
+    //     error:
+    //       "Cannot delete user! Permission flag 'Y' user count is 1 or less.",
+    //   });
+    // }
 
     // id로 행 삭제
     await connection.execute("DELETE FROM company WHERE id = ?", [id]);
