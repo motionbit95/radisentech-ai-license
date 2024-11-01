@@ -20,6 +20,7 @@ import UpdateHistoryModal from "../modal/update-history";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import ADDLicense from "../modal/addLicense-test";
 
 const { Header, Content, Footer } = Layout;
 
@@ -32,6 +33,8 @@ const License = () => {
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
   const [selectedFilters, setSelectedFilters] = useState([]);
+
+  const [selectedLicense, setSelectedLicense] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -51,23 +54,27 @@ const License = () => {
       })
       .then((result) => {
         if (result.status === 200) {
-          setList(result.data.data);
-          console.log(result.data.data);
+          setList(
+            result.data.data.map((item) => ({
+              ...item,
+              key: item.pk, // data의 key 값은 pk
+            }))
+          );
 
           const active = new Date(result.data.data[0].UTCActivateStartDate);
           const expire = new Date(result.data.data[0].UTCTerminateDate);
 
-          // result.data.data.map((item) => {
-          //   console.log(item);
-          // });
+          result.data.data.map((item) => {
+            console.log(item);
+          });
           setLoading(false);
-        } else if (result.status === 401) {
-          navigate("/login");
         }
       })
       .catch((error) => {
         console.log(error);
-        // setError(error);
+        if (error.status === 401) {
+          navigate("/login");
+        }
       });
   };
 
@@ -189,7 +196,7 @@ const License = () => {
   });
 
   const getCompanyCode = (company_name) => {
-    return dummyCompany.find((item) => item.company_name === company_name).key;
+    return list.find((item) => item.Company === company_name).UniqueCode;
   };
 
   // table column
@@ -205,83 +212,88 @@ const License = () => {
       dataIndex: "Company",
       key: "Company",
       fixed: "left",
-      // ...getColumnSearchProps("Company"),
-      //     sorter: (a, b) => {
-      //       return a.Company.localeCompare(b.Company);
-      //     },
+      sorter: (a, b) => {
+        return a.Company.localeCompare(b.Company);
+      },
 
-      // render: (text) => (
-      //   <Space>
-      //     {text}
-      //     <Tooltip placement="top" title={getCompanyCode(text)}>
-      //       <InfoCircleOutlined />
-      //     </Tooltip>
-      //   </Space>
-      // ),
+      render: (text) => (
+        <Space>
+          {text}
+          <Tooltip placement="top" title={getCompanyCode(text)}>
+            <InfoCircleOutlined />
+          </Tooltip>
+        </Space>
+      ),
     },
     {
       title: "Activate Date Time",
       dataIndex: "UTCActivateStartDate",
       key: "UTCActivateStartDate",
       render: (text) => (text ? dayjs(text).format("YYYY-MM-DD HH:mm:ss") : ""),
-      // sorter: (a, b) => {
-      //   return new Date(a.activate_date_time) - new Date(b.activate_date_time);
-      // },
+      sorter: (a, b) => {
+        return (
+          new Date(a.UTCActivateStartDate) - new Date(b.UTCActivateStartDate)
+        );
+      },
     },
     {
       title: "Expire Date",
       dataIndex: "UTCTerminateDate",
       key: "UTCTerminateDate",
       render: (text) => (text ? dayjs(text).format("YYYY-MM-DD HH:mm:ss") : ""),
-      // sorter: (a, b) => {
-      //   return new Date(a.expire_date) - new Date(b.expire_date);
-      // },
+      sorter: (a, b) => {
+        return new Date(a.UTCTerminateDate) - new Date(b.UTCTerminateDate);
+      },
     },
     {
       title: "Country",
       dataIndex: "Country",
       key: "Country",
 
-      // filters: Array.from({ length: countryCodes.length }, (_, index) => {
-      //   return {
-      //     text: countryCodes[index]?.country,
-      //     value: countryCodes[index]?.country,
-      //   };
-      // }),
-      // ...getColumnFilterProps("country"),
-
-      // sorter: (a, b) => {
-      //   return a.country.localeCompare(b.country);
-      // },
+      sorter: (a, b) => {
+        return a.Country.localeCompare(b.Country);
+      },
     },
     {
       title: "AI Type",
       dataIndex: "AIType",
       key: "AIType",
 
-      // sorter: (a, b) => {
-      //   return a.ai_type.localeCompare(b.ai_type);
-      // },
+      sorter: (a, b) => {
+        return a.AIType.localeCompare(b.AIType);
+      },
+
+      ...getColumnSearchProps("AIType"),
     },
     {
       title: "Hospital Name",
       dataIndex: "Hospital",
       key: "Hospital",
+
+      sorter: (a, b) => {
+        return a.Hospital.localeCompare(b.Hospital);
+      },
     },
     {
       title: "User Name",
       dataIndex: "user_name",
       key: "user_name",
+
+      ...getColumnSearchProps("user_name"),
     },
     {
       title: "S/N",
       dataIndex: "DetectorSerialNumber",
       key: "DetectorSerialNumber",
+
+      ...getColumnSearchProps("DetectorSerialNumber"),
     },
     {
       title: "Email",
       dataIndex: "UserEmail",
       key: "UserEmail",
+
+      ...getColumnSearchProps("UserEmail"),
     },
     {
       title: "Update",
@@ -299,6 +311,8 @@ const License = () => {
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
+    console.log(list.find((c) => c.key === newSelectedRowKeys[0]));
+    setSelectedLicense(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 
   const rowSelection = {
@@ -307,6 +321,19 @@ const License = () => {
     onChange: onSelectChange,
   };
   const hasSelected = selectedRowKeys.length > 0;
+
+  const applyFilters = (item) => {
+    const { company, country, hospital, expire_date } = searchFilters;
+
+    return (
+      (!company || item.Company.toLowerCase().includes(company)) &&
+      (!country || item.Country.toLowerCase().includes(country)) &&
+      (!hospital || item.Hospital.toLowerCase().includes(hospital)) &&
+      (!expire_date ||
+        (new Date(expire_date[0]) <= new Date(item.UTCTerminateDate) &&
+          new Date(expire_date[1]) >= new Date(item.UTCTerminateDate)))
+    );
+  };
 
   return (
     <Content
@@ -320,19 +347,21 @@ const License = () => {
           rowSelection={rowSelection}
           loading={loading}
           title={() => (
-            // <Button
-            //   type="primary"
-            //   disabled={!hasSelected}
-            //   onClick={() => console.log(selectedRowKeys)}
-            // >
-            //   Update License
-            // </Button>
-            <UpdateLicense
-              type="primary"
-              disabled={!hasSelected}
-              title="Update License"
-              data={list.find((c) => c.key === selectedRowKeys[0])}
-            />
+            <Row justify={"space-between"}>
+              <UpdateLicense
+                type="primary"
+                disabled={!hasSelected}
+                title="Update License"
+                data={selectedLicense}
+                onComplete={(data) => {
+                  updateLicenseList();
+                  setSelectedLicense(data);
+                  setSelectedRowKeys([]);
+                }}
+              />
+              {/* Lisence 추가 테스트용 */}
+              <ADDLicense />
+            </Row>
           )}
           pagination={{
             defaultCurrent: 1,
@@ -342,21 +371,8 @@ const License = () => {
           columns={licenseColumns}
           dataSource={
             searchFilters
-              ? list.filter((item) => {
-                  if (
-                    searchFilters.UTCTerminateDate
-                      ? new Date(searchFilters.UTCTerminateDate[0]) <
-                          new Date(item.UTCTerminateDate) &&
-                        new Date(searchFilters.UTCTerminateDate[1]) >
-                          new Date(item.UTCTerminateDate)
-                      : true &&
-                        item.Company.includes(searchFilters.Company || "") &&
-                        item.Country.includes(searchFilters.Country || "") &&
-                        item.Hospital.includes(searchFilters.Hospital || "")
-                  ) {
-                    return item;
-                  }
-                })
+              ? // 리스트 필터 조건
+                list.filter(applyFilters)
               : list
           }
           scroll={{
@@ -418,7 +434,14 @@ const AdvancedSearchForm = (props) => {
   };
   const onFinish = (values) => {
     console.log("Received values of form: ", values);
-    props.onSearch(values);
+
+    // 모든 검색 값들을 소문자로 변환
+    const normalizedFilters = Object.fromEntries(
+      Object.entries(values).map(([key, value]) =>
+        typeof value === "string" ? [key, value.toLowerCase()] : [key, value]
+      )
+    );
+    props.onSearch(normalizedFilters);
   };
 
   const formItemLayout = {

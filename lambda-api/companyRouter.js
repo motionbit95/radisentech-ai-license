@@ -42,7 +42,10 @@ const verifyToken = (req, res, next) => {
       return res.status(401).json({ message: "Authentication failed" });
     }
 
-    req.userId = decoded.userId; // 사용자 ID를 요청 객체에 저장
+    req.user = {
+      id: decoded.user_id,
+    };
+
     next(); // 다음 미들웨어로 이동
   });
 };
@@ -301,8 +304,6 @@ router.post("/add", async (req, res) => {
   const { user_id, password, email, company_name, user_name, address, phone } =
     req.body;
 
-  console.log(req.body);
-
   // 비밀번호 해싱
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -424,8 +425,6 @@ router.put("/update/:id", verifyToken, async (req, res) => {
     phone,
     unique_code,
   } = req.body;
-
-  console.log(req.body);
 
   let connection;
   try {
@@ -1031,8 +1030,59 @@ router.post("/reset-password", verifyToken, async (req, res) => {
   }
 });
 
-//# sjpark - 10.31
+/**
+ * @swagger
+ * /company/user-info:
+ *   get:
+ *     tags: [Company]
+ *     summary: 사용자 정보 조회
+ *     description: 사용자 정보 조회
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         description: Bearer [Access Token]
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 사용자 정보 조회 *
+ *       404:
+ *         description: 사용자를 찾을 수 없는 경우
+ *       500:
+ *         description: Database error
+ */
+router.get("/user-info", verifyToken, async (req, res) => {
+  const user = req.user; // verifyToken에서 설정한 userId 사용
+
+  console.log("user_id:", req.user.id);
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    const [rows] = await connection.query(
+      "SELECT * FROM company WHERE user_id = ?",
+      [user.id]
+    ); // users 테이블에서 정보 조회
+
+    if (rows.length > 0) {
+      res.status(200).json(rows[0]); // 사용자 정보를 반환
+    } else {
+      res.status(404).json({ error: "User not found" }); // 사용자를 찾을 수 없는 경우
+    }
+  } catch (err) {
+    console.error("Database connection error:", err);
+    res.status(500).json({ error: "Database connection error" });
+    return;
+  }
+});
+
+//# sjpark - 11.01
 // 회사 정보 Edit 버그(ID 변경, Submit 후 갱신 X)
 // 권한 설정(Radisen / Dealer)
+// 라이센스를 generate 하면 history에 추가
+// 유저 id를 통해 유저 정보를 가져오는 함수
 
 module.exports = router;

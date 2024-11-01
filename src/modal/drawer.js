@@ -73,8 +73,8 @@ const CompanyEdit = (props) => {
         extra={
           <Space>
             <Popconfirm
-              title="Delete the task"
-              description="Are you sure to delete this task?"
+              title="Cancel this task?"
+              description="Are you sure to cancel this task?"
               onConfirm={() => {
                 form.resetFields();
                 onClose();
