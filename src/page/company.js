@@ -34,6 +34,8 @@ const Company = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false); // 로딩 플래그
 
+  const [permission_flag, setPermissionFlag] = useState("D");
+
   useEffect(() => {
     // 페이지를 로드할 때 실행
     updateList();
@@ -231,13 +233,14 @@ const Company = () => {
   });
 
   const getColumnFilterProps = (dataIndex) => ({
-    filteredValue: filteredInfo[dataIndex] || null,
-    onFilter: (value, record) => {
-      return record[dataIndex] === value;
-      // console.log(value, record[dataIndex]);
-    },
+    filteredValue: filteredInfo[dataIndex] || [],
+    onFilter: (value, record) => record[dataIndex] === value,
     filterSearch: true,
     ellipsis: true,
+    filters: list // filter options 설정
+      .map((item) => item[dataIndex])
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .map((value) => ({ text: value, value })),
   });
 
   // table column
@@ -299,6 +302,21 @@ const Company = () => {
       dataIndex: "phone",
       key: "phone",
     },
+    ...(permission_flag === "D"
+      ? [
+          {
+            title: "Permission",
+            dataIndex: "permission_flag",
+            key: "permission_flag",
+
+            sorter: (a, b) => {
+              return a.permission_flag.localeCompare(b.permission_flag);
+            },
+
+            ...getColumnFilterProps("permission_flag"),
+          },
+        ]
+      : []),
     {
       title: "License",
       dataIndex: "license_cnt",

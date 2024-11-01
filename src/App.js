@@ -20,6 +20,7 @@ import axios from "axios";
 function App({ page }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [loading, setLoading] = useState(true);
 
   const [permission_flag, setPermissionFlag] = useState("");
 
@@ -31,6 +32,7 @@ function App({ page }) {
 
   useEffect(() => {
     const getUser = async () => {
+      setLoading(true);
       axios
         .get(`${process.env.REACT_APP_SERVER_URL}/company/user-info`, {
           headers: {
@@ -38,12 +40,17 @@ function App({ page }) {
           },
         })
         .then((response) => {
-          console.log("CURRENT_USER", response.data);
-          setCurrentUser(response.data);
-          setPermissionFlag(response.data.permission_flag);
+          if (response.status === 200) {
+            // console.log("CURRENT_USER", response.data);
+            setCurrentUser(response.data);
+            setPermissionFlag(response.data.permission_flag);
+            setLoading(false);
+          }
         })
         .catch((error) => {
-          console.error("Error fetching user data:", error);
+          if (error.response.status === 401) {
+            navigate("/login");
+          }
         });
     };
 
