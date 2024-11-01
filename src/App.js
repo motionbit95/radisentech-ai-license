@@ -21,9 +21,34 @@ function App({ page }) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [permission_flag, setPermissionFlag] = useState("");
+
   // 관리자(개발자)로 로그인 했을 경우 permission_flag(D)
   // 관리자(CS)의 경우(Y)
   // Dealer의 경우(N)
+
+  const [currentUser, setCurrentUser] = useState({});
+
+  useEffect(() => {
+    const getUser = async () => {
+      axios
+        .get(`${process.env.REACT_APP_SERVER_URL}/company/user-info`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Authorization 헤더 추가
+          },
+        })
+        .then((response) => {
+          console.log("CURRENT_USER", response.data);
+          setCurrentUser(response.data);
+          setPermissionFlag(response.data.permission_flag);
+        })
+        .catch((error) => {
+          console.error("Error fetching user data:", error);
+        });
+    };
+
+    getUser();
+  }, []);
 
   const items = [
     // Admin 계정 일 경우 License, Company, Statistics
@@ -32,14 +57,14 @@ function App({ page }) {
       key: "license",
       label: "License List",
     },
-    ...(true
-      ? [
+    ...(permission_flag === "N"
+      ? []
+      : [
           {
             key: "company",
             label: "Company List",
           },
-        ]
-      : []),
+        ]),
     {
       key: "statistics",
       label: "Statistics",
@@ -124,8 +149,10 @@ function App({ page }) {
           <>
             {page === "license" && (
               <>
-                <License />
-                {/* <LicenseDealer /> */}
+                {permission_flag === "N" && <LicenseDealer />}
+                {(permission_flag === "Y" || permission_flag === "D") && (
+                  <License permission_flag />
+                )}
               </>
             )}
             {page === "company" && <Company />}

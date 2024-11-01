@@ -46,12 +46,12 @@ const CompanyEdit = (props) => {
         if (result.status === 200) {
           setOpen(false);
           onComplete(values);
-        } else if (result.status === 401) {
-          navigate("/login");
         }
       })
       .catch((error) => {
-        console.log(error);
+        if (error.status === 401) {
+          navigate("/login");
+        }
       });
   };
 

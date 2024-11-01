@@ -52,11 +52,12 @@ const Company = () => {
       .then((result) => {
         if (result.status === 200) {
           setList(result.data.map((item) => ({ ...item, key: item.user_id })));
-        } else if (result.status === 401) {
-          navigate("/login");
         }
       })
       .catch((error) => {
+        if (error.status === 401) {
+          navigate("/login");
+        }
         console.log(error);
         setError(error);
       })
@@ -82,12 +83,12 @@ const Company = () => {
           updateList();
           setSelectedCompany(null);
           setSelectedRowKeys([]);
-        } else if (result.status === 401) {
-          navigate("/login");
         }
       })
       .catch((error) => {
-        console.log(error);
+        if (error.status === 401) {
+          navigate("/login");
+        }
       });
   };
 
@@ -109,12 +110,12 @@ const Company = () => {
         if (result.status === 201) {
           updateList();
           setSelectedRowKeys([]);
-        } else if (result.status === 401) {
-          navigate("/login");
         }
       })
       .catch((error) => {
-        console.log(error);
+        if (error.status === 401) {
+          navigate("/login");
+        }
       });
   };
 
