@@ -17,6 +17,7 @@ import CompanyEdit from "../modal/drawer";
 import { useNavigate } from "react-router-dom";
 import LicenseHistoryModal from "../modal/license-history";
 import { AxiosDelete, AxiosGet, AxiosPost } from "../api";
+import axios from "axios";
 
 const { Content } = Layout;
 
@@ -33,6 +34,8 @@ const Company = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false); // 로딩 플래그
 
+  const [permission_flag, setPermissionFlag] = useState("D");
+
   useEffect(() => {
     // 페이지를 로드할 때 실행
     fetchCompanyList();
@@ -40,7 +43,6 @@ const Company = () => {
 
   const fetchCompanyList = async () => {
     setLoading(true);
-
     try {
       const result = await AxiosGet("/company/list");
 
@@ -82,7 +84,6 @@ const Company = () => {
 
   const copyUser = async () => {
     setLoading(true);
-
     try {
       const result = await AxiosPost(
         `/company/copy-user/${selectedCompany?.id}`
@@ -99,6 +100,28 @@ const Company = () => {
     } finally {
       setLoading(false); // fetchCompanyList가 완료된 후 로딩 해제
     }
+
+    axios
+      .post(
+        `${process.env.REACT_APP_SERVER_URL}/company/copy-user/${selectedCompany?.id}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
+          },
+        }
+      )
+      .then((result) => {
+        if (result.status === 201) {
+          fetchCompanyList();
+          setSelectedRowKeys([]);
+        }
+      })
+      .catch((error) => {
+        if (error.status === 401) {
+          navigate("/login");
+        }
+      });
   };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -209,13 +232,14 @@ const Company = () => {
   });
 
   const getColumnFilterProps = (dataIndex) => ({
-    filteredValue: filteredInfo[dataIndex] || null,
-    onFilter: (value, record) => {
-      return record[dataIndex] === value;
-      // console.log(value, record[dataIndex]);
-    },
+    filteredValue: filteredInfo[dataIndex] || [],
+    onFilter: (value, record) => record[dataIndex] === value,
     filterSearch: true,
     ellipsis: true,
+    filters: list // filter options 설정
+      .map((item) => item[dataIndex])
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .map((value) => ({ text: value, value })),
   });
 
   // table column
@@ -277,6 +301,21 @@ const Company = () => {
       dataIndex: "phone",
       key: "phone",
     },
+    ...(permission_flag === "D"
+      ? [
+          {
+            title: "Permission",
+            dataIndex: "permission_flag",
+            key: "permission_flag",
+
+            sorter: (a, b) => {
+              return a.permission_flag.localeCompare(b.permission_flag);
+            },
+
+            ...getColumnFilterProps("permission_flag"),
+          },
+        ]
+      : []),
     {
       title: "License",
       dataIndex: "license_cnt",

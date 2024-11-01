@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Col,
@@ -7,17 +7,22 @@ import {
   Input,
   Popconfirm,
   Row,
+  Select,
   Space,
   Switch,
   Typography,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import { AxiosPut } from "../api";
+import ButtonGroup from "antd/es/button/button-group";
+
 const CompanyEdit = (props) => {
   const navigate = useNavigate();
   const { disabled, data, onComplete, setLoading } = props;
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
+
+  const [permission_flag, setPermissionFlag] = useState("D");
   const showDrawer = () => {
     setOpen(true);
 
@@ -26,6 +31,10 @@ const CompanyEdit = (props) => {
   };
   const onClose = () => {
     setOpen(false);
+  };
+
+  const onValuesChange = (changedValues) => {
+    console.log("Changed values: ", changedValues);
   };
 
   const onFinish = async (values) => {
@@ -88,6 +97,7 @@ const CompanyEdit = (props) => {
           initialValues={data}
           form={form}
           onFinish={onFinish}
+          onValuesChange={onValuesChange}
         >
           <Row gutter={16}>
             <Col span={24}>
@@ -198,26 +208,23 @@ const CompanyEdit = (props) => {
               </Form.Item>
             </Col>
           </Row>
-          <Row gutter={16}>
-            <Col span={24}>
-              <Form.Item
-                name="permission_flag"
-                label="Supervisor"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter country",
-                  },
-                ]}
-              >
-                <Switch
-                  checkedChildren="Admin"
-                  unCheckedChildren="Dealer"
-                  defaultChecked={data?.permission_flag === "Y" ? true : false}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
+          {/* 슈퍼바이저 컨트롤러 */}
+          {/* {permission_flag === "D" && (
+            <Row gutter={16}>
+              <Col span={24}>
+                <Form.Item name="permission_flag" label="Supervisor">
+                  <Select
+                    placeholder="Select permission type"
+                    style={{ width: "200px" }}
+                  >
+                    <Select.Option value="N">Delear</Select.Option>
+                    <Select.Option value="Y">CS</Select.Option>
+                    <Select.Option value="D">Developer</Select.Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+          )} */}
         </Form>
       </Drawer>
     </>
