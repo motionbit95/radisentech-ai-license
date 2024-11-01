@@ -34,13 +34,9 @@ const Company = (props) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false); // 로딩 플래그
 
-  // const [permission_flag, setPermissionFlag] = useState("D");
-
   useEffect(() => {
     // 페이지를 로드할 때 실행
     updateList();
-
-    console.log("permission_flag", props.currentUser.permission_flag);
   }, []);
 
   const updateList = () => {
@@ -415,7 +411,14 @@ const Company = (props) => {
                       okText="Yes"
                       cancelText="No"
                     >
-                      <Button disabled={!hasSelected}>Delete</Button>
+                      <Button
+                        disabled={
+                          !hasSelected ||
+                          selectedCompany?.permission_flag === "D"
+                        }
+                      >
+                        Delete
+                      </Button>
                     </Popconfirm>
                   </ButtonGroup>
                 </Row>

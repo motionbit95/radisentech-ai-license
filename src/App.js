@@ -121,7 +121,7 @@ function App({ page }) {
                   // 저장된 토큰을 삭제합니다.
                   localStorage.removeItem("token");
                   setIsLoggedIn(false);
-                  navigate("/");
+                  navigate("/login");
                 }}
               >
                 Logout
