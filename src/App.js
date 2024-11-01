@@ -162,7 +162,7 @@ function App({ page }) {
                 )}
               </>
             )}
-            {page === "company" && <Company />}
+            {page === "company" && <Company currentUser={currentUser} />}
           </>
         )}
         <Footer
