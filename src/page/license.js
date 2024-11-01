@@ -33,6 +33,8 @@ const License = () => {
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
   const [selectedFilters, setSelectedFilters] = useState([]);
+
+  const [selectedLicense, setSelectedLicense] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -52,15 +54,19 @@ const License = () => {
       })
       .then((result) => {
         if (result.status === 200) {
-          setList(result.data.data);
-          console.log(result.data.data);
+          setList(
+            result.data.data.map((item) => ({
+              ...item,
+              key: item.pk, // data의 key 값은 pk
+            }))
+          );
 
           const active = new Date(result.data.data[0].UTCActivateStartDate);
           const expire = new Date(result.data.data[0].UTCTerminateDate);
 
-          // result.data.data.map((item) => {
-          //   console.log(item);
-          // });
+          result.data.data.map((item) => {
+            console.log(item);
+          });
           setLoading(false);
         } else if (result.status === 401) {
           navigate("/login");
@@ -305,6 +311,8 @@ const License = () => {
   const onSelectChange = (newSelectedRowKeys) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
+    console.log(list.find((c) => c.key === newSelectedRowKeys[0]));
+    setSelectedLicense(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 
   const rowSelection = {
@@ -344,7 +352,12 @@ const License = () => {
                 type="primary"
                 disabled={!hasSelected}
                 title="Update License"
-                data={list.find((c) => c.key === selectedRowKeys[0])}
+                data={selectedLicense}
+                onComplete={(data) => {
+                  updateLicenseList();
+                  setSelectedLicense(data);
+                  setSelectedRowKeys([]);
+                }}
               />
               {/* Lisence 추가 테스트용 */}
               <ADDLicense />
