@@ -15,10 +15,15 @@ import { Footer, Header } from "antd/es/layout/layout";
 import { useLocation, useNavigate } from "react-router-dom";
 import Company from "./page/company";
 import LicenseDealer from "./page/licenseDealer";
+import axios from "axios";
 
 function App({ page }) {
   const navigate = useNavigate();
   const location = useLocation();
+
+  // 관리자(개발자)로 로그인 했을 경우 permission_flag(D)
+  // 관리자(CS)의 경우(Y)
+  // Dealer의 경우(N)
 
   const items = [
     // Admin 계정 일 경우 License, Company, Statistics
