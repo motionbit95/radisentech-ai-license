@@ -162,7 +162,14 @@ function App({ page }) {
                 )}
               </>
             )}
-            {page === "company" && <Company currentUser={currentUser} />}
+
+            {page === "company" && (
+              <>
+                {(permission_flag === "Y" || permission_flag === "D") && (
+                  <Company currentUser={currentUser} />
+                )}
+              </>
+            )}
           </>
         )}
         <Footer
