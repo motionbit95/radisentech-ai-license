@@ -158,7 +158,7 @@ function App({ page }) {
               <>
                 {permission_flag === "N" && <LicenseDealer />}
                 {(permission_flag === "Y" || permission_flag === "D") && (
-                  <License permission_flag />
+                  <License currentUser={currentUser} />
                 )}
               </>
             )}

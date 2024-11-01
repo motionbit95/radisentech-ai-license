@@ -424,6 +424,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
     address,
     phone,
     unique_code,
+    permission_flag,
   } = req.body;
 
   let connection;
@@ -464,7 +465,8 @@ router.put("/update/:id", verifyToken, async (req, res) => {
           user_name = COALESCE(?, user_name), 
           address = COALESCE(?, address), 
           phone = COALESCE(?, phone), 
-          unique_code = COALESCE(?, unique_code) 
+          unique_code = COALESCE(?, unique_code),
+          permission_flag = COALESCE(?, permission_flag) 
         WHERE id = ?
       `;
 
@@ -476,6 +478,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
       address,
       phone,
       unique_code,
+      permission_flag,
       id,
     ]);
 
