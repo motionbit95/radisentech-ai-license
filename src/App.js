@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from "react";
 import License from "./page/license";
-import { Button, Col, Layout, Menu, Result, Space, Spin } from "antd";
+import {
+  Button,
+  Col,
+  Layout,
+  Menu,
+  Result,
+  Space,
+  Spin,
+  Typography,
+} from "antd";
 import { Footer, Header } from "antd/es/layout/layout";
 import { useLocation, useNavigate } from "react-router-dom";
 import Company from "./page/company";
@@ -100,16 +109,21 @@ function App({ page }) {
           </Col>
           <Col span={12} direction style={{ textAlign: "right" }}>
             {isLoggedIn ? (
-              <Button
-                onClick={() => {
-                  // 저장된 토큰을 삭제합니다.
-                  localStorage.removeItem("token");
-                  setIsLoggedIn(false);
-                  navigate("/login");
-                }}
-              >
-                Logout
-              </Button>
+              <Space>
+                <Typography.Text style={{ color: "#fff" }}>
+                  Hi, {currentUser?.company_name}
+                </Typography.Text>
+                <Button
+                  onClick={() => {
+                    // 저장된 토큰을 삭제합니다.
+                    localStorage.removeItem("token");
+                    setIsLoggedIn(false);
+                    navigate("/login");
+                  }}
+                >
+                  Logout
+                </Button>
+              </Space>
             ) : (
               <Button
                 type="primary"

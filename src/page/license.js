@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import ADDLicense from "../modal/addLicense-test";
 import { AxiosGet, AxiosPut } from "../api";
+import ButtonGroup from "antd/es/button/button-group";
 
 const { Header, Content, Footer } = Layout;
 
@@ -442,30 +443,33 @@ const AdvancedSearchForm = (props) => {
   const getFields = () => {
     const children = [];
     children.push(
-      <Col span={8} key={"company"}>
+      <Col span={6} key={"company"}>
         <Form.Item name={`company`} label={`Company`}>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>
     );
     children.push(
-      <Col span={8} key={"country"}>
+      <Col span={6} key={"country"}>
         <Form.Item name={`country`} label={`Country`}>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>
     );
     children.push(
-      <Col span={8} key={"hospital"}>
+      <Col span={6} key={"hospital"}>
         <Form.Item name={`hospital`} label={`Hospital`}>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>
     );
     children.push(
-      <Col span={8} key={"expire_date"}>
+      <Col span={6} key={"expire_date"}>
         <Form.Item name={`expire_date`} label={`Expire Date`}>
-          <DatePicker.RangePicker placeholder={["Start Date", "End Date"]} />
+          <DatePicker.RangePicker
+            className="w-full"
+            placeholder={["Start Date", "End Date"]}
+          />
         </Form.Item>
       </Col>
     );
