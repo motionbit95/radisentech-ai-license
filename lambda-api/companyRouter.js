@@ -830,6 +830,7 @@ router.post("/request-reset-code", async (req, res) => {
     // 데이터베이스 연결
     connection = await mysql.createConnection(dbConfig);
 
+    console.log("user_id:", user_id, "email:", email);
     // 사용자 조회
     const [rows] = await connection.execute(
       "SELECT * FROM company WHERE user_id = ? AND email = ?",

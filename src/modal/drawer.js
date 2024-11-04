@@ -22,7 +22,6 @@ const CompanyEdit = (props) => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
 
-  const [permission_flag, setPermissionFlag] = useState("D");
   const showDrawer = () => {
     setOpen(true);
 
@@ -209,7 +208,7 @@ const CompanyEdit = (props) => {
             </Col>
           </Row>
           {/* 슈퍼바이저 컨트롤러 */}
-          {/* {permission_flag === "D" && (
+          {/* {props.permission_flag === "D" && (
             <Row gutter={16}>
               <Col span={24}>
                 <Form.Item name="permission_flag" label="Supervisor">

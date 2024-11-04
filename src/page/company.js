@@ -21,7 +21,7 @@ import axios from "axios";
 
 const { Content } = Layout;
 
-const Company = () => {
+const Company = (props) => {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
@@ -33,8 +33,6 @@ const Company = () => {
   const [list, setList] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false); // 로딩 플래그
-
-  const [permission_flag, setPermissionFlag] = useState("D");
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
@@ -301,7 +299,7 @@ const Company = () => {
       dataIndex: "phone",
       key: "phone",
     },
-    ...(permission_flag === "D"
+    ...(props.currentUser.permission_flag === "D"
       ? [
           {
             title: "Permission",
@@ -400,6 +398,7 @@ const Company = () => {
                     <CompanyEdit
                       disabled={!hasSelected}
                       data={selectedCompany}
+                      permission_flag={props.currentUser.permission_flag}
                       onComplete={(data) => {
                         fetchCompanyList();
                         setSelectedCompany(data);
@@ -415,7 +414,14 @@ const Company = () => {
                       okText="Yes"
                       cancelText="No"
                     >
-                      <Button disabled={!hasSelected}>Delete</Button>
+                      <Button
+                        disabled={
+                          !hasSelected ||
+                          selectedCompany?.permission_flag === "D"
+                        }
+                      >
+                        Delete
+                      </Button>
                     </Popconfirm>
                   </ButtonGroup>
                 </Row>

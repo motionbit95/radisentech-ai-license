@@ -111,7 +111,7 @@ function App({ page }) {
                   // 저장된 토큰을 삭제합니다.
                   localStorage.removeItem("token");
                   setIsLoggedIn(false);
-                  navigate("/");
+                  navigate("/login");
                 }}
               >
                 Logout
@@ -152,7 +152,14 @@ function App({ page }) {
                 )}
               </>
             )}
-            {page === "company" && <Company />}
+
+            {page === "company" && (
+              <>
+                {(permission_flag === "Y" || permission_flag === "D") && (
+                  <Company currentUser={currentUser} />
+                )}
+              </>
+            )}
           </>
         )}
         <Footer
