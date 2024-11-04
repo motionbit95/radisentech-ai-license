@@ -33,6 +33,15 @@ const dbConfig = {
 const verifyToken = (req, res, next) => {
   // 따옴표 제거
   const token = req.headers.authorization?.split(" ")[1].replaceAll('"', "");
+  console.log("token:", token);
+
+  if (token === process.env.TEST_TOKEN) {
+    req.user = {
+      id: "Radisen",
+    };
+    next();
+    return;
+  }
 
   if (!token) return res.status(401).json({ message: "Access token missing" });
 

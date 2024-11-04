@@ -17,7 +17,7 @@ const swaggerOptions = {
 ### 테스트용 JWT 토큰
 아래의 JWT 토큰을 사용하여 테스트할 수 있습니다:
 
-- **토큰**: \`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiUmFkaXNlbiIsImlhdCI6MTczMDY4NzIzNSwiZXhwIjoyMDQ2MjYzMjM1fQ.XDnVAE3wV_5RsUhr6QjpvJzGI0nCCxNG4gZRYhj3xp4\`
+- **토큰**: \`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ0ZXN0VXNlcl8xMjM0NTYiLCJpYXQiOjE2MDQ3NTI0NzQsImV4cCI6MzMwMjM3MTYwMH0.abc123def456ghi789jkl0mnopqrstuvwxy\`
 
 - **유효기간**: 10년
 - **사용자 ID**: \`Radisen\` (고유한 테스트용 ID)
