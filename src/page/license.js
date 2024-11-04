@@ -16,10 +16,10 @@ import Highlighter from "react-highlight-words";
 import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import UpdateLicense from "../modal/expire";
 import UpdateHistoryModal from "../modal/update-history";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import ADDLicense from "../modal/addLicense-test";
+import { AxiosGet } from "../api";
 
 const { Header, Content, Footer } = Layout;
 
@@ -44,28 +44,10 @@ const License = () => {
 
   const updateLicenseList = () => {
     setLoading(true);
-    axios
-      .get(`${process.env.REACT_APP_SERVER_URL}/license/list`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "application/json",
-        },
-      })
+    AxiosGet("/license/list")
       .then((result) => {
         if (result.status === 200) {
-          setList(
-            result.data.data.map((item) => ({
-              ...item,
-              key: item.pk, // data의 key 값은 pk
-            }))
-          );
-
-          const active = new Date(result.data.data[0].UTCActivateStartDate);
-          const expire = new Date(result.data.data[0].UTCTerminateDate);
-
-          result.data.data.map((item) => {
-            console.log(item);
-          });
+          setList(result.data.data);
           setLoading(false);
         }
       })

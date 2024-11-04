@@ -1,23 +1,18 @@
 import React, { useState } from "react";
 import {
-  AutoComplete,
   Button,
-  Cascader,
   Checkbox,
   Col,
   Form,
   Input,
-  InputNumber,
   Result,
   Row,
   Select,
-  Space,
   message,
 } from "antd";
 import { SmileOutlined } from "@ant-design/icons";
-import { countryCodes } from "../data";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { AxiosGet, AxiosPost } from "../api";
 const { Option } = Select;
 
 const formItemLayout = {
@@ -64,19 +59,15 @@ const SignUp = () => {
       return;
     }
 
-    axios
-      .post(`${process.env.REACT_APP_SERVER_URL}/company/add`, values)
-      .then((result) => {
-        // 회원가입 성공
-        console.log(result.data, result.status);
-
-        if (result.data.status === "success") {
+    AxiosPost("/company/add", values)
+      .then((response) => {
+        if (response.status === 201) {
           setIsRegistered(true);
-        } else if (result.data.status === "fail") {
-          message.error("Registration failed. Please try again.");
         }
       })
-      .catch((error) => {});
+      .catch((error) => {
+        message.error(error.response.data.message);
+      });
   };
 
   // ID 중복 체크
@@ -93,23 +84,21 @@ const SignUp = () => {
 
     const userId = form.getFieldValue("user_id");
 
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_SERVER_URL}/company/check-user-id/${userId}`
-      );
-
-      if (response.data.exists) {
-        message.error(response.data.message);
+    AxiosGet(`/company/check-user-id/${userId}`)
+      .then((response) => {
+        if (response.data.exists) {
+          message.error(response.data.message);
+          setIsCheckedId(false);
+        } else {
+          message.success(response.data.message);
+          setIsCheckedId(true);
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking ID:", error);
+        message.error("Failed to check ID. Please try again.");
         setIsCheckedId(false);
-      } else {
-        message.success(response.data.message);
-        setIsCheckedId(true);
-      }
-    } catch (error) {
-      console.error("Error checking ID:", error);
-      message.error("Failed to check ID. Please try again.");
-      setIsCheckedId(false);
-    }
+      });
   };
 
   // const prefixSelector = (

@@ -1,20 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import {
-  Button,
-  Checkbox,
-  Form,
-  Input,
-  Flex,
-  Space,
-  Row,
-  Col,
-  Alert,
-  message,
-} from "antd";
+import { Button, Form, Input, Flex, Row, Col, message } from "antd";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { useForm } from "antd/es/form/Form";
+import { AxiosPost } from "../api";
 const LoginForm = () => {
   const [form] = useForm();
   const navigate = useNavigate();
@@ -30,8 +19,7 @@ const LoginForm = () => {
       // })
     );
 
-    axios
-      .post(`${process.env.REACT_APP_SERVER_URL}/company/login`, values)
+    AxiosPost("/company/login", values)
       .then((result) => {
         // 로그인 성공
         console.log(result);

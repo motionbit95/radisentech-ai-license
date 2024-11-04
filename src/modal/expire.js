@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  DatePicker,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  message,
-} from "antd";
+import { Button, DatePicker, Form, Input, Modal, message } from "antd";
 import dayjs from "dayjs";
-import axios from "axios";
+import { AxiosPut } from "../api";
 const UpdateLicense = (props) => {
   const { title, type, disabled, data, onComplete } = props;
   const [modalOpen, setModalOpen] = useState(false);
@@ -42,30 +34,25 @@ const UpdateLicense = (props) => {
       const { expire_date } = values; // 폼에서 가져온 expire_date
       const pk = data.pk; // data에서 pk 가져오기
 
-      // PUT 요청
-      const response = await axios.put(
-        `${process.env.REACT_APP_SERVER_URL}/license/update-subscription/${pk}`,
-        {
-          ExpireDate: expire_date.format("YYYY-MM-DD HH:mm:ss"), // 원하는 형식으로 날짜를 전송
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
-          },
-        }
-      );
+      AxiosPut(`/license/update-subscription/${pk}`, {
+        ExpireDate: expire_date.format("YYYY-MM-DD HH:mm:ss"), // 원하는 형식으로 날짜를 전송
+      })
+        .then((response) => {
+          // 성공 메시지 표시
+          message.success(response.data.message);
 
-      // 성공 메시지 표시
-      message.success(response.data.message);
+          // 완료 콜백 호출 (필요 시)
+          if (onComplete) {
+            onComplete();
+          }
 
-      // 완료 콜백 호출 (필요 시)
-      if (onComplete) {
-        onComplete();
-      }
-
-      // 모달 닫기
-      setModalOpen(false);
-      form.resetFields();
+          // 모달 닫기
+          setModalOpen(false);
+          form.resetFields();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     } catch (error) {
       console.error("Update failed:", error);
       message.error("Update failed. Please try again."); // 오류 메시지 표시

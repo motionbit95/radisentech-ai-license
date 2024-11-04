@@ -336,7 +336,7 @@ router.post("/add", async (req, res) => {
     ]);
 
     // 성공 응답
-    res.status(200).json({
+    res.status(201).json({
       status: "success",
       message: "User added successfully",
       id: result.insertId,
@@ -903,6 +903,8 @@ router.post("/request-reset-code", async (req, res) => {
  * */
 router.post("/verify-code", async (req, res) => {
   const { user_id, authCode } = req.body;
+
+  console.log("user_id:", user_id, "authCode:", authCode);
 
   // 필수 필드 확인
   if (!user_id || !authCode) {

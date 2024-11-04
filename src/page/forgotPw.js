@@ -2,8 +2,8 @@ import { Button, Col, Form, Input, Result, Space, Spin, message } from "antd";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MailOutlined, UserOutlined, UnlockOutlined } from "@ant-design/icons";
-import axios from "axios";
 import { SmileOutlined } from "@ant-design/icons";
+import { AxiosPost } from "../api";
 
 const ForgotPw = () => {
   const navigate = useNavigate();
@@ -47,80 +47,70 @@ const ForgotPw = () => {
     if (!openCodeInput) {
       // 1. 유저ID, 이메일의 유무 확인 이후 이메일 발송
       setLoading(true);
-      try {
-        const response = await axios.post(
-          `${process.env.REACT_APP_SERVER_URL}/company/request-reset-code`,
-          {
-            user_id: values.user_id,
-            email: values.email,
+      AxiosPost("/company/request-reset-code", {
+        user_id: values.user_id,
+        email: values.email,
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            message.success("Code sent to your email.");
+            setSavedUserId(values.user_id);
+            setOpenCodeInput(true);
+            setLoading(false);
           }
-        );
-
-        if (response.status === 200) {
-          message.success("Code sent to your email.");
-          setOpenCodeInput(true);
+        })
+        .catch((error) => {
+          message.error("Failed to send code. Please try again.");
           setLoading(false);
-        }
-      } catch (error) {
-        console.error("Error sending email: ", error);
-        message.error("Failed to send code. Please try again.");
-        setLoading(false);
-        form.resetFields();
-      }
+          form.resetFields();
+          console.error("Error sending email: ", error);
+        });
     } else if (!resetpwForm) {
       // 2. 코드가 일치하는지 확인
       setLoading(true);
-      try {
-        const response = await axios.post(
-          `${process.env.REACT_APP_SERVER_URL}/company/verify-code`,
-          {
-            user_id: values.user_id,
-            authCode: values.code,
+
+      console.log("Received values of form: ", values);
+
+      AxiosPost("/company/verify-code", {
+        user_id: savedUserId,
+        authCode: values.code,
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            const token = response.data.token;
+            localStorage.setItem("token", token); // JWT 토큰 저장
+            setSavedUserId(values.user_id);
+
+            message.success("Code is correct. Please set your new password.");
+            setLoading(false);
+            setResetpwForm(true);
           }
-        );
-
-        if (response.status === 200) {
-          const token = response.data.token;
-          localStorage.setItem("authToken", token); // JWT 토큰 저장
-          setSavedUserId(values.user_id);
-
-          message.success("Code is correct. Please set your new password.");
+        })
+        .catch((error) => {
+          message.error("Code is incorrect. Please try again.");
           setLoading(false);
-          setResetpwForm(true);
-        }
-      } catch (error) {
-        message.error("Code is incorrect. Please try again.");
-        setLoading(false);
-      }
+          form.resetFields();
+          console.error("Error verifying code: ", error);
+        });
     } else {
       // 3. 새로운 비밀번호 제출
       setLoading(true);
-      try {
-        const token = localStorage.getItem("authToken");
-        const response = await axios.post(
-          `${process.env.REACT_APP_SERVER_URL}/company/reset-password`,
-          {
-            user_id: savedUserId,
-            new_password: values.new,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, // JWT 토큰 추가
-            },
-          }
-        );
 
-        if (response.status === 200) {
-          message.success("Password updated successfully.");
-          setIsResetPW(true);
-          setLoading(false);
-        }
-      } catch (error) {
-        message.error("Failed to reset password. Please try again.");
-        console.error("Error resetting password:", error);
-      } finally {
-        setLoading(false);
-      }
+      AxiosPost("/company/reset-password", {
+        user_id: savedUserId,
+        new_password: values.new,
+      })
+        .then((response) => {
+          if (response.status === 200) {
+            message.success("Password updated successfully.");
+            setIsResetPW(true);
+            setLoading(false);
+          }
+        })
+        .catch((error) => {
+          message.error("Failed to reset password. Please try again.");
+          console.error("Error resetting password:", error);
+        });
     }
   };
 

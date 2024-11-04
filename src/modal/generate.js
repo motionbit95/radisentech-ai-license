@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form, Input, InputNumber, Modal } from "antd";
-import axios from "axios";
+import { AxiosPut } from "../api";
 const GenerateModal = (props) => {
   const { title, type, disabled, data, onComplete, setLoading } = props;
   const [modalOpen, setModalOpen] = useState(false);
@@ -19,26 +19,18 @@ const GenerateModal = (props) => {
 
   const onFinish = (values) => {
     setLoading(true);
-    axios
-      .put(
-        `${process.env.REACT_APP_SERVER_URL}/company/update-license/${data?.user_id}`,
-        values,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
-          },
-        }
-      )
-      .then((result) => {
+    AxiosPut(`/company/update-license/${data?.user_id}`, values)
+      .then((response) => {
         // 업데이트에 성공하면 아래 구문 실행
-        console.log(result);
-
+        console.log(response);
+        setLoading(false);
         form.resetFields();
         setModalOpen(false);
         onComplete(values);
       })
       .catch((error) => {
         console.log(error);
+        setLoading(false);
       });
   };
 

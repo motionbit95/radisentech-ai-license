@@ -4,8 +4,8 @@ import { Button, Col, Layout, Menu, Result, Space, Spin } from "antd";
 import { Footer, Header } from "antd/es/layout/layout";
 import { useLocation, useNavigate } from "react-router-dom";
 import Company from "./page/company";
-import axios from "axios";
 import LicenseDealer from "./page/licenseDealer";
+import { AxiosGet } from "./api";
 
 function App({ page }) {
   const navigate = useNavigate();
@@ -23,12 +23,7 @@ function App({ page }) {
   useEffect(() => {
     const getUser = async () => {
       setLoading(true);
-      axios
-        .get(`${process.env.REACT_APP_SERVER_URL}/company/user-info`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // Authorization 헤더 추가
-          },
-        })
+      AxiosGet("/company/user-info")
         .then((response) => {
           if (response.status === 200) {
             // console.log("CURRENT_USER", response.data);

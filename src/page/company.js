@@ -17,7 +17,6 @@ import CompanyEdit from "../modal/drawer";
 import { useNavigate } from "react-router-dom";
 import LicenseHistoryModal from "../modal/license-history";
 import { AxiosDelete, AxiosGet, AxiosPost } from "../api";
-import axios from "axios";
 
 const { Content } = Layout;
 
@@ -99,16 +98,15 @@ const Company = (props) => {
       setLoading(false); // fetchCompanyList가 완료된 후 로딩 해제
     }
 
-    axios
-      .post(
-        `${process.env.REACT_APP_SERVER_URL}/company/copy-user/${selectedCompany?.id}`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
-          },
-        }
-      )
+    AxiosPost(
+      `/company/copy-user/${selectedCompany?.id}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
+        },
+      }
+    )
       .then((result) => {
         if (result.status === 201) {
           fetchCompanyList();
