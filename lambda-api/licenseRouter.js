@@ -246,7 +246,8 @@ router.get("/list", verifyToken, async (req, res) => {
  *       401:
  *         description: Unauthorized
  * */
-router.get("/list/:pk", verifyToken, async (req, res) => {
+router.get("/list/:DealerCompany", verifyToken, async (req, res) => {
+  console.log(req.params.DealerCompany);
   let connection;
   try {
     // 데이터베이스 연결
@@ -254,8 +255,8 @@ router.get("/list/:pk", verifyToken, async (req, res) => {
 
     // LicenseManagement 테이블의 모든 데이터를 가져오는 쿼리
     const [rows] = await connection.execute(
-      "SELECT * FROM LicenseManagement WHERE pk = ?",
-      [req.params.pk]
+      "SELECT * FROM LicenseManagement WHERE DealerCompany = ?",
+      [req.params.DealerCompany]
     );
 
     // 결과를 클라이언트에 JSON 형식으로 반환
