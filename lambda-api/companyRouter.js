@@ -572,12 +572,12 @@ router.get("/check-user-id/:user_id", async (req, res) => {
  *         required: true
  *         description: 인증 토큰 헤더(Bearer [Access Token])
  *       - in: path
- *         name: user_id
- *         description: user_id
+ *         name: id
+ *         description: company pk
  *         required: true
  *         schema:
- *           type: string
- *         example: user1
+ *           type: integer
+ *         example: 1
  *       - in: body
  *         name: body
  *         description: body
@@ -599,8 +599,8 @@ router.get("/check-user-id/:user_id", async (req, res) => {
  *       500:
  *         description: Database error
  * */
-router.put("/update-license/:user_id", verifyToken, async (req, res) => {
-  const userId = req.params.user_id; // URL에서 user_id를 가져옵니다.
+router.put("/update-license/:id", verifyToken, async (req, res) => {
+  const id = req.params.id; // URL에서 user_id를 가져옵니다.
   const { license_cnt } = req.body; // body에서 license_cnt 값을 가져옵니다.
 
   // 필수 필드가 누락된 경우 에러 응답
@@ -617,8 +617,8 @@ router.put("/update-license/:user_id", verifyToken, async (req, res) => {
 
     // user_id 존재 여부 확인
     const [existingUser] = await connection.execute(
-      "SELECT license_cnt FROM company WHERE user_id = ?",
-      [userId]
+      "SELECT license_cnt FROM company WHERE id = ?",
+      [id]
     );
     if (existingUser.length === 0) {
       return res.status(404).json({ error: "User not found" });
@@ -632,8 +632,30 @@ router.put("/update-license/:user_id", verifyToken, async (req, res) => {
       parseInt(currentLicenseCnt) + parseInt(license_cnt);
 
     // license_cnt 수정 쿼리 실행
-    const query = "UPDATE company SET license_cnt = ? WHERE user_id = ?";
-    await connection.execute(query, [updatedLicenseCnt, userId]);
+    const query = "UPDATE company SET license_cnt = ? WHERE id = ?";
+    await connection.execute(query, [updatedLicenseCnt, id]);
+
+    // 라이센스 변경 내역을 DB에 저장
+    // Insert data into generate_history
+    const insertQuery = `
+INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt)
+VALUES (?, ?, ?, ?, ?)`;
+
+    const values = [
+      new Date(), // create_time
+      "Generate License", // description
+      id, // company_pk (make sure this exists in the company table)
+      currentLicenseCnt, // prev_cnt
+      updatedLicenseCnt, // new_cnt
+    ];
+
+    connection.query(insertQuery, values, (err, results) => {
+      if (err) {
+        console.error("Error inserting data:", err);
+        return;
+      }
+      console.log("Data inserted successfully:", results.insertId);
+    });
 
     // 성공 응답
     res.status(200).json({
@@ -1075,6 +1097,66 @@ router.get("/user-info", verifyToken, async (req, res) => {
     console.error("Database connection error:", err);
     res.status(500).json({ error: "Database connection error" });
     return;
+  }
+});
+
+/**
+ * @swagger
+ * /company/generate-history/{pk}:
+ *   get:
+ *     tags: [Company]
+ *     summary: 생성 이력 조회
+ *     description: 생성 이력 조회
+ *     parameters:
+ *       - in: path
+ *         name: pk
+ *         description: company_pk
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: 1
+ *       - in: header
+ *         name: Authorization
+ *         description: Bearer [Access Token]
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: 생성 이력 조회
+ *       500:
+ *         description: Database error
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/generate-history/:pk", verifyToken, async (req, res) => {
+  const licensePk = req.params.pk;
+
+  console.log("user_id:", req.params.pk);
+
+  let connection;
+  try {
+    // Create a database connection
+    connection = await mysql.createConnection(dbConfig);
+
+    // Execute the query
+    const [rows] = await connection.query(
+      "SELECT * FROM generate_history WHERE company_pk = ?",
+      [licensePk]
+    );
+
+    if (rows.length > 0) {
+      res.status(200).json(rows); // Return the records
+    } else {
+      res.status(404).json({ error: "No records found" }); // No records found
+    }
+  } catch (err) {
+    console.error("Database connection error:", err);
+    res.status(500).json({ error: "Database connection error" });
+  } finally {
+    if (connection) {
+      await connection.end(); // Close the connection
+    }
   }
 });
 
