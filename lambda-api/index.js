@@ -31,7 +31,6 @@ const swaggerOptions = {
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Swagger UI 초기화 시 requestInterceptor 설정 추가
 app.use(
@@ -39,6 +38,8 @@ app.use(
   swaggerUi.serve,
   swaggerUi.setup(swaggerDocs, {
     swaggerOptions: {
+      docExpansion: "none", // 기본적으로 모든 API를 축소
+      filter: true,
       requestInterceptor: (req) => {
         if (
           req.headers.Authorization &&

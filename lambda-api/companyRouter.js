@@ -1078,10 +1078,4 @@ router.get("/user-info", verifyToken, async (req, res) => {
   }
 });
 
-//# sjpark - 11.01
-// 회사 정보 Edit 버그(ID 변경, Submit 후 갱신 X)
-// 권한 설정(Radisen / Dealer)
-// 라이센스를 generate 하면 history에 추가
-// 유저 id를 통해 유저 정보를 가져오는 함수
-
 module.exports = router;
