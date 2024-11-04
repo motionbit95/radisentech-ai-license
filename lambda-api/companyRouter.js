@@ -481,6 +481,18 @@ router.put("/update/:id", verifyToken, async (req, res) => {
         WHERE id = ?
       `;
 
+    console.log(
+      user_id,
+      email,
+      company_name,
+      user_name,
+      address,
+      phone,
+      unique_code,
+      permission_flag,
+      id
+    );
+
     await connection.execute(query, [
       user_id,
       email,

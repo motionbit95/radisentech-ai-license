@@ -40,7 +40,10 @@ const CompanyEdit = (props) => {
     console.log("Received values of form: ", values, data);
     setLoading(true);
 
-    await AxiosPut(`/company/update/${data?.id}`, values)
+    await AxiosPut(`/company/update/${data?.id}`, {
+      permission_flag: data?.permission_flag,
+      ...values,
+    })
       .then((result) => {
         if (result.status === 200) {
           setOpen(false);
