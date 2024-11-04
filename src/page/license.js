@@ -264,7 +264,7 @@ const License = (props) => {
       title: "Expire Date",
       dataIndex: "UTCTerminateDate",
       key: "UTCTerminateDate",
-      render: (text) => (text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : ""),
+      render: (text) => (text ? dayjs(text).format("MM-DD-YYYY") : ""),
       sorter: (a, b) => {
         return new Date(a.UTCTerminateDate) - new Date(b.UTCTerminateDate);
       },
