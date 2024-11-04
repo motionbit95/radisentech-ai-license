@@ -37,14 +37,14 @@ const License = (props) => {
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
-    console.log(props.currentUser.id);
+    // console.log(props.currentUser.id);
     updateDealerLicenseList();
   }, []);
 
   const updateDealerLicenseList = async () => {
     setLoading(true);
     try {
-      console.log(props.currentUser.company_name);
+      // console.log(props.currentUser.company_name);
       const result = await AxiosGet(
         `/license/list/${props.currentUser.company_name}`
       );
@@ -210,7 +210,7 @@ const License = (props) => {
       title: "Expire Date",
       dataIndex: "UTCTerminateDate",
       key: "UTCTerminateDate",
-      render: (text) => (text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : ""),
+      render: (text) => (text ? dayjs(text).format("MM-DD-YYYY") : ""),
       sorter: (a, b) => {
         return new Date(a.UTCTerminateDate) - new Date(b.UTCTerminateDate);
       },
