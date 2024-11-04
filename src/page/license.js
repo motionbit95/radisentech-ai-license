@@ -23,7 +23,7 @@ import { AxiosGet } from "../api";
 
 const { Header, Content, Footer } = Layout;
 
-const License = () => {
+const License = (props) => {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
@@ -37,9 +37,12 @@ const License = () => {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [deleted, setDeleted] = useState(""); // 삭제된 데이터 확인 플래그
+
   useEffect(() => {
     // 페이지를 로드할 때 실행
     updateLicenseList();
+    console.log("리스트 불러오기", list, deleted);
   }, []);
 
   const updateLicenseList = () => {
@@ -47,7 +50,12 @@ const License = () => {
     AxiosGet("/license/list")
       .then((result) => {
         if (result.status === 200) {
-          setList(result.data.data);
+          setList(
+            result.data.data.map((item) => ({
+              ...item,
+              key: item.pk, // data의 key 값은 pk
+            }))
+          );
           setLoading(false);
         }
       })
@@ -144,7 +152,10 @@ const License = () => {
       />
     ),
     onFilter: (value, record) =>
-      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+      (record[dataIndex] ? record[dataIndex].toString() : "")
+        .toLowerCase()
+        .includes(value.toLowerCase()),
+
     onFilterDropdownOpenChange: (visible) => {
       if (visible) {
         setTimeout(() => searchInput.current?.select(), 100);
@@ -257,10 +268,10 @@ const License = () => {
     },
     {
       title: "User Name",
-      dataIndex: "user_name",
-      key: "user_name",
+      dataIndex: "UserName",
+      key: "UserName",
 
-      ...getColumnSearchProps("user_name"),
+      ...getColumnSearchProps("UserName"),
     },
     {
       title: "S/N",
@@ -340,8 +351,18 @@ const License = () => {
                   setSelectedRowKeys([]);
                 }}
               />
-              {/* Lisence 추가 테스트용 */}
-              <ADDLicense onAddFinish={() => updateLicenseList()} />
+              <Space>
+                {/* delete 상태 변경 */}
+                <Button
+                  danger
+                  type="primary"
+                  disabled={!hasSelected || deleted}
+                >
+                  Delete
+                </Button>
+                {/* Lisence 추가 테스트용 */}
+                <ADDLicense onAddFinish={() => updateLicenseList()} />
+              </Space>
             </Row>
           )}
           pagination={{

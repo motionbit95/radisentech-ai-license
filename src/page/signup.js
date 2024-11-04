@@ -50,6 +50,7 @@ const SignUp = () => {
   const [form] = Form.useForm();
   const [isRegistered, setIsRegistered] = useState(false);
   const [ischeckedId, setIsCheckedId] = useState(false);
+  const [isSendEmail, setIsSendEmail] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const onFinish = (values) => {
     console.log("Received values of form: ", values);
@@ -277,8 +278,28 @@ const SignUp = () => {
               },
             ]}
           >
-            <Input />
+            <Row gutter={8}>
+              <Col span={16}>
+                <Input onChange={() => setIsSendEmail(false)} />
+              </Col>
+              <Col span={8}>
+                <Button
+                  className="w-full"
+                  // onClick={handleCheckDuplicateEmail}
+                  onClick={() => setIsSendEmail(true)}
+                  style={isSendEmail ? { borderColor: "#52c41a" } : {}}
+                >
+                  Send code
+                  {isSendEmail && <SmileOutlined style={{ marginLeft: 3 }} />}
+                </Button>
+              </Col>
+            </Row>
           </Form.Item>
+          {isSendEmail && (
+            <Form.Item name={"code"} label={"Code"}>
+              <Input />
+            </Form.Item>
+          )}
 
           <Form.Item
             name="company_name"

@@ -11,9 +11,11 @@ function App({ page }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [permission_flag, setPermissionFlag] = useState(""); // D: Developer, Y: Admin, N: Delear
 
   const [currentUser, setCurrentUser] = useState({});
+
   // 로그인한 유저 데이터 가져오기
   useEffect(() => {
     const getUser = async () => {
@@ -36,6 +38,10 @@ function App({ page }) {
 
     getUser();
   }, []);
+
+  const toggleDarkMode = () => {
+    setDarkMode((prev) => !prev);
+  };
 
   const items = [
     {
@@ -134,7 +140,9 @@ function App({ page }) {
           <>
             {page === "license" && (
               <>
-                {permission_flag === "N" && <LicenseDealer />}
+                {permission_flag === "N" && (
+                  <LicenseDealer currentUser={currentUser} />
+                )}
                 {(permission_flag === "Y" || permission_flag === "D") && (
                   <License currentUser={currentUser} />
                 )}

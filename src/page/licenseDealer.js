@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Button,
   Col,
@@ -19,7 +19,7 @@ import UpdateLicense from "../modal/expire";
 
 const { Header, Content, Footer } = Layout;
 
-const LicenseDealer = () => {
+const LicenseDealer = (props) => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
@@ -27,6 +27,10 @@ const LicenseDealer = () => {
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
   const [selectedFilters, setSelectedFilters] = useState([]);
+
+  useEffect(() => {
+    console.log("company", props?.currentUser.company_name);
+  }, []); // 유저의 회사명을 기준으로 데이터를 가져옵니다.
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
