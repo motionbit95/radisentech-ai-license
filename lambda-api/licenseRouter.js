@@ -163,6 +163,120 @@ router.get("/list", verifyToken, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /license/list/{pk}:
+ *   get:
+ *     tags: [License]
+ *     summary: License 조회
+ *     description: license table list를 조회
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: 인증 토큰 헤더(Bearer [Access Token])
+ *       - in: path
+ *         name: pk
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: license pk
+ *     responses:
+ *       200:
+ *         description: license table list를 조회
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               pk:
+ *                 type: integer
+ *                 description: license pk
+ *               DealerCompany:
+ *                 type: string
+ *                 description: DealerCompany
+ *               Company:
+ *                 type: string
+ *                 description: Company
+ *               Country:
+ *                 type: string
+ *                 description: Country
+ *               AIType:
+ *                 type: string
+ *                 description: AIType
+ *               Hospital:
+ *                 type: string
+ *                 description: Hospital
+ *               UserEmail:
+ *                 type: string
+ *                 description: UserEmail
+ *               HardWareInfo:
+ *                 type: string
+ *                 description: HardWareInfo
+ *               DetectorSerialNumber:
+ *                 type: string
+ *                 description: DetectorSerialNumber
+ *               LocalActivateStartDate:
+ *                 type: string
+ *                 description: LocalActivateStartDate
+ *               LocalTerminateDate:
+ *                 type: string
+ *                 description: LocalTerminateDate
+ *               UTCActivateStartDate:
+ *                 type: string
+ *                 description: UTCActivateStartDate
+ *               UTCTerminateDate:
+ *                 type: string
+ *                 description: UTCTerminateDate
+ *               ActivateCount:
+ *                 type: integer
+ *                 description: ActivateCount
+ *               UniqueCode:
+ *                 type: string
+ *                 description: UniqueCode
+ *               UpdatedAt:
+ *                 type: string
+ *                 description: UpdatedAt
+ *       500:
+ *         description: Database error
+ *       401:
+ *         description: Unauthorized
+ * */
+router.get("/list/:pk", verifyToken, async (req, res) => {
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // LicenseManagement 테이블의 모든 데이터를 가져오는 쿼리
+    const [rows] = await connection.execute(
+      "SELECT * FROM LicenseManagement WHERE pk = ?",
+      [req.params.pk]
+    );
+
+    // 결과를 클라이언트에 JSON 형식으로 반환
+    res.status(200).json({
+      status: "success",
+      message: "Data fetched successfully",
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Database error",
+      error: error.message,
+    });
+  } finally {
+    // 데이터베이스 연결 해제
+    if (connection) await connection.end();
+  }
+});
+
 router.post("/add", verifyToken, async (req, res) => {
   /*
   DealerCompany: 'Radisen',
