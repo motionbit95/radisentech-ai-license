@@ -418,7 +418,7 @@ const AdvancedSearchForm = (props) => {
     );
     children.push(
       <Col span={8} key={"hospital"}>
-        <Form.Item name={`hospital_name`} label={`Hospital`}>
+        <Form.Item name={`hospital`} label={`Hospital`}>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>

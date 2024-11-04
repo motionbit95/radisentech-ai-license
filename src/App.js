@@ -21,15 +21,10 @@ function App({ page }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(true);
-
-  const [permission_flag, setPermissionFlag] = useState("");
-
-  // 관리자(개발자)로 로그인 했을 경우 permission_flag(D)
-  // 관리자(CS)의 경우(Y)
-  // Dealer의 경우(N)
+  const [permission_flag, setPermissionFlag] = useState(""); // D: Developer, Y: Admin, N: Delear
 
   const [currentUser, setCurrentUser] = useState({});
-
+  // 로그인한 유저 데이터 가져오기
   useEffect(() => {
     const getUser = async () => {
       setLoading(true);
@@ -58,8 +53,6 @@ function App({ page }) {
   }, []);
 
   const items = [
-    // Admin 계정 일 경우 License, Company, Statistics
-    // Delear 일 경우 LicenseDealer, Statistics
     {
       key: "license",
       label: "License List",
@@ -165,8 +158,24 @@ function App({ page }) {
 
             {page === "company" && (
               <>
-                {(permission_flag === "Y" || permission_flag === "D") && (
+                {permission_flag === "Y" || permission_flag === "D" ? (
                   <Company currentUser={currentUser} />
+                ) : (
+                  <div>
+                    <Result
+                      status="403"
+                      title="403"
+                      subTitle="Sorry, you are not authorized to access this page."
+                      extra={
+                        <Button
+                          type="primary"
+                          onClick={() => navigate("/login")}
+                        >
+                          Login Account
+                        </Button>
+                      }
+                    />
+                  </div>
                 )}
               </>
             )}
