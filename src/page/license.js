@@ -19,7 +19,7 @@ import UpdateHistoryModal from "../modal/update-history";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import ADDLicense from "../modal/addLicense-test";
-import { AxiosGet } from "../api";
+import { AxiosGet, AxiosPut } from "../api";
 
 const { Header, Content, Footer } = Layout;
 
@@ -65,6 +65,33 @@ const License = (props) => {
           navigate("/login");
         }
       });
+  };
+
+  const deleteLicense = async () => {
+    if (selectedLicense) {
+      setLoading(true);
+      AxiosPut(`/license/withdrawal-subscription/${selectedLicense.key}`)
+        .then((result) => {
+          console.log(result);
+          if (result.status === 200) {
+            updateLicenseList();
+            setSelectedLicense(null);
+            setLoading(false);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          if (error.status === 401) {
+            navigate("/login");
+          }
+        });
+
+      // if (result.status === 200) {
+      //   updateLicenseList();
+      //   setSelectedLicense(null);
+      //   setDeleted(result.data.data);
+      // }
+    }
   };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -357,6 +384,10 @@ const License = (props) => {
                   danger
                   type="primary"
                   disabled={!hasSelected || deleted}
+                  onClick={() => {
+                    deleteLicense();
+                    setSelectedRowKeys([]);
+                  }}
                 >
                   Delete
                 </Button>

@@ -223,9 +223,9 @@ router.post("/add", verifyToken, async (req, res) => {
     // LicenseManagement 테이블에 데이터 추가하는 쿼리
     const insertQuery = `
       INSERT INTO LicenseManagement
-      (DealerCompany, Company, Country, AIType, Hospital, UserEmail, UserName, HardWareInfo, DetectorSerialNumber, LocalActivateStartDate, LocalTerminateDate, UTCActivateStartDate, UTCTerminateDate, UniqueCode)
+      (DealerCompany, Company, Country, AIType, Hospital, UserEmail, UserName, HardWareInfo, DetectorSerialNumber, LocalActivateStartDate, LocalTerminateDate, UTCActivateStartDate, UTCTerminateDate, UniqueCode, ActivateCount)
       VALUES
-      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
     `;
 
     const parameters = [
@@ -365,8 +365,8 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
 
     // license_history 테이블에 데이터 삽입
     const insertHistoryQuery = `
-      INSERT INTO license_history (license_pk, previous_expire_date, new_expire_date)
-      VALUES (?, ?, ?);
+      INSERT INTO license_history (license_pk, description, previous_expire_date, new_expire_date)
+      VALUES (?, 'ExpireDate updated', ?, ?);
     `;
     await connection.execute(insertHistoryQuery, [
       pk,
@@ -389,6 +389,46 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
     res.status(500).json({ error: "Database error" });
   } finally {
     // 데이터베이스 연결 종료
+    if (connection) {
+      await connection.end();
+      console.log("Connection closed");
+    }
+  }
+});
+
+// 청약 철회 함수 추가
+router.put("/withdrawal-subscription/:pk", verifyToken, async (req, res) => {
+  const { pk } = req.params;
+  console.log("license_pk:", pk);
+
+  let connection;
+
+  try {
+    connection = await mysql.createConnection(dbConfig);
+    // 업데이트 쿼리 작성
+    const updateQuery = `
+      UPDATE LicenseManagement 
+      SET 
+        ActivateCount = ActivateCount - 1,
+        Deleted = 1
+      WHERE pk = ?
+    `;
+
+    // license_history 테이블에 데이터 삽입
+    const insertHistoryQuery = `
+      INSERT INTO license_history (license_pk, description, deleted, update_date)
+      VALUES (?, "Subscription withdrawn", 1, NOW());
+    `;
+
+    // 업데이트 쿼리 실행
+    await connection.execute(updateQuery, [pk]);
+    await connection.execute(insertHistoryQuery, [pk]);
+
+    res.status(200).json({ message: "Subscription withdrawn successfully" });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Database error" });
+  } finally {
     if (connection) {
       await connection.end();
       console.log("Connection closed");
