@@ -19,7 +19,11 @@ const GenerateModal = (props) => {
 
   const onFinish = (values) => {
     setLoading(true);
-    AxiosPut(`/company/update-license/${data?.id}`, values)
+    AxiosPut(`/company/update-license/${data?.id}`, {
+      ...values,
+      description: "Generated",
+      canceled: 0,
+    })
       .then((response) => {
         // 업데이트에 성공하면 아래 구문 실행
         console.log(response);

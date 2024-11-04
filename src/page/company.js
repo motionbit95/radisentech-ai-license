@@ -349,7 +349,13 @@ const Company = (props) => {
       key: "license_cnt",
       fixed: "right",
       render: (text, record, index) => (
-        <LicenseHistoryModal data={record} title={text} />
+        <LicenseHistoryModal
+          data={record}
+          title={text}
+          onCancel={() => {
+            fetchCompanyList();
+          }}
+        />
       ),
     },
   ];

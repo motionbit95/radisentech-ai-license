@@ -601,7 +601,7 @@ router.get("/check-user-id/:user_id", async (req, res) => {
  * */
 router.put("/update-license/:id", verifyToken, async (req, res) => {
   const id = req.params.id; // URL에서 user_id를 가져옵니다.
-  const { license_cnt } = req.body; // body에서 license_cnt 값을 가져옵니다.
+  const { license_cnt, description, canceled } = req.body; // body에서 license_cnt 값을 가져옵니다.
 
   // 필수 필드가 누락된 경우 에러 응답
   if (license_cnt === undefined) {
@@ -638,15 +638,16 @@ router.put("/update-license/:id", verifyToken, async (req, res) => {
     // 라이센스 변경 내역을 DB에 저장
     // Insert data into generate_history
     const insertQuery = `
-INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt)
-VALUES (?, ?, ?, ?, ?)`;
+INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled)
+VALUES (?, ?, ?, ?, ?, ?)`;
 
     const values = [
       new Date(), // create_time
-      "Generate License", // description
+      description, // description
       id, // company_pk (make sure this exists in the company table)
       currentLicenseCnt, // prev_cnt
       updatedLicenseCnt, // new_cnt
+      canceled,
     ];
 
     connection.query(insertQuery, values, (err, results) => {
@@ -1157,6 +1158,33 @@ router.get("/generate-history/:pk", verifyToken, async (req, res) => {
     if (connection) {
       await connection.end(); // Close the connection
     }
+  }
+});
+
+router.put("/history-cancel/:id", verifyToken, async (req, res) => {
+  const id = req.params.id; // URL에서 history id를 가져옵니다.
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    // 이력 변경 쿼리
+    const updateQuery = `
+      UPDATE generate_history
+      SET canceled = 1
+      WHERE id = ?
+    `;
+
+    // 업데이트 쿼리 실행
+    await connection.execute(updateQuery, [id]);
+
+    res.status(200).json({ message: "License canceled successfully" });
+  } catch (error) {
+    console.error("Error updating license count:", error);
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    if (connection) await connection.end(); // 연결 종료
   }
 });
 

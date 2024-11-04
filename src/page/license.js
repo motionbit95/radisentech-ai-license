@@ -45,32 +45,36 @@ const License = (props) => {
     console.log("리스트 불러오기", list, deleted);
   }, []);
 
-  const updateLicenseList = () => {
+  const updateLicenseList = async () => {
     setLoading(true);
-    AxiosGet("/license/list")
-      .then((result) => {
-        if (result.status === 200) {
-          setList(
-            result.data.data.map((item) => ({
-              ...item,
-              key: item.pk, // data의 key 값은 pk
-            }))
-          );
-          setLoading(false);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-        if (error.status === 401) {
-          navigate("/login");
-        }
-      });
+    try {
+      const result = await AxiosGet("/license/list");
+      if (result.status === 200) {
+        setList(
+          result.data.data.map((item) => ({
+            ...item,
+            key: item.pk, // data의 key 값은 pk
+          }))
+        );
+        setLoading(false);
+      } else {
+        throw new Error("Unauthorized");
+      }
+    } catch (error) {
+      if (error.status === 401) {
+        navigate("/login");
+      } else {
+        console.error("Error:", error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const deleteLicense = async () => {
     if (selectedLicense) {
       setLoading(true);
-      AxiosPut(`/license/withdrawal-subscription/${selectedLicense.key}`)
+      AxiosPut(`/license/withdrawal-subscription/${selectedLicense.pk}`)
         .then((result) => {
           console.log(result);
           if (result.status === 200) {
@@ -378,22 +382,24 @@ const License = (props) => {
                   setSelectedRowKeys([]);
                 }}
               />
-              <Space>
-                {/* delete 상태 변경 */}
-                <Button
-                  danger
-                  type="primary"
-                  disabled={!hasSelected || deleted}
-                  onClick={() => {
-                    deleteLicense();
-                    setSelectedRowKeys([]);
-                  }}
-                >
-                  Delete
-                </Button>
-                {/* Lisence 추가 테스트용 */}
-                <ADDLicense onAddFinish={() => updateLicenseList()} />
-              </Space>
+              {props.currentUser.permission_flag === "D" && (
+                <Space>
+                  {/* delete 상태 변경 */}
+                  <Button
+                    danger
+                    type="primary"
+                    disabled={!hasSelected || deleted}
+                    onClick={() => {
+                      deleteLicense();
+                      setSelectedRowKeys([]);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                  {/* Lisence 추가 테스트용 */}
+                  <ADDLicense onAddFinish={() => updateLicenseList()} />
+                </Space>
+              )}
             </Row>
           )}
           pagination={{

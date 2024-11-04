@@ -149,7 +149,7 @@ function App({ page }) {
               </>
             )}
 
-            {page === "company" && (
+            {page === "company" && permission_flag && (
               <>
                 {permission_flag === "Y" || permission_flag === "D" ? (
                   <Company currentUser={currentUser} />
