@@ -9,6 +9,7 @@ import {
   Space,
   Table,
   Tag,
+  Badge,
 } from "antd";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
@@ -31,6 +32,7 @@ const Company = (props) => {
 
   const [selectedCompany, setSelectedCompany] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
+  const [historyList, setHistoryList] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false); // 로딩 플래그
 
@@ -235,10 +237,22 @@ const Company = (props) => {
     onFilter: (value, record) => record[dataIndex] === value,
     filterSearch: true,
     ellipsis: true,
-    filters: list // filter options 설정
+    // filters: list // filter options 설정
+    //   .map((item) => item[dataIndex])
+    //   .filter((value, index, self) => self.indexOf(value) === index)
+    //   .map((value) => ({ text: value, value })),
+    filters: list
       .map((item) => item[dataIndex])
       .filter((value, index, self) => self.indexOf(value) === index)
-      .map((value) => ({ text: value, value })),
+      .map((value) => ({
+        text:
+          value.toString() === "D"
+            ? "Developer"
+            : value === "Y"
+            ? "Admin"
+            : "Dealer",
+        value,
+      })),
   });
 
   // table column
@@ -269,6 +283,8 @@ const Company = (props) => {
       sorter: (a, b) => {
         return new Date(a.email) - new Date(b.email);
       },
+
+      ...getColumnSearchProps("email"),
     },
     {
       title: "Company",
@@ -285,6 +301,8 @@ const Company = (props) => {
       title: "Code",
       dataIndex: "unique_code",
       key: "unique_code",
+
+      ...getColumnSearchProps("unique_code"),
     },
     {
       title: "User Name",
@@ -294,11 +312,14 @@ const Company = (props) => {
       sorter: (a, b) => {
         return a.user_name.localeCompare(b.user_name);
       },
+
+      ...getColumnSearchProps("user_name"),
     },
     {
       title: "Phone",
       dataIndex: "phone",
       key: "phone",
+      ...getColumnSearchProps("phone"),
     },
     ...(props.currentUser.permission_flag === "D"
       ? [
@@ -306,6 +327,13 @@ const Company = (props) => {
             title: "Permission",
             dataIndex: "permission_flag",
             key: "permission_flag",
+            render: (text) => (
+              <Tag
+                color={text === "D" ? "red" : text === "Y" ? "blue" : "green"}
+              >
+                {text === "D" ? "Developer" : text === "Y" ? "Admin" : "Dealer"}
+              </Tag>
+            ),
 
             sorter: (a, b) => {
               return a.permission_flag.localeCompare(b.permission_flag);
@@ -321,7 +349,7 @@ const Company = (props) => {
       key: "license_cnt",
       fixed: "right",
       render: (text, record, index) => (
-        <LicenseHistoryModal history={[]} title={text} />
+        <LicenseHistoryModal data={record} title={text} />
       ),
     },
   ];
