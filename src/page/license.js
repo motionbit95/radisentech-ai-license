@@ -384,7 +384,9 @@ const License = (props) => {
                 }}
               />
               {props.currentUser.permission_flag === "D" && (
-                <Space>
+                <ButtonGroup>
+                  {/* Lisence 추가 테스트용 */}
+                  <ADDLicense onAddFinish={() => updateLicenseList()} />
                   {/* delete 상태 변경 */}
                   <Button
                     danger
@@ -397,9 +399,7 @@ const License = (props) => {
                   >
                     Delete
                   </Button>
-                  {/* Lisence 추가 테스트용 */}
-                  <ADDLicense onAddFinish={() => updateLicenseList()} />
-                </Space>
+                </ButtonGroup>
               )}
             </Row>
           )}

@@ -3,6 +3,7 @@ import {
   Button,
   Col,
   DatePicker,
+  Descriptions,
   Form,
   Input,
   Layout,
@@ -10,7 +11,6 @@ import {
   Space,
   Table,
   theme,
-  Tooltip,
 } from "antd";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
@@ -296,6 +296,10 @@ const License = (props) => {
       }}
     >
       <Space size={"large"} direction="vertical" className="w-full">
+        <CompanyInfo
+          currentUser={props.currentUser}
+          license_cnt={list.length}
+        />
         <AdvancedSearchForm onSearch={(filter) => setSearchFilters(filter)} />
         <Table
           rowSelection={rowSelection}
@@ -319,6 +323,40 @@ const License = (props) => {
         />
       </Space>
     </Content>
+  );
+};
+
+const CompanyInfo = (props) => {
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
+  const [form] = Form.useForm();
+  const [expand, setExpand] = useState(false);
+  const formStyle = {
+    background: colorBgContainer,
+    padding: 24,
+    borderRadius: borderRadiusLG,
+    maxWidth: "none",
+    borderRadius: borderRadiusLG,
+    padding: 24,
+  };
+
+  return (
+    <Descriptions
+      style={formStyle}
+      column={3}
+      labelStyle={{ fontWeight: "bold" }}
+    >
+      <Descriptions.Item label="Company Name">
+        {props.currentUser.company_name}
+      </Descriptions.Item>
+      <Descriptions.Item label="Unique Code">
+        {props.currentUser.unique_code}
+      </Descriptions.Item>
+      <Descriptions.Item label="License Count">
+        {props.license_cnt} / {props.currentUser.license_cnt}
+      </Descriptions.Item>
+    </Descriptions>
   );
 };
 

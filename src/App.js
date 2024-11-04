@@ -110,9 +110,6 @@ function App({ page }) {
           <Col span={12} direction style={{ textAlign: "right" }}>
             {isLoggedIn ? (
               <Space>
-                <Typography.Text style={{ color: "#fff" }}>
-                  Hi, {currentUser?.company_name}
-                </Typography.Text>
                 <Button
                   onClick={() => {
                     // 저장된 토큰을 삭제합니다.
