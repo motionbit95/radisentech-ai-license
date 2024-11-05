@@ -21,8 +21,7 @@ import CompanyEdit from "../modal/drawer";
 import { useNavigate } from "react-router-dom";
 import LicenseHistoryModal from "../modal/license-history";
 import { AxiosDelete, AxiosGet, AxiosPost } from "../api";
-import IniFileDownload from "../component/IniFileDownload";
-
+import IniFileDownload from "../component/button/download";
 const { Content } = Layout;
 
 const Company = (props) => {
@@ -104,27 +103,6 @@ const Company = (props) => {
     } finally {
       setLoading(false); // fetchCompanyList가 완료된 후 로딩 해제
     }
-
-    AxiosPost(
-      `/company/copy-user/${selectedCompany?.id}`,
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
-        },
-      }
-    )
-      .then((result) => {
-        if (result.status === 201) {
-          fetchCompanyList();
-          setSelectedRowKeys([]);
-        }
-      })
-      .catch((error) => {
-        if (error.status === 401) {
-          navigate("/login");
-        }
-      });
   };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {

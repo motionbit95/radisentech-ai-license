@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
+  Checkbox,
   Col,
   DatePicker,
-  Descriptions,
   Form,
   Input,
   Layout,
@@ -11,12 +11,16 @@ import {
   Space,
   Table,
   theme,
+  Tooltip,
 } from "antd";
 import Highlighter from "react-highlight-words";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import UpdateLicense from "../modal/expire";
+import UpdateHistoryModal from "../modal/update-history";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { AxiosGet } from "../api";
+import ADDLicense from "../modal/add-license";
+import { AxiosGet, AxiosPut } from "../api";
 
 const { Content } = Layout;
 
@@ -25,7 +29,13 @@ const License = (props) => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
-  const [searchFilters, setSearchFilters] = useState(null);
+  const [searchFilters, setSearchFilters] = useState({
+    company: undefined,
+    country: undefined,
+    hospital: undefined,
+    expire_date: undefined,
+    deleted: false,
+  });
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
 
@@ -35,36 +45,53 @@ const License = (props) => {
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
-    // console.log(props.currentUser.id);
-    updateDealerLicenseList();
+    updateLicenseList();
   }, []);
 
-  const updateDealerLicenseList = async () => {
+  const updateLicenseList = async () => {
     setLoading(true);
     try {
-      // console.log(props.currentUser.company_name);
-      const result = await AxiosGet(
-        `/license/list/${props.currentUser.company_name}`
-      );
+      const result = await AxiosGet("/license/list");
       if (result.status === 200) {
-        console.log(result.data.data);
         setList(
-          result.data.data
-            .filter((item) => item.Deleted === 0)
-            .map((item) => ({
-              ...item,
-              key: item.pk,
-            }))
+          result.data.data.map((item) => ({
+            ...item,
+            key: item.pk, // data의 key 값은 pk
+          }))
         );
         setLoading(false);
       } else {
         throw new Error("Unauthorized");
       }
     } catch (error) {
-      console.log(error);
       if (error.status === 401) {
         navigate("/login");
+      } else {
+        console.error("Error:", error.message);
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteLicense = async () => {
+    if (selectedLicense) {
+      setLoading(true);
+      AxiosPut(`/license/withdrawal-subscription/${selectedLicense.pk}`)
+        .then((result) => {
+          console.log(result);
+          if (result.status === 200) {
+            updateLicenseList();
+            setSelectedLicense(null);
+            setLoading(false);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          if (error.status === 401) {
+            navigate("/login");
+          }
+        });
     }
   };
 
@@ -178,13 +205,35 @@ const License = (props) => {
       ),
   });
 
+  const getCompanyCode = (company_name) => {
+    return list.find((item) => item.Company === company_name).UniqueCode;
+  };
+
   // table column
-  const DealerlicenseColumns = [
+  const licenseColumns = [
     {
       title: "No.",
       render: (text, record, index) => index + 1,
       fixed: "left",
       width: 50,
+    },
+    {
+      title: "Company",
+      dataIndex: "Company",
+      key: "Company",
+      fixed: "left",
+      sorter: (a, b) => {
+        return a.Company.localeCompare(b.Company);
+      },
+
+      render: (text) => (
+        <Space>
+          {text}
+          <Tooltip placement="top" title={getCompanyCode(text)}>
+            <InfoCircleOutlined />
+          </Tooltip>
+        </Space>
+      ),
     },
     {
       title: "Activate Date Time",
@@ -243,11 +292,37 @@ const License = (props) => {
       ...getColumnSearchProps("UserName"),
     },
     {
+      title: "S/N",
+      dataIndex: "DetectorSerialNumber",
+      key: "DetectorSerialNumber",
+
+      ...getColumnSearchProps("DetectorSerialNumber"),
+    },
+    {
       title: "Email",
       dataIndex: "UserEmail",
       key: "UserEmail",
 
       ...getColumnSearchProps("UserEmail"),
+    },
+    {
+      title: "Deleted",
+      dataIndex: "Deleted",
+      key: "Deleted",
+      hidden: searchFilters.deleted ? false : true,
+      render: (text) => (text ? "Deleted" : ""),
+    },
+    {
+      title: "Update",
+      dataIndex: "UpdatedAt",
+      key: "UpdatedAt",
+      fixed: "right",
+      render: (text, record, index) => (
+        <UpdateHistoryModal
+          data={record}
+          title={text ? dayjs(text).format("MM-DD-YYYY") : ""}
+        />
+      ),
     },
   ];
 
@@ -265,11 +340,16 @@ const License = (props) => {
     selectedRowKeys,
     onChange: onSelectChange,
   };
+  const hasSelected = selectedRowKeys.length > 0;
 
   const applyFilters = (item) => {
-    const { company, country, hospital, expire_date } = searchFilters;
+    const { company, country, hospital, expire_date, deleted } = searchFilters;
+
+    console.log("item", item, searchFilters);
 
     return (
+      // deleted 플래그가 false일 경우 삭제된 라이센스는 보이지 않습니다.
+      ((!deleted && item.Deleted === 0) || deleted) &&
       (!company || item.Company.toLowerCase().includes(company)) &&
       (!country || item.Country.toLowerCase().includes(country)) &&
       (!hospital || item.Hospital.toLowerCase().includes(hospital)) &&
@@ -286,20 +366,50 @@ const License = (props) => {
       }}
     >
       <Space size={"large"} direction="vertical" className="w-full">
-        <CompanyInfo
-          currentUser={props.currentUser}
-          license_cnt={list.length}
-        />
         <AdvancedSearchForm onSearch={(filter) => setSearchFilters(filter)} />
         <Table
+          rowClassName={(record) => (record.Deleted === 0 ? "" : "deleted-row")}
           rowSelection={rowSelection}
           loading={loading}
+          title={() => (
+            <Row justify={"space-between"}>
+              <UpdateLicense
+                type="primary"
+                disabled={!hasSelected || selectedLicense.Deleted === 1}
+                title="Update License"
+                data={selectedLicense}
+                onComplete={(data) => {
+                  updateLicenseList();
+                  setSelectedLicense(data);
+                  setSelectedRowKeys([]);
+                }}
+              />
+              {props.currentUser.permission_flag === "D" && (
+                <Space>
+                  {/* delete 상태 변경 */}
+                  <Button
+                    danger
+                    type="primary"
+                    disabled={!hasSelected || selectedLicense.Deleted === 1}
+                    onClick={() => {
+                      deleteLicense();
+                      setSelectedRowKeys([]);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                  {/* Lisence 추가 테스트용 */}
+                  <ADDLicense onAddFinish={() => updateLicenseList()} />
+                </Space>
+              )}
+            </Row>
+          )}
           pagination={{
             defaultCurrent: 1,
             defaultPageSize: 10,
             showSizeChanger: true,
           }}
-          columns={DealerlicenseColumns}
+          columns={licenseColumns}
           dataSource={
             searchFilters
               ? // 리스트 필터 조건
@@ -313,42 +423,6 @@ const License = (props) => {
         />
       </Space>
     </Content>
-  );
-};
-
-const CompanyInfo = (props) => {
-  const {
-    token: { colorBgContainer, borderRadiusLG },
-  } = theme.useToken();
-  const [form] = Form.useForm();
-  const formStyle = {
-    background: colorBgContainer,
-    padding: 24,
-    borderRadius: borderRadiusLG,
-    maxWidth: "none",
-    borderRadius: borderRadiusLG,
-    padding: 24,
-  };
-
-  return (
-    <Descriptions
-      style={formStyle}
-      column={3}
-      labelStyle={{ fontWeight: "bold" }}
-    >
-      <Descriptions.Item label="Company Name">
-        {props.currentUser.company_name}
-      </Descriptions.Item>
-      <Descriptions.Item label="Unique Code">
-        <Space>
-          {props.currentUser.unique_code}
-          {/* <IniFileDownload code={props.currentUser.unique_code} /> */}
-        </Space>
-      </Descriptions.Item>
-      <Descriptions.Item label="License Count [Rem/Total]">
-        {props.currentUser.license_cnt} / {props.license_cnt}
-      </Descriptions.Item>
-    </Descriptions>
   );
 };
 
@@ -369,6 +443,13 @@ const AdvancedSearchForm = (props) => {
   const getFields = () => {
     const children = [];
     children.push(
+      <Col span={8} key={"company"}>
+        <Form.Item name={`company`} label={`Company`}>
+          <Input placeholder="search..." />
+        </Form.Item>
+      </Col>
+    );
+    children.push(
       <Col span={8} key={"country"}>
         <Form.Item name={`country`} label={`Country`}>
           <Input placeholder="search..." />
@@ -387,8 +468,20 @@ const AdvancedSearchForm = (props) => {
         <Form.Item name={`expire_date`} label={`Expire Date`}>
           <DatePicker.RangePicker
             format={"MM-DD-YYYY"}
+            className="w-full"
             placeholder={["Start Date", "End Date"]}
           />
+        </Form.Item>
+      </Col>
+    );
+    children.push(
+      <Col span={8} key={"deleted"}>
+        <Form.Item
+          name={"deleted"}
+          label={`View Deleted`}
+          valuePropName="checked"
+        >
+          <Checkbox />
         </Form.Item>
       </Col>
     );

@@ -27,7 +27,7 @@ const swaggerOptions = {
       `,
     },
   },
-  apis: ["./companyRouter.js", "./licenseRouter.js"],
+  apis: ["./company-router.js", "./license-router.js"],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
@@ -59,10 +59,10 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 
 // 라우터 설정
-const companyRouter = require("./companyRouter");
+const companyRouter = require("./routes/company-router");
 app.use("/company", companyRouter);
 
-const licenseRouter = require("./licenseRouter");
+const licenseRouter = require("./routes/license-router");
 app.use("/license", licenseRouter);
 
 // 로컬에서 실행될 때를 위한 서버 설정 (Lambda 배포 시에는 불필요)

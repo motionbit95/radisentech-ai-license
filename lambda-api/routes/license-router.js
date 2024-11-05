@@ -4,6 +4,11 @@ const mysql = require("mysql2/promise"); // mysql2 패키지 불러오기
 const bodyParser = require("body-parser"); // json 파싱
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
+const {
+  verifyToken,
+  formatDateToYYYYMMDD,
+  pool,
+} = require("../controllers/common");
 
 const router = express.Router();
 router.use(cors());
@@ -15,42 +20,6 @@ router.use(bodyParser.json());
  *   name: License
  *   description: License 정보 관련 API
  */
-
-// MySQL 연결 설정
-const dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-};
-
-// JWT 검증
-const verifyToken = (req, res, next) => {
-  // 따옴표 제거
-  const token = req.headers.authorization?.split(" ")[1].replaceAll('"', "");
-
-  // console.log("token:", token);
-
-  if (token === process.env.TEST_TOKEN) {
-    req.user = {
-      id: "Radisen",
-    };
-    next();
-    return;
-  }
-
-  if (!token) return res.status(401).json({ message: "Access token missing" });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      console.error("JWT verification error:", err);
-      return res.status(401).json({ message: "Authentication failed" });
-    }
-
-    req.userId = decoded.userId; // 사용자 ID를 요청 객체에 저장
-    next(); // 다음 미들웨어로 이동
-  });
-};
 
 /**
  * @swagger
@@ -119,7 +88,7 @@ router.get("/list", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await mysql.createConnection(dbConfig);
+    connection = await pool.getConnection();
 
     // LicenseManagement 테이블의 모든 데이터를 가져오는 쿼리
     const [rows] = await connection.execute("SELECT * FROM LicenseManagement");
@@ -251,7 +220,7 @@ router.get("/list/:DealerCompany", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await mysql.createConnection(dbConfig);
+    connection = await pool.getConnection();
 
     // LicenseManagement 테이블의 모든 데이터를 가져오는 쿼리
     const [rows] = await connection.execute(
@@ -278,6 +247,100 @@ router.get("/list/:DealerCompany", verifyToken, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /license/add:
+ *   post:
+ *     tags: [License]
+ *     summary: License 추가
+ *     description: license table에 데이터 추가
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: 인증 토큰 헤더(Bearer [Access Token])
+ *       - in: body
+ *         name: body
+ *         description: License 추가 요청데이터
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             DealerCompany:
+ *               type: string
+ *               description: DealerCompany
+ *             Company:
+ *               type: string
+ *               description: Company
+ *             Country:
+ *               type: string
+ *               description: Country
+ *             AIType:
+ *               type: string
+ *
+ *             Hospital:
+ *               type: string
+ *               description: Hospital
+ *             UserEmail:
+ *               type: string
+ *               description: UserEmail
+ *             HardWareInfo:
+ *               type: string
+ *               description: HardWareInfo
+ *             DetectorSerialNumber:
+ *               type: string
+ *               description: DetectorSerialNumber
+ *             LocalActivateStartDate:
+ *               type: string
+ *               description: LocalActivateStartDate
+ *             LocalTerminateDate:
+ *               type: string
+ *               description: LocalTerminateDate
+ *             UTCActivateStartDate:
+ *               type: string
+ *               description: UTCActivateStartDate
+ *             UTCTerminateDate:
+ *               type: string
+ *               description: UTCTerminateDate
+ *             ActivateCount:
+ *               type: integer
+ *               description: ActivateCount
+ *             UniqueCode:
+ *               type: string
+ *               description: UniqueCode
+ *             UpdatedAt:
+ *               type: string
+ *               description: UpdatedAt
+ *     responses:
+ *       200:
+ *         description: license table에 데이터 추가
+ *         schema:
+ *           type: object
+ *           properties:
+ *             status:
+ *               type: string
+ *               description: status
+ *             message:
+ *               type: string
+ *               description: message
+ *             data:
+ *               type: object
+ *               properties:
+ *                 pk:
+ *                   type: integer
+ *                   description: license pk
+ *       500:
+ *         description: Database error
+ *
+ *       400:
+ *         description: Bad Request
+ *       401:
+ *         description: Unauthorized
+ * */
 router.post("/add", verifyToken, async (req, res) => {
   /*
   DealerCompany: 'Radisen',
@@ -333,7 +396,7 @@ router.post("/add", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await mysql.createConnection(dbConfig);
+    connection = await pool.getConnection();
 
     // LicenseManagement 테이블에 데이터 추가하는 쿼리
     const insertQuery = `
@@ -380,14 +443,6 @@ router.post("/add", verifyToken, async (req, res) => {
     if (connection) await connection.end();
   }
 });
-
-function formatDateToYYYYMMDD(date) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // 월을 1부터 시작
-  const day = String(date.getDate()).padStart(2, "0"); // 일
-
-  return `${year}-${month}-${day}`;
-}
 
 /**
  * @swagger
@@ -442,7 +497,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
 
   try {
     // 데이터베이스 연결
-    connection = await mysql.createConnection(dbConfig);
+    connection = await pool.getConnection();
 
     // ExpireDate 변환: LocalTerminateDate와 UTCTerminateDate 계산
     const expireDateObj = new Date(ExpireDate);
@@ -520,7 +575,7 @@ router.put("/withdrawal-subscription/:pk", verifyToken, async (req, res) => {
   let connection;
 
   try {
-    connection = await mysql.createConnection(dbConfig);
+    connection = await pool.getConnection();
     // 업데이트 쿼리 작성
     const updateQuery = `
       UPDATE LicenseManagement 
@@ -591,7 +646,7 @@ router.get("/license-history/:pk", verifyToken, async (req, res) => {
 
   try {
     // 데이터베이스 연결
-    connection = await mysql.createConnection(dbConfig);
+    connection = await pool.getConnection();
 
     // license_history에서 특정 license_pk의 변경 이력 조회
     const [historyRows] = await connection.execute(

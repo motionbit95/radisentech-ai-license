@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import License from "./page/license";
+import License from "./page/license-admin";
 import { Button, Col, Layout, Menu, Result, Space, Spin } from "antd";
 import { Footer, Header } from "antd/es/layout/layout";
 import { useNavigate } from "react-router-dom";
 import Company from "./page/company";
-import LicenseDealer from "./page/licenseDealer";
+import LicenseDealer from "./page/license-dealer";
 import { AxiosGet } from "./api";
 
 function App({ page }) {
