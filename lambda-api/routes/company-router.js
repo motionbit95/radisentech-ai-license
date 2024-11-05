@@ -1,19 +1,16 @@
 require("dotenv").config();
 const express = require("express");
-const mysql = require("mysql2/promise"); // mysql2 패키지 불러오기
 const bcrypt = require("bcryptjs"); // 비밀번호 해싱을 위한 패키지 불러오기
 const bodyParser = require("body-parser"); // json 파싱
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-
 const router = express.Router();
 const cors = require("cors"); // cors 패키지 불러오기
+const { verifyToken, generateToken } = require("../controller/auth");
+const { pool } = require("../controller/mysql");
 const {
-  verifyToken,
   generateRandomCode,
   generateUniqueCopyValue,
-  pool,
-} = require("../controllers/common");
+} = require("../controller/common");
+const { sendVerifyEmail } = require("../controller/mailer");
 router.use(cors());
 router.use(bodyParser.json());
 
@@ -23,9 +20,6 @@ router.use(bodyParser.json());
  *   name: Company
  *   description: 회사 정보 관련 API
  */
-
-// .env 파일에서 비밀 키 및 포트 가져오기
-const JWT_SECRET = process.env.JWT_SECRET;
 
 /**
  * @swagger
@@ -63,7 +57,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
  *               type: string
  *               description: JWT 토큰
  *       401:
- *         description: 로그인 실패 (유효하지 않은 자격 증명)
+ *         description: 로그인 실패
  */
 router.post("/login", async (req, res) => {
   const { user_id, password } = req.body;
@@ -95,13 +89,10 @@ router.post("/login", async (req, res) => {
     }
 
     // JWT 생성
-    const token = jwt.sign({ user_id }, JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = generateToken(user);
 
     // 로그인 성공
-    res.json({
-      status: "success",
+    res.status(200).json({
       message: "Login successful",
       userId: user.id,
       token: token,
@@ -110,7 +101,7 @@ router.post("/login", async (req, res) => {
     console.error("Database error:", error);
     res.status(500).json({ status: "error", error: "Database error" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 
@@ -183,7 +174,7 @@ router.get("/list", verifyToken, async (req, res) => {
     console.error("MySQL query error: ", error);
     res.status(500).json({ error: "Database query error" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 
@@ -280,7 +271,6 @@ router.post("/add", async (req, res) => {
 
     // 성공 응답
     res.status(201).json({
-      status: "success",
       message: "User added successfully",
       id: result.insertId,
     });
@@ -292,7 +282,7 @@ router.post("/add", async (req, res) => {
       message: error.sqlMessage,
     });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 
@@ -445,7 +435,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
     console.error("Error updating user:", error);
     res.status(500).json({ error: "Database error" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 
@@ -499,7 +489,7 @@ router.get("/check-user-id/:user_id", async (req, res) => {
     console.error("Error checking user ID:", error);
     res.status(500).json({ error: "Database error" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 
@@ -613,7 +603,7 @@ VALUES (?, ?, ?, ?, ?, ?)`;
     console.error("Error updating license count:", error);
     res.status(500).json({ error: "Database error" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 
@@ -672,7 +662,7 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
     console.error("Error deleting user:", error);
     res.status(500).json({ error: "Database error" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 
@@ -752,17 +742,8 @@ router.post("/copy-user/:id", verifyToken, async (req, res) => {
     console.error("Error copying user:", error);
     res.status(500).json({ error: "Database error" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
-});
-
-// Nodemailer 설정
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER, // 발신자 이메일
-    pass: process.env.EMAIL_PASS, // 발신자 이메일 비밀번호
-  },
 });
 
 /**
@@ -808,7 +789,6 @@ router.post("/request-reset-code", async (req, res) => {
     // 데이터베이스 연결
     connection = await pool.getConnection();
 
-    console.log("user_id:", user_id, "email:", email);
     // 사용자 조회
     const [rows] = await connection.execute(
       "SELECT * FROM company WHERE user_id = ? AND email = ?",
@@ -833,12 +813,7 @@ router.post("/request-reset-code", async (req, res) => {
     );
 
     // 이메일로 인증 코드 전송
-    await transporter.sendMail({
-      from: `"Your Company" <${process.env.EMAIL}>`,
-      to: email,
-      subject: "Your Authentication Code",
-      text: `Your authentication code is ${authCode}`,
-    });
+    await sendVerifyEmail(email, "Your Authentication Code", authCode);
 
     // 성공 응답
     res.status(200).json({ message: "Authentication code sent to email" });
@@ -846,7 +821,7 @@ router.post("/request-reset-code", async (req, res) => {
     console.error("Error requesting reset code:", error);
     res.status(500).json({ error: "Database error" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 
@@ -893,8 +868,6 @@ router.post("/send-code", async (req, res) => {
     // 데이터베이스 연결
     connection = await pool.getConnection();
 
-    console.log("user_id:", user_id, "email:", email);
-
     // 인증 코드 생성
     const authCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 랜덤 숫자
 
@@ -908,12 +881,7 @@ router.post("/send-code", async (req, res) => {
     );
 
     // 이메일로 인증 코드 전송
-    await transporter.sendMail({
-      from: `"Your Company" <${process.env.EMAIL}>`,
-      to: email,
-      subject: "Your Authentication Code",
-      text: `Your authentication code is ${authCode}`,
-    });
+    await sendVerifyEmail(email, "Your Authentication Code", authCode);
 
     // 성공 응답
     res.status(200).json({ message: "Authentication code sent to email" });
@@ -921,7 +889,7 @@ router.post("/send-code", async (req, res) => {
     console.error("Error requesting reset code:", error);
     res.status(500).json({ error: "Database error" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 
@@ -956,8 +924,6 @@ router.post("/send-code", async (req, res) => {
  * */
 router.post("/verify-code", async (req, res) => {
   const { user_id, authCode } = req.body;
-
-  console.log("user_id:", user_id, "authCode:", authCode);
 
   // 필수 필드 확인
   if (!user_id || !authCode) {
@@ -995,16 +961,14 @@ router.post("/verify-code", async (req, res) => {
     }
 
     // 인증 성공, JWT 발급
-    const token = jwt.sign({ user_id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = generateToken({ user_id });
 
     res.status(200).json({ token });
   } catch (error) {
     console.error("Error verifying reset code:", error);
     res.status(500).json({ error: "Database error" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 
@@ -1069,7 +1033,7 @@ router.post("/reset-password", verifyToken, async (req, res) => {
     console.error("Error resetting password:", error);
     res.status(500).json({ error: "Error resetting password" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 
@@ -1177,11 +1141,42 @@ router.get("/generate-history/:pk", verifyToken, async (req, res) => {
     res.status(500).json({ error: "Database connection error" });
   } finally {
     if (connection) {
-      await connection.end(); // Close the connection
+      await connection.release(); // Close the connection
     }
   }
 });
 
+/**
+ * @swagger
+ * /company/history-cancel/{id}:
+ *   put:
+ *     tags: [Company]
+ *     summary: generate license 취소
+ *     description: generate license 취소
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         description: history id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: 1
+ *       - in: header
+ *         name: Authorization
+ *         description: Bearer [Access Token]
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: generate license 취소 완료
+ *       500:
+ *         description: Database error
+ *       401:
+ *         description: Unauthorized
+ *     security:
+ *       - bearerAuth: []
+ * */
 router.put("/history-cancel/:id", verifyToken, async (req, res) => {
   const id = req.params.id; // URL에서 history id를 가져옵니다.
 
@@ -1205,7 +1200,7 @@ router.put("/history-cancel/:id", verifyToken, async (req, res) => {
     console.error("Error updating license count:", error);
     res.status(500).json({ error: "Database error" });
   } finally {
-    if (connection) await connection.end(); // 연결 종료
+    if (connection) await connection.release(); // 연결 종료
   }
 });
 

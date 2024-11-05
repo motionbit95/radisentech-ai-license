@@ -4,11 +4,9 @@ const mysql = require("mysql2/promise"); // mysql2 패키지 불러오기
 const bodyParser = require("body-parser"); // json 파싱
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
-const {
-  verifyToken,
-  formatDateToYYYYMMDD,
-  pool,
-} = require("../controllers/common");
+const { pool } = require("../controller/mysql");
+const { formatDateToYYYYMMDD } = require("../controller/common");
+const { verifyToken } = require("../controller/auth");
 
 const router = express.Router();
 router.use(cors());
@@ -115,7 +113,6 @@ router.get("/list", verifyToken, async (req, res) => {
 
     // 결과를 클라이언트에 JSON 형식으로 반환
     res.status(200).json({
-      status: "success",
       message: "Data fetched successfully",
       data: rows,
     });
@@ -128,7 +125,7 @@ router.get("/list", verifyToken, async (req, res) => {
     });
   } finally {
     // 데이터베이스 연결 해제
-    if (connection) await connection.end();
+    if (connection) await connection.release();
   }
 });
 
@@ -230,7 +227,6 @@ router.get("/list/:DealerCompany", verifyToken, async (req, res) => {
 
     // 결과를 클라이언트에 JSON 형식으로 반환
     res.status(200).json({
-      status: "success",
       message: "Data fetched successfully",
       data: rows,
     });
@@ -243,7 +239,7 @@ router.get("/list/:DealerCompany", verifyToken, async (req, res) => {
     });
   } finally {
     // 데이터베이스 연결 해제
-    if (connection) await connection.end();
+    if (connection) await connection.release();
   }
 });
 
@@ -427,7 +423,6 @@ router.post("/add", verifyToken, async (req, res) => {
 
     console.log("Rows inserted:", result.affectedRows);
     res.status(200).json({
-      status: "success",
       message: "Data added successfully",
       data: result,
     });
@@ -440,7 +435,7 @@ router.post("/add", verifyToken, async (req, res) => {
     });
   } finally {
     // 데이터베이스 연결 해제
-    if (connection) await connection.end();
+    if (connection) await connection.release();
   }
 });
 
@@ -561,7 +556,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
   } finally {
     // 데이터베이스 연결 종료
     if (connection) {
-      await connection.end();
+      await connection.release();
       console.log("Connection closed");
     }
   }
@@ -601,7 +596,7 @@ router.put("/withdrawal-subscription/:pk", verifyToken, async (req, res) => {
     res.status(500).json({ error: "Database error" });
   } finally {
     if (connection) {
-      await connection.end();
+      await connection.release();
       console.log("Connection closed");
     }
   }
@@ -667,7 +662,7 @@ router.get("/license-history/:pk", verifyToken, async (req, res) => {
   } finally {
     // 데이터베이스 연결 종료
     if (connection) {
-      await connection.end();
+      await connection.release();
       console.log("Connection closed");
     }
   }
