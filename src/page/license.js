@@ -20,7 +20,6 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import ADDLicense from "../modal/addLicense-test";
 import { AxiosGet, AxiosPut } from "../api";
-import ButtonGroup from "antd/es/button/button-group";
 
 const { Header, Content, Footer } = Layout;
 
@@ -38,12 +37,10 @@ const License = (props) => {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [deleted, setDeleted] = useState(""); // 삭제된 데이터 확인 플래그
-
   useEffect(() => {
     // 페이지를 로드할 때 실행
     updateLicenseList();
-    console.log("리스트 불러오기", list, deleted);
+    console.log("리스트 불러오기", list);
   }, []);
 
   const updateLicenseList = async () => {
@@ -384,14 +381,12 @@ const License = (props) => {
                 }}
               />
               {props.currentUser.permission_flag === "D" && (
-                <ButtonGroup>
-                  {/* Lisence 추가 테스트용 */}
-                  <ADDLicense onAddFinish={() => updateLicenseList()} />
+                <Space>
                   {/* delete 상태 변경 */}
                   <Button
                     danger
                     type="primary"
-                    disabled={!hasSelected || deleted}
+                    disabled={!hasSelected || selectedLicense.Deleted === 1}
                     onClick={() => {
                       deleteLicense();
                       setSelectedRowKeys([]);
@@ -399,7 +394,9 @@ const License = (props) => {
                   >
                     Delete
                   </Button>
-                </ButtonGroup>
+                  {/* Lisence 추가 테스트용 */}
+                  <ADDLicense onAddFinish={() => updateLicenseList()} />
+                </Space>
               )}
             </Row>
           )}
@@ -443,30 +440,31 @@ const AdvancedSearchForm = (props) => {
   const getFields = () => {
     const children = [];
     children.push(
-      <Col span={6} key={"company"}>
+      <Col span={8} key={"company"}>
         <Form.Item name={`company`} label={`Company`}>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>
     );
     children.push(
-      <Col span={6} key={"country"}>
+      <Col span={8} key={"country"}>
         <Form.Item name={`country`} label={`Country`}>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>
     );
     children.push(
-      <Col span={6} key={"hospital"}>
+      <Col span={8} key={"hospital"}>
         <Form.Item name={`hospital`} label={`Hospital`}>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>
     );
     children.push(
-      <Col span={6} key={"expire_date"}>
+      <Col span={8} key={"expire_date"}>
         <Form.Item name={`expire_date`} label={`Expire Date`}>
           <DatePicker.RangePicker
+            format={"MM-DD-YYYY"}
             className="w-full"
             placeholder={["Start Date", "End Date"]}
           />
