@@ -8,6 +8,7 @@ import {
   Result,
   Row,
   Select,
+  Spin,
   message,
 } from "antd";
 import { SmileOutlined } from "@ant-design/icons";
@@ -52,27 +53,38 @@ const SignUp = () => {
   const [ischeckedId, setIsCheckedId] = useState(false);
   const [isSendEmail, setIsSendEmail] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const [isCheckedEmail, setIsCheckedEmail] = useState(false);
+  const [loading, setLoading] = useState(false);
   const onFinish = (values) => {
     console.log("Received values of form: ", values);
+    setLoading(true);
 
     if (!ischeckedId) {
       message.error("Please check the ID before submitting.");
       return;
     }
-
-    AxiosPost("/company/add", values)
-      .then((response) => {
-        if (response.status === 201) {
-          setIsRegistered(true);
-        }
-      })
-      .catch((error) => {
-        message.error(error.response.data.message);
-      });
+    // Id 체크, Email 인증 확인 후 진행
+    if (isCheckedEmail && ischeckedId) {
+      AxiosPost("/company/add", values)
+        .then((response) => {
+          if (response.status === 201) {
+            setIsRegistered(true);
+            setLoading(false);
+          }
+        })
+        .catch((error) => {
+          message.error(error.response.data.message);
+          setLoading(false);
+        });
+    } else {
+      message.error("Please check the ID and Email before submitting.");
+      setLoading(false);
+    }
   };
 
   // ID 중복 체크
   const handleCheckDuplicateId = async () => {
+    setLoading(true);
     // userId 필드가 유효할 때만 중복 체크 실행
     const isValid = await form
       .validateFields(["user_id"])
@@ -81,6 +93,7 @@ const SignUp = () => {
 
     if (!isValid) {
       return setIsCheckedId(false); // 유효하지 않으면 함수 종료
+      setLoading(false);
     }
 
     const userId = form.getFieldValue("user_id");
@@ -90,20 +103,59 @@ const SignUp = () => {
         if (response.data.exists) {
           message.error(response.data.message);
           setIsCheckedId(false);
+          setLoading(false);
         } else {
           message.success(response.data.message);
           setIsCheckedId(true);
+          setLoading(false);
         }
       })
       .catch((error) => {
         console.error("Error checking ID:", error);
         message.error("Failed to check ID. Please try again.");
         setIsCheckedId(false);
+        setLoading(false);
       });
   };
 
-  const handleCheckEmail = async () => {
-    setIsSendEmail(true);
+  const sendEmailCode = () => {
+    setLoading(true);
+    AxiosPost("/company/send-code", {
+      user_id: form.getFieldValue("user_id"),
+      email: form.getFieldValue("email"),
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          setIsSendEmail(true);
+          message.success("Code sent to your email.");
+          setLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.error("Error sending email: ", error);
+        setLoading(false);
+      });
+  };
+
+  const handleCheckCode = () => {
+    setLoading(true);
+    AxiosPost("/company/verify-code", {
+      user_id: form.getFieldValue("user_id"),
+      authCode: form.getFieldValue("code"),
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          message.success("Code verified successfully.");
+          setIsCheckedEmail(true);
+          setIsSendEmail(false);
+          setLoading(false);
+        }
+      })
+      .catch((error) => {
+        console.error("Error verifying code: ", error);
+        message.error("Failed to verify code. Please try again.");
+        setLoading(false);
+      });
   };
 
   // const prefixSelector = (
@@ -164,6 +216,17 @@ const SignUp = () => {
           }}
           scrollToFirstError
         >
+          <Spin
+            size="large"
+            spinning={loading}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 999,
+            }}
+          />
           <Form.Item
             name="user_id"
             label="ID"
@@ -284,16 +347,32 @@ const SignUp = () => {
           >
             <Row gutter={8}>
               <Col span={16}>
-                <Input onChange={() => setIsSendEmail(false)} />
+                <Input
+                  onChange={() => {
+                    setIsCheckedEmail(false);
+                    setIsSendEmail(false);
+                  }}
+                />
               </Col>
               <Col span={8}>
                 <Button
                   className="w-full"
-                  onClick={handleCheckEmail}
-                  style={isSendEmail ? { borderColor: "#52c41a" } : {}}
+                  onClick={sendEmailCode}
+                  style={
+                    isSendEmail || isCheckedEmail
+                      ? { borderColor: "#52c41a" }
+                      : {}
+                  }
                 >
-                  Send code
-                  {isSendEmail && <SmileOutlined style={{ marginLeft: 3 }} />}
+                  {isCheckedEmail
+                    ? "Successful!"
+                    : isSendEmail
+                    ? "Sent Email"
+                    : "Send code"}
+                  {isSendEmail ||
+                    (isCheckedEmail && (
+                      <SmileOutlined style={{ marginLeft: 3 }} />
+                    ))}
                 </Button>
               </Col>
             </Row>
@@ -304,7 +383,16 @@ const SignUp = () => {
               label={"Code"}
               rules={[{ required: true }]}
             >
-              <Input />
+              <Row gutter={8}>
+                <Col span={16}>
+                  <Input />
+                </Col>
+                <Col span={8}>
+                  <Button className="w-full" onClick={handleCheckCode}>
+                    Code Check
+                  </Button>
+                </Col>
+              </Row>
             </Form.Item>
           )}
 
