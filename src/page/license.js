@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
+  Checkbox,
   Col,
   DatePicker,
   Form,
@@ -29,7 +30,13 @@ const License = (props) => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
-  const [searchFilters, setSearchFilters] = useState(null);
+  const [searchFilters, setSearchFilters] = useState({
+    company: undefined,
+    country: undefined,
+    hospital: undefined,
+    expire_date: undefined,
+    deleted: false,
+  });
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
   const [selectedFilters, setSelectedFilters] = useState([]);
@@ -43,7 +50,6 @@ const License = (props) => {
   useEffect(() => {
     // 페이지를 로드할 때 실행
     updateLicenseList();
-    console.log("리스트 불러오기", list, deleted);
   }, []);
 
   const updateLicenseList = async () => {
@@ -320,6 +326,13 @@ const License = (props) => {
       ...getColumnSearchProps("UserEmail"),
     },
     {
+      title: "Deleted",
+      dataIndex: "Deleted",
+      key: "Deleted",
+      hidden: searchFilters.deleted ? false : true,
+      render: (text) => (text ? "Deleted" : ""),
+    },
+    {
       title: "Update",
       dataIndex: "UpdatedAt",
       key: "UpdatedAt",
@@ -347,9 +360,13 @@ const License = (props) => {
   const hasSelected = selectedRowKeys.length > 0;
 
   const applyFilters = (item) => {
-    const { company, country, hospital, expire_date } = searchFilters;
+    const { company, country, hospital, expire_date, deleted } = searchFilters;
+
+    console.log("item", item, searchFilters);
 
     return (
+      // deleted 플래그가 false일 경우 삭제된 라이센스는 보이지 않습니다.
+      ((!deleted && item.Deleted === 0) || deleted) &&
       (!company || item.Company.toLowerCase().includes(company)) &&
       (!country || item.Country.toLowerCase().includes(country)) &&
       (!hospital || item.Hospital.toLowerCase().includes(hospital)) &&
@@ -368,6 +385,7 @@ const License = (props) => {
       <Space size={"large"} direction="vertical" className="w-full">
         <AdvancedSearchForm onSearch={(filter) => setSearchFilters(filter)} />
         <Table
+          rowClassName={(record) => (record.Deleted === 0 ? "" : "deleted-row")}
           rowSelection={rowSelection}
           loading={loading}
           title={() => (
@@ -443,33 +461,44 @@ const AdvancedSearchForm = (props) => {
   const getFields = () => {
     const children = [];
     children.push(
-      <Col span={6} key={"company"}>
+      <Col span={8} key={"company"}>
         <Form.Item name={`company`} label={`Company`}>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>
     );
     children.push(
-      <Col span={6} key={"country"}>
+      <Col span={8} key={"country"}>
         <Form.Item name={`country`} label={`Country`}>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>
     );
     children.push(
-      <Col span={6} key={"hospital"}>
+      <Col span={8} key={"hospital"}>
         <Form.Item name={`hospital`} label={`Hospital`}>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>
     );
     children.push(
-      <Col span={6} key={"expire_date"}>
+      <Col span={8} key={"expire_date"}>
         <Form.Item name={`expire_date`} label={`Expire Date`}>
           <DatePicker.RangePicker
             className="w-full"
             placeholder={["Start Date", "End Date"]}
           />
+        </Form.Item>
+      </Col>
+    );
+    children.push(
+      <Col span={8} key={"deleted"}>
+        <Form.Item
+          name={"deleted"}
+          label={`View Deleted`}
+          valuePropName="checked"
+        >
+          <Checkbox />
         </Form.Item>
       </Col>
     );

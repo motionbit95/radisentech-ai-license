@@ -25,3 +25,13 @@ code {
 .w-full {
   width: 100%;
 }
+
+.deleted-row {
+  /*background-color: #f0f0f0;*/ /* 원하는 색상으로 변경 */
+  pointer-events: none; /* hover 효과 방지 */
+  color: #c8c8c8;
+}
+
+.deleted-row:hover {
+  background-color: #f0f0f0; /* hover 시에도 동일한 색상 유지 */
+}
