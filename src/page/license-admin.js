@@ -7,6 +7,7 @@ import {
   Form,
   Input,
   Layout,
+  Popconfirm,
   Row,
   Space,
   Table,
@@ -21,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import ADDLicense from "../modal/add-license";
 import { AxiosGet, AxiosPut } from "../api";
+import ButtonGroup from "antd/es/button/button-group";
 
 const { Content } = Layout;
 
@@ -237,13 +239,11 @@ const License = (props) => {
     },
     {
       title: "Activate Date Time",
-      dataIndex: "UTCActivateStartDate",
-      key: "UTCActivateStartDate",
+      dataIndex: "LocalActivateStartDate",
+      key: "LocalActivateStartDate",
       render: (text) => (text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : ""),
       sorter: (a, b) => {
-        return (
-          new Date(a.UTCActivateStartDate) - new Date(b.UTCActivateStartDate)
-        );
+        return new Date(a.LocalActivateDate) - new Date(b.LocalActivateDate);
       },
     },
     {
@@ -385,22 +385,27 @@ const License = (props) => {
                 }}
               />
               {props.currentUser.permission_flag === "D" && (
-                <Space>
+                <ButtonGroup>
+                  <ADDLicense onAddFinish={() => updateLicenseList()} />
                   {/* delete 상태 변경 */}
-                  <Button
-                    danger
-                    type="primary"
-                    disabled={!hasSelected || selectedLicense.Deleted === 1}
-                    onClick={() => {
+                  <Popconfirm
+                    title="Are you sure to delete this license?"
+                    onConfirm={() => {
                       deleteLicense();
                       setSelectedRowKeys([]);
                     }}
+                    okText="Yes"
+                    cancelText="No"
                   >
-                    Delete
-                  </Button>
+                    <Button
+                      danger
+                      disabled={!hasSelected || selectedLicense.Deleted === 1}
+                    >
+                      Delete
+                    </Button>
+                  </Popconfirm>
                   {/* Lisence 추가 테스트용 */}
-                  <ADDLicense onAddFinish={() => updateLicenseList()} />
-                </Space>
+                </ButtonGroup>
               )}
             </Row>
           )}

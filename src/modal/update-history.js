@@ -3,6 +3,7 @@ import { Modal, Table, message } from "antd";
 import { AxiosGet } from "../api";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+
 const UpdateHistoryModal = (props) => {
   const { title, data } = props;
   const navigate = useNavigate();
