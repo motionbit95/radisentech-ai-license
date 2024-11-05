@@ -389,7 +389,7 @@ const License = (props) => {
             <Row justify={"space-between"}>
               <UpdateLicense
                 type="primary"
-                disabled={!hasSelected}
+                disabled={!hasSelected || selectedLicense.Deleted === 1}
                 title="Update License"
                 data={selectedLicense}
                 onComplete={(data) => {

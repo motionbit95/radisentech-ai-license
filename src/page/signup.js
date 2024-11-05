@@ -102,6 +102,10 @@ const SignUp = () => {
       });
   };
 
+  const handleCheckEmail = async () => {
+    setIsSendEmail(true);
+  };
+
   // const prefixSelector = (
   //   <Form.Item name="prefix" noStyle>
   //     <Select
@@ -285,8 +289,7 @@ const SignUp = () => {
               <Col span={8}>
                 <Button
                   className="w-full"
-                  // onClick={handleCheckDuplicateEmail}
-                  onClick={() => setIsSendEmail(true)}
+                  onClick={handleCheckEmail}
                   style={isSendEmail ? { borderColor: "#52c41a" } : {}}
                 >
                   Send code
@@ -296,7 +299,11 @@ const SignUp = () => {
             </Row>
           </Form.Item>
           {isSendEmail && (
-            <Form.Item name={"code"} label={"Code"}>
+            <Form.Item
+              name={"code"}
+              label={"Code"}
+              rules={[{ required: true }]}
+            >
               <Input />
             </Form.Item>
           )}

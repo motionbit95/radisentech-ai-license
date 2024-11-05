@@ -10,38 +10,9 @@ const ForgotPw = () => {
   const [form] = Form.useForm();
   const [openCodeInput, setOpenCodeInput] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [expirationTime, setExpirationTime] = useState(300); // 5분 (300초)
-  const [timerActive, setTimerActive] = useState(false);
   const [resetpwForm, setResetpwForm] = useState(false);
   const [savedUserId, setSavedUserId] = useState("");
   const [isResetPW, setIsResetPW] = useState(false);
-
-  //타이머
-  const startTimer = () => {
-    setTimerActive(true);
-    const timer = setInterval(() => {
-      setExpirationTime((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timer);
-          setTimerActive(false);
-          return 0;
-        }
-        return prevTime - 1;
-      });
-    }, 1000);
-  };
-
-  useEffect(() => {
-    if (openCodeInput) {
-      startTimer();
-    }
-  }, [openCodeInput]);
-
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${minutes}:${secs < 10 ? `0${secs}` : secs}`;
-  };
 
   const onFinish = async (values) => {
     if (!openCodeInput) {
@@ -187,19 +158,20 @@ const ForgotPw = () => {
                       message: "Please input your code!",
                     },
                   ]}
+                  help="Didn't receive the code?"
+                  extra={
+                    <Button
+                      type="link"
+                      onClick={() => {
+                        setOpenCodeInput(false);
+                        form.resetFields();
+                      }}
+                    >
+                      Resend Code
+                    </Button>
+                  }
                 >
-                  <Input
-                    prefix={<UnlockOutlined />}
-                    placeholder="Code"
-                    suffix={
-                      <div
-                        type="danger"
-                        style={{ marginLeft: 10, opacity: 0.4 }}
-                      >
-                        {timerActive ? `${formatTime(expirationTime)}` : "0:00"}
-                      </div>
-                    }
-                  />
+                  <Input prefix={<UnlockOutlined />} placeholder="Code" />
                 </Form.Item>
               )}
               <Form.Item>
