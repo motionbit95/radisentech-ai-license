@@ -93,7 +93,6 @@ const SignUp = () => {
 
     if (!isValid) {
       return setIsCheckedId(false); // 유효하지 않으면 함수 종료
-      setLoading(false);
     }
 
     const userId = form.getFieldValue("user_id");

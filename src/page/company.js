@@ -12,6 +12,7 @@ import {
   Badge,
   Col,
   Typography,
+  message,
 } from "antd";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
@@ -78,6 +79,8 @@ const Company = (props) => {
     } catch (error) {
       if (error.response?.status === 401) {
         navigate("/login");
+      } else if (error.response?.status === 500) {
+        message.error("Failed to delete company. Licenses History exists.");
       } else {
         console.error("Error:", error.message);
       }
