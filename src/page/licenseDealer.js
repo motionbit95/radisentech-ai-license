@@ -17,9 +17,8 @@ import { SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { AxiosGet } from "../api";
-import IniFileDownload from "../component/IniFileDownload";
 
-const { Header, Content, Footer } = Layout;
+const { Content } = Layout;
 
 const License = (props) => {
   const navigate = useNavigate();
@@ -29,7 +28,6 @@ const License = (props) => {
   const [searchFilters, setSearchFilters] = useState(null);
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
-  const [selectedFilters, setSelectedFilters] = useState([]);
 
   const [selectedLicense, setSelectedLicense] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
@@ -180,16 +178,6 @@ const License = (props) => {
       ),
   });
 
-  const getColumnFilterProps = (dataIndex) => ({
-    filteredValue: filteredInfo[dataIndex] || null,
-    onFilter: (value, record) => {
-      return record[dataIndex] === value;
-      // console.log(value, record[dataIndex]);
-    },
-    filterSearch: true,
-    ellipsis: true,
-  });
-
   // table column
   const DealerlicenseColumns = [
     {
@@ -277,7 +265,6 @@ const License = (props) => {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-  const hasSelected = selectedRowKeys.length > 0;
 
   const applyFilters = (item) => {
     const { company, country, hospital, expire_date } = searchFilters;
@@ -334,7 +321,6 @@ const CompanyInfo = (props) => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const [form] = Form.useForm();
-  const [expand, setExpand] = useState(false);
   const formStyle = {
     background: colorBgContainer,
     padding: 24,
@@ -371,7 +357,6 @@ const AdvancedSearchForm = (props) => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const [form] = Form.useForm();
-  const [expand, setExpand] = useState(false);
   const formStyle = {
     background: colorBgContainer,
     padding: 24,

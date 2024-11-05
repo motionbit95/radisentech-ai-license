@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { Button, Modal, Table, message } from "antd";
+import React, { useState } from "react";
+import { Modal, Table, message } from "antd";
 import { AxiosGet } from "../api";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 const UpdateHistoryModal = (props) => {
-  const { title, data, onCancel } = props;
+  const { title, data } = props;
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [updateHistory, setUpdateHistory] = useState([]);

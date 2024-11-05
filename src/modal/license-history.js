@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button, Col, Modal, Table, Tag, Typography, message } from "antd";
-import { AxiosGet, AxiosPost, AxiosPut } from "../api";
+import { AxiosGet, AxiosPut } from "../api";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { CloseOutlined } from "@ant-design/icons";

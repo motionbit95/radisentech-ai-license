@@ -14,7 +14,6 @@ import {
 import { SmileOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { AxiosGet, AxiosPost } from "../api";
-const { Option } = Select;
 
 const formItemLayout = {
   labelCol: {
@@ -156,23 +155,6 @@ const SignUp = () => {
         setLoading(false);
       });
   };
-
-  // const prefixSelector = (
-  //   <Form.Item name="prefix" noStyle>
-  //     <Select
-  //       popupMatchSelectWidth={false}
-  //       style={{
-  //         width: 70,
-  //       }}
-  //     >
-  //       {countryCodes.map(({ code, country }) => (
-  //         <Option key={code} value={code}>
-  //           +{code}
-  //         </Option>
-  //       ))}
-  //     </Select>
-  //   </Form.Item>
-  // );
 
   const [autoCompleteResult, setAutoCompleteResult] = useState([]);
   const onWebsiteChange = (value) => {

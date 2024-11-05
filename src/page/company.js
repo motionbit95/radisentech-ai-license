@@ -9,7 +9,6 @@ import {
   Space,
   Table,
   Tag,
-  Badge,
   Col,
   Typography,
   message,
@@ -22,7 +21,6 @@ import CompanyEdit from "../modal/drawer";
 import { useNavigate } from "react-router-dom";
 import LicenseHistoryModal from "../modal/license-history";
 import { AxiosDelete, AxiosGet, AxiosPost } from "../api";
-import { render } from "@testing-library/react";
 import IniFileDownload from "../component/IniFileDownload";
 
 const { Content } = Layout;
@@ -37,7 +35,6 @@ const Company = (props) => {
 
   const [selectedCompany, setSelectedCompany] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
-  const [historyList, setHistoryList] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false); // 로딩 플래그
 

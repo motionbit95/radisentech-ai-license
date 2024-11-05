@@ -8,7 +8,7 @@ import {
   Row,
   message,
 } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { AxiosPost } from "../api";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";

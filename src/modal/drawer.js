@@ -1,20 +1,7 @@
-import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Col,
-  Drawer,
-  Form,
-  Input,
-  Popconfirm,
-  Row,
-  Select,
-  Space,
-  Switch,
-  Typography,
-} from "antd";
+import React, { useState } from "react";
+import { Button, Col, Drawer, Form, Input, Popconfirm, Row, Space } from "antd";
 import { useNavigate } from "react-router-dom";
 import { AxiosPut } from "../api";
-import ButtonGroup from "antd/es/button/button-group";
 
 const CompanyEdit = (props) => {
   const navigate = useNavigate();

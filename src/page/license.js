@@ -22,7 +22,7 @@ import dayjs from "dayjs";
 import ADDLicense from "../modal/addLicense-test";
 import { AxiosGet, AxiosPut } from "../api";
 
-const { Header, Content, Footer } = Layout;
+const { Content } = Layout;
 
 const License = (props) => {
   const navigate = useNavigate();
@@ -38,7 +38,6 @@ const License = (props) => {
   });
   const [filteredInfo, setFilteredInfo] = useState({});
   const [sortedInfo, setSortedInfo] = useState({});
-  const [selectedFilters, setSelectedFilters] = useState([]);
 
   const [selectedLicense, setSelectedLicense] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
@@ -93,12 +92,6 @@ const License = (props) => {
             navigate("/login");
           }
         });
-
-      // if (result.status === 200) {
-      //   updateLicenseList();
-      //   setSelectedLicense(null);
-      //   setDeleted(result.data.data);
-      // }
     }
   };
 
@@ -210,16 +203,6 @@ const License = (props) => {
       ) : (
         text
       ),
-  });
-
-  const getColumnFilterProps = (dataIndex) => ({
-    filteredValue: filteredInfo[dataIndex] || null,
-    onFilter: (value, record) => {
-      return record[dataIndex] === value;
-      // console.log(value, record[dataIndex]);
-    },
-    filterSearch: true,
-    ellipsis: true,
   });
 
   const getCompanyCode = (company_name) => {
@@ -338,9 +321,6 @@ const License = (props) => {
         <UpdateHistoryModal
           data={record}
           title={text ? dayjs(text).format("MM-DD-YYYY") : ""}
-          onCancel={() => {
-            updateLicenseList();
-          }}
         />
       ),
     },
@@ -451,7 +431,6 @@ const AdvancedSearchForm = (props) => {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
   const [form] = Form.useForm();
-  const [expand, setExpand] = useState(false);
   const formStyle = {
     background: colorBgContainer,
     padding: 24,

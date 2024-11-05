@@ -1,5 +1,5 @@
-import { Button, Col, Form, Input, Result, Space, Spin, message } from "antd";
-import React, { useEffect, useState } from "react";
+import { Button, Form, Input, Result, Spin, message } from "antd";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MailOutlined, UserOutlined, UnlockOutlined } from "@ant-design/icons";
 import { SmileOutlined } from "@ant-design/icons";

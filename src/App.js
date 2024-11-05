@@ -1,26 +1,14 @@
 import React, { useEffect, useState } from "react";
 import License from "./page/license";
-import {
-  Button,
-  Col,
-  Layout,
-  Menu,
-  Result,
-  Space,
-  Spin,
-  Typography,
-} from "antd";
+import { Button, Col, Layout, Menu, Result, Space, Spin } from "antd";
 import { Footer, Header } from "antd/es/layout/layout";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Company from "./page/company";
 import LicenseDealer from "./page/licenseDealer";
 import { AxiosGet } from "./api";
 
 function App({ page }) {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [permission_flag, setPermissionFlag] = useState(""); // D: Developer, Y: Admin, N: Delear
 
   const [currentUser, setCurrentUser] = useState({});
@@ -28,14 +16,12 @@ function App({ page }) {
   // 로그인한 유저 데이터 가져오기
   useEffect(() => {
     const getUser = async () => {
-      setLoading(true);
       AxiosGet("/company/user-info")
         .then((response) => {
           if (response.status === 200) {
             // console.log("CURRENT_USER", response.data);
             setCurrentUser(response.data);
             setPermissionFlag(response.data.permission_flag);
-            setLoading(false);
           }
         })
         .catch((error) => {
@@ -47,10 +33,6 @@ function App({ page }) {
 
     getUser();
   }, []);
-
-  const toggleDarkMode = () => {
-    setDarkMode((prev) => !prev);
-  };
 
   const items = [
     {
