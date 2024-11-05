@@ -29,7 +29,7 @@ const verifyToken = (req, res, next) => {
   // 따옴표 제거
   const token = req.headers.authorization?.split(" ")[1].replaceAll('"', "");
 
-  console.log("token:", token);
+  // console.log("token:", token);
 
   if (token === process.env.TEST_TOKEN) {
     req.user = {
@@ -455,13 +455,14 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
       SET 
         LocalTerminateDate = ?, 
         UTCTerminateDate = ?,
-        ActivateCount = ActivateCount + 1
+        ActivateCount = ActivateCount + 1,
+        UpdatedAt = NOW()
       WHERE pk = ?
     `;
 
     // 현재 ExpireDate 가져오기
     const [currentRows] = await connection.execute(
-      "SELECT LocalTerminateDate, ActivateCount FROM LicenseManagement WHERE pk = ?",
+      "SELECT LocalTerminateDate, UTCTerminateDate, ActivateCount FROM LicenseManagement WHERE pk = ?",
       [pk]
     );
 
@@ -469,7 +470,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "License not found" });
     }
 
-    const currentExpireDate = new Date(currentRows[0].LocalTerminateDate);
+    const currentExpireDate = new Date(currentRows[0].UTCTerminateDate);
 
     // 이전과 새로운 ExpireDate 비교
     if (formatDateToYYYYMMDD(currentExpireDate) === utcTerminateDate) {

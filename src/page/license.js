@@ -335,7 +335,13 @@ const License = (props) => {
       key: "UpdatedAt",
       fixed: "right",
       render: (text, record, index) => (
-        <UpdateHistoryModal history={[]} title={text} />
+        <UpdateHistoryModal
+          data={record}
+          title={text ? dayjs(text).format("MM-DD-YYYY") : ""}
+          onCancel={() => {
+            updateLicenseList();
+          }}
+        />
       ),
     },
   ];

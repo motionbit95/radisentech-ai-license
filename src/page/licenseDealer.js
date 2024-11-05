@@ -359,8 +359,8 @@ const CompanyInfo = (props) => {
           {/* <IniFileDownload code={props.currentUser.unique_code} /> */}
         </Space>
       </Descriptions.Item>
-      <Descriptions.Item label="License Count">
-        {props.license_cnt} / {props.currentUser.license_cnt}
+      <Descriptions.Item label="License Count [Rem/Total]">
+        {props.currentUser.license_cnt} / {props.license_cnt}
       </Descriptions.Item>
     </Descriptions>
   );
