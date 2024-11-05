@@ -11,6 +11,7 @@ import {
   Tag,
   Badge,
   Col,
+  Typography,
 } from "antd";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
@@ -308,8 +309,12 @@ const Company = (props) => {
       ...getColumnSearchProps("unique_code"),
 
       render: (text) => (
-        <Row>
-          <Col span={16}>{text}</Col>
+        <Row gutter={8}>
+          <Col span={16}>
+            <Typography.Text style={{ whiteSpace: "nowrap" }}>
+              {text}
+            </Typography.Text>
+          </Col>
           <Col span={8} style={{ textAlign: "right" }}>
             <IniFileDownload code={text} />
           </Col>

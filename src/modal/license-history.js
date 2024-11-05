@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Col, Modal, Table, message } from "antd";
+import { Button, Col, Modal, Table, Tag, Typography, message } from "antd";
 import { AxiosGet, AxiosPost, AxiosPut } from "../api";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -93,7 +93,13 @@ const LicenseHistoryModal = (props) => {
       title: "Added Count",
       dataIndex: "new_cnt",
       key: "new_cnt",
-      render: (text, record, index) => text - record.prev_cnt,
+      render: (text, record, index) => (
+        <Typography.Text
+          style={{ color: text - record.prev_cnt > 0 ? "#40a9ff" : "#ff4d4f" }}
+        >
+          {text - record.prev_cnt}
+        </Typography.Text>
+      ),
     },
     {
       title: "Total Count",
@@ -111,6 +117,10 @@ const LicenseHistoryModal = (props) => {
       title: "Description",
       dataIndex: "description",
       key: "description",
+
+      render: (text, record, index) => (
+        <Tag color={text === "Canceled" ? "red" : "green"}>{text}</Tag>
+      ),
     },
     {
       title: "Action",
