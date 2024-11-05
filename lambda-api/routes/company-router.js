@@ -89,7 +89,7 @@ router.post("/login", async (req, res) => {
     }
 
     // JWT 생성
-    const token = generateToken(user);
+    const token = await generateToken(user);
 
     // 로그인 성공
     res.status(200).json({
@@ -644,6 +644,10 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
     // 데이터베이스 연결
     connection = await pool.getConnection();
 
+    // generate history가 있으면 삭제시킵니다.
+    const deleteQuery = "DELETE FROM generate_history WHERE company_pk = ?";
+    await connection.execute(deleteQuery, [id]);
+
     // id 존재 여부 확인
     const [existingUser] = await connection.execute(
       "SELECT * FROM company WHERE id = ?",
@@ -961,7 +965,7 @@ router.post("/verify-code", async (req, res) => {
     }
 
     // 인증 성공, JWT 발급
-    const token = generateToken({ user_id });
+    const token = await generateToken({ user_id });
 
     res.status(200).json({ token });
   } catch (error) {
@@ -1062,15 +1066,13 @@ router.post("/reset-password", verifyToken, async (req, res) => {
 router.get("/user-info", verifyToken, async (req, res) => {
   const user = req.user; // verifyToken에서 설정한 userId 사용
 
-  console.log("user_id:", req.user.id);
-
   let connection;
   try {
     // 데이터베이스 연결
     connection = await pool.getConnection();
 
     const [rows] = await connection.query(
-      "SELECT * FROM company WHERE user_id = ?",
+      "SELECT * FROM company WHERE id = ?",
       [user.id]
     ); // users 테이블에서 정보 조회
 

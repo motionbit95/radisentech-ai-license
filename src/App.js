@@ -18,6 +18,7 @@ function App({ page }) {
     const getUser = async () => {
       AxiosGet("/company/user-info")
         .then((response) => {
+          console.log(response);
           if (response.status === 200) {
             // console.log("CURRENT_USER", response.data);
             setCurrentUser(response.data);

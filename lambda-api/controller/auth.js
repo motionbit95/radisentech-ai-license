@@ -11,7 +11,6 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const verifyToken = (req, res, next) => {
   // 따옴표 제거
   const token = req.headers.authorization?.split(" ")[1].replaceAll('"', "");
-  console.log("token:", token);
 
   if (token === process.env.TEST_TOKEN) {
     req.user = {
@@ -38,7 +37,7 @@ const verifyToken = (req, res, next) => {
 };
 
 // JWT 생성
-const generateToken = (user) => {
+const generateToken = async (user) => {
   return jwt.sign({ user_id: user.id }, JWT_SECRET, {
     expiresIn: "1h",
   });
