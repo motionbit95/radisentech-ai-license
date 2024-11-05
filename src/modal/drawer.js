@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { Button, Col, Drawer, Form, Input, Popconfirm, Row, Space } from "antd";
+import {
+  Button,
+  Col,
+  Drawer,
+  Form,
+  Input,
+  Popconfirm,
+  Row,
+  Select,
+  Space,
+} from "antd";
 import { useNavigate } from "react-router-dom";
 import { AxiosPut } from "../api";
 
@@ -198,7 +208,7 @@ const CompanyEdit = (props) => {
             </Col>
           </Row>
           {/* 슈퍼바이저 컨트롤러 */}
-          {/* {props.permission_flag === "D" && (
+          {props.permission_flag === "D" && (
             <Row gutter={16}>
               <Col span={24}>
                 <Form.Item name="permission_flag" label="Supervisor">
@@ -207,13 +217,13 @@ const CompanyEdit = (props) => {
                     style={{ width: "200px" }}
                   >
                     <Select.Option value="N">Delear</Select.Option>
-                    <Select.Option value="Y">CS</Select.Option>
+                    <Select.Option value="Y">Admin</Select.Option>
                     <Select.Option value="D">Developer</Select.Option>
                   </Select>
                 </Form.Item>
               </Col>
             </Row>
-          )} */}
+          )}
         </Form>
       </Drawer>
     </>

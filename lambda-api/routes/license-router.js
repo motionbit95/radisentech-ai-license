@@ -1,8 +1,6 @@
 require("dotenv").config();
 const express = require("express");
-const mysql = require("mysql2/promise"); // mysql2 패키지 불러오기
 const bodyParser = require("body-parser"); // json 파싱
-const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const { pool } = require("../controller/mysql");
 const { formatDateToYYYYMMDD } = require("../controller/common");

@@ -438,7 +438,12 @@ const Company = (props) => {
                     />
                     <Popconfirm
                       title="Delete the Account?"
-                      description="Are you sure to delete this account?"
+                      description={
+                        <>
+                          <div>Are you sure to delete this account?</div>
+                          <div>License history will also be deleted.</div>
+                        </>
+                      }
                       onConfirm={handleDeleteCompany}
                       onCancel={() => {}}
                       okText="Yes"
