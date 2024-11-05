@@ -13,11 +13,11 @@ import {
   theme,
 } from "antd";
 import Highlighter from "react-highlight-words";
-import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
-import UpdateLicense from "../modal/expire";
+import { SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { AxiosGet, AxiosPut } from "../api";
+import { AxiosGet } from "../api";
+import IniFileDownload from "../component/IniFileDownload";
 
 const { Header, Content, Footer } = Layout;
 
@@ -351,7 +351,10 @@ const CompanyInfo = (props) => {
         {props.currentUser.company_name}
       </Descriptions.Item>
       <Descriptions.Item label="Unique Code">
-        {props.currentUser.unique_code}
+        <Space>
+          {props.currentUser.unique_code}
+          {/* <IniFileDownload code={props.currentUser.unique_code} /> */}
+        </Space>
       </Descriptions.Item>
       <Descriptions.Item label="License Count">
         {props.license_cnt} / {props.currentUser.license_cnt}

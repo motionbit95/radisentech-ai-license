@@ -10,6 +10,7 @@ import {
   Table,
   Tag,
   Badge,
+  Col,
 } from "antd";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
@@ -19,6 +20,8 @@ import CompanyEdit from "../modal/drawer";
 import { useNavigate } from "react-router-dom";
 import LicenseHistoryModal from "../modal/license-history";
 import { AxiosDelete, AxiosGet, AxiosPost } from "../api";
+import { render } from "@testing-library/react";
+import IniFileDownload from "../component/IniFileDownload";
 
 const { Content } = Layout;
 
@@ -298,11 +301,20 @@ const Company = (props) => {
       ...getColumnSearchProps("company_name"),
     },
     {
-      title: "Code",
+      title: "Unique Code",
       dataIndex: "unique_code",
       key: "unique_code",
 
       ...getColumnSearchProps("unique_code"),
+
+      render: (text) => (
+        <Row>
+          <Col span={16}>{text}</Col>
+          <Col span={8} style={{ textAlign: "right" }}>
+            <IniFileDownload code={text} />
+          </Col>
+        </Row>
+      ),
     },
     {
       title: "User Name",
