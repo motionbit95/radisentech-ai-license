@@ -31,15 +31,10 @@ const ADDLicense = (props) => {
 
     try {
       // 추가 요청
-      const response = await AxiosPost(
-        "/license/add",
-        { ...values, ...dates },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
-          },
-        }
-      ).catch((error) => {
+      const response = await AxiosPost("/license/add", {
+        ...values,
+        ...dates,
+      }).catch((error) => {
         message.error(error.response.data.error);
       });
       // 성공 메시지 표시

@@ -345,7 +345,7 @@ const License = (props) => {
   const applyFilters = (item) => {
     const { company, country, hospital, expire_date, deleted } = searchFilters;
 
-    console.log("item", item, searchFilters);
+    // console.log("item", item, searchFilters);
 
     return (
       // deleted 플래그가 false일 경우 삭제된 라이센스는 보이지 않습니다.
