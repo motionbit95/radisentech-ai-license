@@ -107,7 +107,7 @@ const UpdateLicense = (props) => {
             name="expire_date"
             rules={[{ required: true, message: "Please input expire date" }]}
           >
-            <DatePicker showTime className="w-full" />
+            <DatePicker format={"MM-DD-YYYY"} showTime className="w-full" />
           </Form.Item>
         </Form>
       </Modal>

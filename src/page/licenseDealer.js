@@ -49,11 +49,14 @@ const License = (props) => {
         `/license/list/${props.currentUser.company_name}`
       );
       if (result.status === 200) {
+        console.log(result.data.data);
         setList(
-          result.data.data.map((item) => ({
-            ...item,
-            key: item.pk,
-          }))
+          result.data.data
+            .filter((item) => item.Deleted === 0)
+            .map((item) => ({
+              ...item,
+              key: item.pk,
+            }))
         );
         setLoading(false);
       } else {
@@ -397,7 +400,10 @@ const AdvancedSearchForm = (props) => {
     children.push(
       <Col span={8} key={"expire_date"}>
         <Form.Item name={`expire_date`} label={`Expire Date`}>
-          <DatePicker.RangePicker placeholder={["Start Date", "End Date"]} />
+          <DatePicker.RangePicker
+            format={"MM-DD-YYYY"}
+            placeholder={["Start Date", "End Date"]}
+          />
         </Form.Item>
       </Col>
     );
