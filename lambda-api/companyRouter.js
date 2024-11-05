@@ -918,6 +918,81 @@ router.post("/request-reset-code", async (req, res) => {
 
 /**
  * @swagger
+ * /company/send-code:
+ *   post:
+ *     tags: [Company]
+ *     summary: 인증 코드 발송
+ *     description: 인증 코드 발송
+ *     parameters:
+ *       - in: body
+ *         name: body
+ *         description: 인증 코드 저장 및 발송
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             user_id:
+ *               type: string
+ *             email:
+ *               type: string
+ *               format: email
+ *     responses:
+ *       200:
+ *         description: 인증 코드 저장 및 발송
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Invalid user ID or email
+ *       500:
+ *         description: Database error
+ * */
+router.post("/send-code", async (req, res) => {
+  const { user_id, email } = req.body;
+
+  // 필수 필드 확인
+  if (!user_id || !email) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await mysql.createConnection(dbConfig);
+
+    console.log("user_id:", user_id, "email:", email);
+
+    // 인증 코드 생성
+    const authCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 랜덤 숫자
+
+    // 인증 코드의 만료 시간을 설정 (예: 10분 후)
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    // 인증 코드 DB에 저장 (기존의 코드를 업데이트하거나 새로 삽입)
+    await connection.execute(
+      "INSERT INTO auth_codes (user_id, code, expires_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE code = ?, expires_at = ?",
+      [user_id, authCode, expiresAt, authCode, expiresAt]
+    );
+
+    // 이메일로 인증 코드 전송
+    await transporter.sendMail({
+      from: `"Your Company" <${process.env.EMAIL}>`,
+      to: email,
+      subject: "Your Authentication Code",
+      text: `Your authentication code is ${authCode}`,
+    });
+
+    // 성공 응답
+    res.status(200).json({ message: "Authentication code sent to email" });
+  } catch (error) {
+    console.error("Error requesting reset code:", error);
+    res.status(500).json({ error: "Database error" });
+  } finally {
+    if (connection) await connection.end(); // 연결 종료
+  }
+});
+
+/**
+ * @swagger
  * /company/verify-code:
  *   post:
  *     tags: [Company]
