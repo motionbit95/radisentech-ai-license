@@ -1302,16 +1302,16 @@ router.post("/transfer", verifyToken, async (req, res) => {
     const updateGenerateHistory = `UPDATE generate_history SET company_pk = ? WHERE company_pk = ?`;
     await connection.execute(updateGenerateHistory, [targetId, sourceId]);
 
-    console.log("success 1");
+    console.log("generate_history transferred!");
 
     // LicenseManagement의 UniqueCode 먼저 업데이트
-    // const updateLicenseManagement = `UPDATE LicenseManagement SET UniqueCode = ? WHERE UniqueCode = ?`;
-    // await connection.execute(updateLicenseManagement, [
-    //   targetUniqueCode,
-    //   sourceUniqueCode,
-    // ]);
+    const updateLicenseManagement = `UPDATE LicenseManagement SET UniqueCode = ? WHERE UniqueCode = ?`;
+    await connection.execute(updateLicenseManagement, [
+      targetUniqueCode,
+      sourceUniqueCode,
+    ]);
 
-    // console.log("success 2");
+    console.log("LicenseManagement transferred!");
 
     // // license_history의 unique_code 업데이트
     const updateLicenseHistory = `UPDATE license_history SET unique_code = ? WHERE unique_code = ?`;
@@ -1320,7 +1320,7 @@ router.post("/transfer", verifyToken, async (req, res) => {
       sourceUniqueCode,
     ]);
 
-    console.log("success 3");
+    console.log("license_history transferred!!");
 
     res.status(200).json({
       message: "User data transferred successfully from source to target",
