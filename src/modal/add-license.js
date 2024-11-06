@@ -23,23 +23,22 @@ const ADDLicense = (props) => {
     console.log("Received values of form: ", values.date_range);
     // 시간 데이터 변환
     const dates = {
-      LocalActivateStartDate: values.date_range[0].format("YYYY-MM-DD"),
+      LocalActivateStartDate: values.date_range[0].format(
+        "YYYY-MM-DD HH:mm:ss"
+      ),
       LocalTerminateDate: values.date_range[1].format("YYYY-MM-DD"),
-      UTCActivateStartDate: values.date_range[0].toDate().toISOString(),
-      UTCTerminateDate: values.date_range[1].toDate().toISOString(),
+      UTCActivateStartDate: values.date_range[0].toDate(),
+      UTCTerminateDate: values.date_range[1].toDate(),
     };
+
+    console.log(dates);
 
     try {
       // 추가 요청
-      const response = await AxiosPost(
-        "/license/add",
-        { ...values, ...dates },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`, // JWT 토큰 추가
-          },
-        }
-      ).catch((error) => {
+      const response = await AxiosPost("/license/add", {
+        ...values,
+        ...dates,
+      }).catch((error) => {
         message.error(error.response.data.error);
       });
       // 성공 메시지 표시

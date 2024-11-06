@@ -218,7 +218,6 @@ const CompanyEdit = (props) => {
                   >
                     <Select.Option value="N">Delear</Select.Option>
                     <Select.Option value="Y">Admin</Select.Option>
-                    <Select.Option value="D">Developer</Select.Option>
                   </Select>
                 </Form.Item>
               </Col>

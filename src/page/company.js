@@ -417,7 +417,14 @@ const Company = (props) => {
                       okText="Yes"
                       cancelText="No"
                     >
-                      <Button disabled={!hasSelected}>Copy</Button>
+                      <Button
+                        disabled={
+                          !hasSelected ||
+                          selectedCompany?.permission_flag === "D"
+                        }
+                      >
+                        Copy
+                      </Button>
                     </Popconfirm>
                     <Button
                       disabled={!hasSelected}
@@ -426,7 +433,9 @@ const Company = (props) => {
                       Cancel
                     </Button>
                     <CompanyEdit
-                      disabled={!hasSelected}
+                      disabled={
+                        !hasSelected || selectedCompany?.permission_flag === "D"
+                      }
                       data={selectedCompany}
                       permission_flag={props.currentUser.permission_flag}
                       onComplete={(data) => {
