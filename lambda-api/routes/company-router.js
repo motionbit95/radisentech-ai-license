@@ -824,8 +824,8 @@ router.post("/request-reset-code", async (req, res) => {
     // 인증 코드 생성
     const authCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 랜덤 숫자
 
-    // 인증 코드의 만료 시간을 설정 (예: 10분 후)
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    // 인증 코드의 만료 시간을 설정 (예: 5분 후)
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     // 인증 코드 DB에 저장 (기존의 코드를 업데이트하거나 새로 삽입)
     await connection.execute(

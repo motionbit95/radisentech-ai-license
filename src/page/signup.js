@@ -113,9 +113,19 @@ const SignUp = () => {
       });
   };
 
-  const sendEmailCode = () => {
+  const sendEmailCode = async () => {
     setLoading(true);
-    if (ischeckedId) {
+
+    const isValid = await form
+      .validateFields(["email"])
+      .then(() => true)
+      .catch(() => false);
+
+    if (!isValid) {
+      return setLoading(false), setIsSendEmail(false);
+    }
+
+    if (ischeckedId && isValid) {
       AxiosPost("/company/send-code", {
         user_id: form.getFieldValue("user_id"),
         email: form.getFieldValue("email"),
