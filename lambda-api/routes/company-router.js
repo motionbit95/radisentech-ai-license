@@ -1235,4 +1235,102 @@ router.put("/history-cancel/:id", verifyToken, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /company/transfer:
+ *   post:
+ *     tags: [Company]
+ *     summary: 사용자 정보 이관
+ *     description: 사용자 정보 이관
+ *     parameters:
+ *       - in: header
+ *         name: Authorization
+ *         description: Bearer [Access Token]
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: body
+ *         name: body
+ *         description: 사용자 정보 이관 from -> to ID
+ *         required: true
+ *         schema:
+ *           type: object
+ *           properties:
+ *             sourceId:
+ *               type: integer
+ *               description: source user id
+ *             targetId:
+ *               type: integer
+ *               description: target user id
+ *     responses:
+ *       200:
+ *         description: 사용자 정보 이관 완료
+ *       500:
+ *         description: Database error
+ *       403:
+ *         description: Unauthorized
+ * */
+router.post("/transfer", verifyToken, async (req, res) => {
+  const { sourceId, targetId } = req.body;
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await pool.getConnection();
+
+    // sourceId와 targetId의 유저 정보 조회
+    const [sourceUser] = await connection.execute(
+      "SELECT unique_code FROM company WHERE id = ?",
+      [sourceId]
+    );
+    const [targetUser] = await connection.execute(
+      "SELECT unique_code FROM company WHERE id = ?",
+      [targetId]
+    );
+
+    if (sourceUser.length === 0) {
+      return res.status(404).json({ error: "Source user not found" });
+    }
+    if (targetUser.length === 0) {
+      return res.status(404).json({ error: "Target user not found" });
+    }
+
+    const sourceUniqueCode = sourceUser[0].unique_code;
+    const targetUniqueCode = targetUser[0].unique_code;
+
+    // generate_history의 company_pk 업데이트
+    const updateGenerateHistory = `UPDATE generate_history SET company_pk = ? WHERE company_pk = ?`;
+    await connection.execute(updateGenerateHistory, [targetId, sourceId]);
+
+    console.log("success 1");
+
+    // LicenseManagement의 UniqueCode 먼저 업데이트
+    // const updateLicenseManagement = `UPDATE LicenseManagement SET UniqueCode = ? WHERE UniqueCode = ?`;
+    // await connection.execute(updateLicenseManagement, [
+    //   targetUniqueCode,
+    //   sourceUniqueCode,
+    // ]);
+
+    // console.log("success 2");
+
+    // // license_history의 unique_code 업데이트
+    const updateLicenseHistory = `UPDATE license_history SET unique_code = ? WHERE unique_code = ?`;
+    await connection.execute(updateLicenseHistory, [
+      targetUniqueCode,
+      sourceUniqueCode,
+    ]);
+
+    console.log("success 3");
+
+    res.status(200).json({
+      message: "User data transferred successfully from source to target",
+    });
+  } catch (error) {
+    console.error("Error transferring user data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (connection) await connection.release();
+  }
+});
+
 module.exports = router;

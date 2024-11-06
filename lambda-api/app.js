@@ -27,7 +27,7 @@ const swaggerOptions = {
       `,
     },
   },
-  apis: ["./company-router.js", "./license-router.js"],
+  apis: ["./routes/company-router.js", "./routes/license-router.js"],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
