@@ -31,6 +31,7 @@ const ForgotPw = () => {
           }
         })
         .catch((error) => {
+          console.log(error);
           message.error("Failed to send code. Please try again.");
           setLoading(false);
           form.resetFields();
@@ -39,7 +40,7 @@ const ForgotPw = () => {
       // 2. 코드가 일치하는지 확인
       setLoading(true);
 
-      console.log("Received values of form: ", values);
+      // console.log("Received values of form: ", values);
 
       AxiosPost("/company/verify-code", {
         user_id: savedUserId,

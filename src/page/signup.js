@@ -115,22 +115,27 @@ const SignUp = () => {
 
   const sendEmailCode = () => {
     setLoading(true);
-    AxiosPost("/company/send-code", {
-      user_id: form.getFieldValue("user_id"),
-      email: form.getFieldValue("email"),
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          setIsSendEmail(true);
-          message.success("Code sent to your email.");
-          setLoading(false);
-        }
+    if (ischeckedId) {
+      AxiosPost("/company/send-code", {
+        user_id: form.getFieldValue("user_id"),
+        email: form.getFieldValue("email"),
       })
-      .catch((error) => {
-        console.error("Error sending email: ", error);
-        message.error("The ID and email must be entered. Please try again.");
-        setLoading(false);
-      });
+        .then((response) => {
+          if (response.status === 200) {
+            setIsSendEmail(true);
+            message.success("Code sent to your email.");
+            setLoading(false);
+          }
+        })
+        .catch((error) => {
+          console.error("Error sending email: ", error);
+          message.error("The ID and email must be entered. Please try again.");
+          setLoading(false);
+        });
+    } else {
+      message.error("Please check the ID before submitting.");
+      setLoading(false);
+    }
   };
 
   const handleCheckCode = () => {

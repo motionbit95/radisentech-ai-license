@@ -1091,6 +1091,10 @@ router.get("/user-info", verifyToken, async (req, res) => {
     res.status(500).json({ error: "Database connection error" });
     return;
   }
+
+  if (connection) {
+    await connection.release();
+  }
 });
 
 /**
