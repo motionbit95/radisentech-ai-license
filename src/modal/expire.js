@@ -36,6 +36,7 @@ const UpdateLicense = (props) => {
 
       AxiosPut(`/license/update-subscription/${pk}`, {
         ExpireDate: expire_date.format("YYYY-MM-DD HH:mm:ss"), // 원하는 형식으로 날짜를 전송
+        UniqueCode: data.UniqueCode,
       })
         .then((response) => {
           // 성공 메시지 표시

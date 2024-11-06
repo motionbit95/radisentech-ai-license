@@ -641,6 +641,19 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    const uniqueCode = existingUser[0].unique_code;
+
+    // 라이센스 히스토리도 지웁니다.
+    const deleteLicenseHistoryQuery =
+      "DELETE FROM license_history WHERE unique_code = ?";
+    await connection.execute(deleteLicenseHistoryQuery, [uniqueCode]);
+
+    // LicenseManagement에서 연결된 레코드 삭제
+    const deleteLicenseQuery =
+      "DELETE FROM LicenseManagement WHERE UniqueCode = ?";
+    await connection.execute(deleteLicenseQuery, [uniqueCode]);
+    console.log("LicenseManagement entries deleted successfully");
+
     // id로 행 삭제
     await connection.execute("DELETE FROM company WHERE id = ?", [id]);
 

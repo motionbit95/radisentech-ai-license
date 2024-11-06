@@ -5,6 +5,7 @@ const cors = require("cors");
 const { pool } = require("../controller/mysql");
 const { formatDateToYYYYMMDD } = require("../controller/common");
 const { verifyToken } = require("../controller/auth");
+const dayjs = require("dayjs");
 
 const router = express.Router();
 router.use(cors());
@@ -479,7 +480,9 @@ router.post("/add", verifyToken, async (req, res) => {
  */
 router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
   const { pk } = req.params;
-  const { ExpireDate } = req.body;
+  const { ExpireDate, UniqueCode } = req.body;
+
+  console.log("ExpireDate:", ExpireDate, "UniqueCode:", UniqueCode);
 
   // 요청 유효성 검사
   if (!ExpireDate) {
@@ -497,6 +500,10 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
     const localTerminateDate = expireDateObj.toISOString().split("T")[0]; // Local 날짜
     const utcTerminateDate = formatDateToYYYYMMDD(expireDateObj);
 
+    const nowDate = dayjs(Date.now()).format("YYYY-MM-DDTHH:mm:ss");
+
+    console.log("now : ", nowDate);
+
     // 업데이트 쿼리 작성
     const updateQuery = `
       UPDATE LicenseManagement 
@@ -504,7 +511,8 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
         LocalTerminateDate = ?, 
         UTCTerminateDate = ?,
         ActivateCount = ActivateCount + 1,
-        UpdatedAt = NOW()
+        UniqueCode = ?,
+        UpdatedAt = ?
       WHERE pk = ?
     `;
 
@@ -529,19 +537,23 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
 
     // license_history 테이블에 데이터 삽입
     const insertHistoryQuery = `
-      INSERT INTO license_history (license_pk, description, previous_expire_date, new_expire_date)
-      VALUES (?, 'ExpireDate updated', ?, ?);
+      INSERT INTO license_history (license_pk, description, previous_expire_date, new_expire_date, unique_code, update_date)
+      VALUES (?, 'ExpireDate updated', ?, ?, ?, ?);
     `;
     await connection.execute(insertHistoryQuery, [
       pk,
       formatDateToYYYYMMDD(currentExpireDate),
       utcTerminateDate,
+      UniqueCode,
+      nowDate,
     ]);
 
     // 업데이트 쿼리 실행
     await connection.execute(updateQuery, [
       localTerminateDate,
       utcTerminateDate,
+      UniqueCode,
+      nowDate,
       pk,
     ]);
 
