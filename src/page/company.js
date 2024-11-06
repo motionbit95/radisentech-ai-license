@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import LicenseHistoryModal from "../modal/license-history";
 import { AxiosDelete, AxiosGet, AxiosPost } from "../api";
 import IniFileDownload from "../component/button/download";
+import CompanyCopy from "../modal/company-copy";
 const { Content } = Layout;
 
 const Company = (props) => {
@@ -85,25 +86,25 @@ const Company = (props) => {
     }
   };
 
-  const copyUser = async () => {
-    setLoading(true);
-    try {
-      const result = await AxiosPost(
-        `/company/copy-user/${selectedCompany?.id}`
-      );
+  // const copyUser = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const result = await AxiosPost(
+  //       `/company/copy-user/${selectedCompany?.id}`
+  //     );
 
-      if (result.status === 200) {
-        await fetchCompanyList(); // 데이터 갱신이 완료된 후 로딩 해제
-        setSelectedRowKeys([]);
-      } else if (result.status === 403) {
-        navigate("/login");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-    } finally {
-      setLoading(false); // fetchCompanyList가 완료된 후 로딩 해제
-    }
-  };
+  //     if (result.status === 201) {
+  //       await fetchCompanyList(); // 데이터 갱신이 완료된 후 로딩 해제
+  //       setSelectedRowKeys([]);
+  //     } else if (result.status === 403) {
+  //       navigate("/login");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error:", error);
+  //   } finally {
+  //     setLoading(false); // fetchCompanyList가 완료된 후 로딩 해제
+  //   }
+  // };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -409,67 +410,78 @@ const Company = (props) => {
                     setLoading={setLoading}
                   />
                   <ButtonGroup>
-                    <Space>
-                      <Popconfirm
-                        title="Copy the Account?"
-                        description="Are you sure to copy this account?"
-                        onConfirm={copyUser}
-                        onCancel={() => {}}
-                        okText="Yes"
-                        cancelText="No"
-                      >
-                        <Button
-                          disabled={
-                            !hasSelected ||
-                            selectedCompany?.permission_flag === "D"
-                          }
-                        >
-                          Copy
-                        </Button>
-                      </Popconfirm>
+                    {/* <Popconfirm
+                      title="Copy the Account?"
+                      description="Are you sure to copy this account?"
+                      onConfirm={copyUser}
+                      onCancel={() => {}}
+                      okText="Yes"
+                      cancelText="No"
+                    >
                       <Button
-                        disabled={!hasSelected}
-                        onClick={() => setSelectedRowKeys([])}
-                      >
-                        Cancel
-                      </Button>
-                      <CompanyEdit
                         disabled={
                           !hasSelected ||
                           selectedCompany?.permission_flag === "D"
                         }
-                        data={selectedCompany}
-                        permission_flag={props.currentUser.permission_flag}
-                        onComplete={(data) => {
-                          fetchCompanyList();
-                          setSelectedCompany(data);
-                          setSelectedRowKeys([]);
-                        }}
-                        setLoading={setLoading}
-                      />
-                      <Popconfirm
-                        title="Delete the Account?"
-                        description={
-                          <>
-                            <div>Are you sure to delete this account?</div>
-                            <div>License history will also be deleted.</div>
-                          </>
-                        }
-                        onConfirm={handleDeleteCompany}
-                        onCancel={() => {}}
-                        okText="Yes"
-                        cancelText="No"
                       >
-                        <Button
-                          disabled={
-                            !hasSelected ||
-                            selectedCompany?.permission_flag === "D"
-                          }
-                        >
-                          Delete
-                        </Button>
-                      </Popconfirm>
-                    </Space>
+                        Copy
+                      </Button>
+                    </Popconfirm> */}
+                    <CompanyCopy
+                      disabled={
+                        !hasSelected || selectedCompany?.permission_flag === "D"
+                      }
+                      data={selectedCompany}
+                      list={list}
+                      permission_flag={props.currentUser.permission_flag}
+                      onComplete={(data) => {
+                        fetchCompanyList();
+                        setSelectedCompany(data);
+                        setSelectedRowKeys([]);
+                      }}
+                      setLoading={setLoading}
+                    />
+                    <Button
+                      disabled={!hasSelected}
+                      onClick={() => setSelectedRowKeys([])}
+                    >
+                      Cancel
+                    </Button>
+                    <CompanyEdit
+                      disabled={
+                        !hasSelected || selectedCompany?.permission_flag === "D"
+                      }
+                      data={selectedCompany}
+                      permission_flag={props.currentUser.permission_flag}
+                      onComplete={(data) => {
+                        fetchCompanyList();
+                        setSelectedCompany(data);
+                        setSelectedRowKeys([]);
+                      }}
+                      setLoading={setLoading}
+                    />
+                    <Popconfirm
+                      title="Delete the Account?"
+                      description={
+                        <>
+                          <div>Are you sure to delete this account?</div>
+                          <div>License history will also be deleted.</div>
+                        </>
+                      }
+                      onConfirm={handleDeleteCompany}
+                      onCancel={() => {}}
+                      okText="Yes"
+                      cancelText="No"
+                    >
+                      <Button
+                        disabled={
+                          !hasSelected ||
+                          selectedCompany?.permission_flag === "D"
+                        }
+                      >
+                        Delete
+                      </Button>
+                    </Popconfirm>
                   </ButtonGroup>
                 </Row>
               )}
