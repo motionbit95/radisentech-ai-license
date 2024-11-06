@@ -173,7 +173,7 @@ router.get("/list", verifyToken, async (req, res) => {
   try {
     connection = await pool.getConnection();
     const [rows] = await connection.query("SELECT * FROM company"); // 'your_table_name'을 실제 테이블 이름으로 변경
-    res.json(rows);
+    res.status(200).json(rows);
   } catch (error) {
     console.error("MySQL query error: ", error);
     res.status(500).json({ error: "Database query error" });
@@ -342,6 +342,8 @@ router.post("/add", async (req, res) => {
  *     responses:
  *       200:
  *         description: company table data 변경
+ *       401:
+ *         description: User not found
  *       400:
  *         description: Missing required fields
  *       500:
@@ -362,6 +364,19 @@ router.put("/update/:id", verifyToken, async (req, res) => {
     permission_flag,
   } = req.body;
 
+  // 필수 필드가 누락된 경우 에러 응답
+  if (
+    !user_id ||
+    !email ||
+    !company_name ||
+    !user_name ||
+    !address ||
+    !phone ||
+    !unique_code
+  ) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
   let connection;
   try {
     // 데이터베이스 연결
@@ -373,7 +388,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
       [id]
     );
     if (existingUser.length === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(401).json({ error: "User not found" });
     }
 
     // 데이터 수정 쿼리 실행
@@ -514,8 +529,10 @@ router.get("/check-user-id/:user_id", async (req, res) => {
  *         description: 라이센스 수량 변경
  *       400:
  *         description: Missing required field [license_cnt]
- *       404:
+ *       401:
  *         description: User not found
+ *       403:
+ *         description: Unauthorized
  *       500:
  *         description: Database error
  * */
@@ -527,7 +544,7 @@ router.put("/update-license/:id", verifyToken, async (req, res) => {
   if (license_cnt === undefined) {
     return res
       .status(400)
-      .json({ error: "Missing required field [license_cnt]" });
+      .json({ error: "Missing required field license_cnt" });
   }
 
   let connection;
@@ -541,7 +558,7 @@ router.put("/update-license/:id", verifyToken, async (req, res) => {
       [id]
     );
     if (existingUser.length === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(401).json({ error: "User not found" });
     }
 
     // 기존 license_cnt 값 가져오기
@@ -615,8 +632,10 @@ VALUES (?, ?, ?, ?, ?, ?)`;
  *     responses:
  *       200:
  *         description: 사용자 삭제
- *       404:
+ *       401:
  *         description: User not found
+ *       403:
+ *         description: Unauthorized
  *       500:
  *         description: Database error
  * */
@@ -638,7 +657,7 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
       [id]
     );
     if (existingUser.length === 0) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(401).json({ error: "User not found" });
     }
 
     const uniqueCode = existingUser[0].unique_code;
@@ -717,13 +736,14 @@ router.post("/copy-user/:id", verifyToken, async (req, res) => {
     const userData = existingUser[0];
     delete userData.id; // 자동 증가 컬럼 id는 제거
 
-    // 고유한 user_id와 email 값을 생성
+    // 고유한 user_id와 unique_code 생성
     userData.user_id = await generateUniqueCopyValue(
       connection,
       "user_id",
       userData.user_id
     );
     userData.unique_code = await generateRandomCode();
+    userData.license_cnt = 0;
 
     // 새로운 행 삽입 쿼리 작성
     const columns = Object.keys(userData).join(", ");
@@ -737,7 +757,7 @@ router.post("/copy-user/:id", verifyToken, async (req, res) => {
 
     // 성공 응답
     res
-      .status(201)
+      .status(200)
       .json({ message: "User copied successfully", data: userData });
   } catch (error) {
     console.error("Error copying user:", error);
