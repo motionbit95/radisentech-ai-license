@@ -64,7 +64,7 @@ const License = (props) => {
         throw new Error("Unauthorized");
       }
     } catch (error) {
-      if (error.status === 401) {
+      if (error.status === 403) {
         navigate("/login");
       } else {
         console.error("Error:", error.message);
@@ -88,7 +88,7 @@ const License = (props) => {
         })
         .catch((error) => {
           console.log(error);
-          if (error.status === 401) {
+          if (error.status === 403) {
             navigate("/login");
           }
         });

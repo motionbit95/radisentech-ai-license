@@ -58,15 +58,16 @@ const SignUp = () => {
     console.log("Received values of form: ", values);
     setLoading(true);
 
-    if (!ischeckedId) {
-      message.error("Please check the ID before submitting.");
-      return;
-    }
+    // if (!ischeckedId) {
+    //   message.error("Please check the ID before submitting.");
+    //   return;
+    // }
+
     // Id 체크, Email 인증 확인 후 진행
     if (isCheckedEmail && ischeckedId) {
       AxiosPost("/company/add", values)
         .then((response) => {
-          if (response.status === 201) {
+          if (response.status === 200) {
             setIsRegistered(true);
             setLoading(false);
           }
@@ -91,6 +92,7 @@ const SignUp = () => {
       .catch(() => false);
 
     if (!isValid) {
+      setLoading(false);
       return setIsCheckedId(false); // 유효하지 않으면 함수 종료
     }
 
@@ -98,19 +100,15 @@ const SignUp = () => {
 
     AxiosGet(`/company/check-user-id/${userId}`)
       .then((response) => {
-        if (response.data.exists) {
-          message.error(response.data.message);
-          setIsCheckedId(false);
-          setLoading(false);
-        } else {
+        console.log(response);
+        if (response.status === 200) {
           message.success(response.data.message);
           setIsCheckedId(true);
           setLoading(false);
         }
       })
       .catch((error) => {
-        console.error("Error checking ID:", error);
-        message.error("Failed to check ID. Please try again.");
+        message.error(error.response.data.message);
         setIsCheckedId(false);
         setLoading(false);
       });

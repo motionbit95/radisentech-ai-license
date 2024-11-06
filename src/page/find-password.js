@@ -158,24 +158,50 @@ const ForgotPw = () => {
                       message: "Please input your code!",
                     },
                   ]}
-                  help="Didn't receive the code?"
-                  extra={
-                    <Button
-                      type="link"
-                      onClick={() => {
-                        setOpenCodeInput(false);
-                        form.resetFields();
+                  help={
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "8px",
                       }}
                     >
-                      Resend Code
-                    </Button>
+                      <span>Didn't receive the code?</span>
+                      <Button
+                        type="link"
+                        onClick={() => {
+                          setOpenCodeInput(false);
+                          form.resetFields();
+                        }}
+                      >
+                        Resend Code
+                      </Button>
+                    </div>
                   }
+                  // help="Didn't receive the code?"
+                  // extra={
+                  //   <Button
+                  //     type="link"
+                  //     onClick={() => {
+                  //       setOpenCodeInput(false);
+                  //       form.resetFields();
+                  //     }}
+                  //   >
+                  //     Resend Code
+                  //   </Button>
+                  // }
                 >
                   <Input prefix={<UnlockOutlined />} placeholder="Code" />
                 </Form.Item>
               )}
               <Form.Item>
-                <Button block type="primary" htmlType="submit">
+                <Button
+                  block
+                  type="primary"
+                  htmlType="submit"
+                  style={{ marginTop: 16 }}
+                >
                   {openCodeInput ? "Submit" : "Get Code"}
                 </Button>
               </Form.Item>

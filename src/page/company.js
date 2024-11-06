@@ -53,7 +53,7 @@ const Company = (props) => {
         throw new Error("Unauthorized");
       }
     } catch (error) {
-      if (error.response?.status === 401) {
+      if (error.response?.status === 403) {
         navigate("/login");
       } else {
         console.error("Error:", error.message);
@@ -73,7 +73,7 @@ const Company = (props) => {
       setSelectedCompany(null);
       setSelectedRowKeys([]);
     } catch (error) {
-      if (error.response?.status === 401) {
+      if (error.response?.status === 403) {
         navigate("/login");
       } else if (error.response?.status === 500) {
         message.error("Failed to delete company. Licenses History exists.");
@@ -95,7 +95,7 @@ const Company = (props) => {
       if (result.status === 201) {
         await fetchCompanyList(); // 데이터 갱신이 완료된 후 로딩 해제
         setSelectedRowKeys([]);
-      } else if (result.status === 401) {
+      } else if (result.status === 403) {
         navigate("/login");
       }
     } catch (error) {

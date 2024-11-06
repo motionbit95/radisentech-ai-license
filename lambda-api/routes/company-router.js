@@ -58,6 +58,10 @@ router.use(bodyParser.json());
  *               description: JWT 토큰
  *       401:
  *         description: 로그인 실패
+ *       400:
+ *         description: Missing required fields
+ *       500:
+ *         description: Internal Server error
  */
 router.post("/login", async (req, res) => {
   const { user_id, password } = req.body;
@@ -99,7 +103,7 @@ router.post("/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Database error:", error);
-    res.status(500).json({ status: "error", error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release(); // 연결 종료
   }
@@ -161,7 +165,7 @@ router.post("/login", async (req, res) => {
  *                 description: updated_at
  *       500:
  *         description: MySQL query error
- *       401:
+ *       403:
  *         description: Unauthorized
  * */
 router.get("/list", verifyToken, async (req, res) => {
@@ -231,8 +235,6 @@ router.get("/list", verifyToken, async (req, res) => {
  *         description: Missing required fields
  *       500:
  *         description: Database error
- *       401:
- *         description: Unauthorized
  * */
 router.post("/add", async (req, res) => {
   const { user_id, password, email, company_name, user_name, address, phone } =
@@ -270,7 +272,7 @@ router.post("/add", async (req, res) => {
     ]);
 
     // 성공 응답
-    res.status(201).json({
+    res.status(200).json({
       message: "User added successfully",
       id: result.insertId,
     });
@@ -344,7 +346,7 @@ router.post("/add", async (req, res) => {
  *         description: Missing required fields
  *       500:
  *         description: Database error
- *       401:
+ *       403:
  *         description: Unauthorized
  * */
 router.put("/update/:id", verifyToken, async (req, res) => {
@@ -433,7 +435,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
     res.status(200).json({ message: "User updated successfully" });
   } catch (error) {
     console.error("Error updating user:", error);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release(); // 연결 종료
   }
@@ -456,7 +458,9 @@ router.put("/update/:id", verifyToken, async (req, res) => {
  *         example: user1
  *     responses:
  *       200:
- *         description: 사용자 ID 존재 확인
+ *         description: User ID is available
+ *       401:
+ *         description: User ID already exists
  *       500:
  *         description: Database error
  * */
@@ -476,18 +480,14 @@ router.get("/check-user-id/:user_id", async (req, res) => {
 
     // user_id가 존재하는 경우
     if (results.length > 0) {
-      return res
-        .status(200)
-        .json({ exists: true, message: "User ID already exists" });
+      return res.status(401).json({ message: "User ID already exists" });
     } else {
       // user_id가 존재하지 않는 경우
-      return res
-        .status(200)
-        .json({ exists: false, message: "User ID is available" });
+      return res.status(200).json({ message: "User ID is available" });
     }
   } catch (error) {
     console.error("Error checking user ID:", error);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release(); // 연결 종료
   }
@@ -601,7 +601,7 @@ VALUES (?, ?, ?, ?, ?, ?)`;
     });
   } catch (error) {
     console.error("Error updating license count:", error);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release(); // 연결 종료
   }
@@ -664,7 +664,7 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     console.error("Error deleting user:", error);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release(); // 연결 종료
   }
@@ -744,7 +744,7 @@ router.post("/copy-user/:id", verifyToken, async (req, res) => {
       .json({ message: "User copied successfully", data: userData });
   } catch (error) {
     console.error("Error copying user:", error);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release(); // 연결 종료
   }
@@ -823,7 +823,7 @@ router.post("/request-reset-code", async (req, res) => {
     res.status(200).json({ message: "Authentication code sent to email" });
   } catch (error) {
     console.error("Error requesting reset code:", error);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release(); // 연결 종료
   }
@@ -854,7 +854,7 @@ router.post("/request-reset-code", async (req, res) => {
  *         description: 인증 코드 저장 및 발송
  *       400:
  *         description: Missing required fields
- *       401:
+ *       403:
  *         description: Invalid user ID or email
  *       500:
  *         description: Database error
@@ -869,14 +869,14 @@ router.post("/send-code", async (req, res) => {
 
   let connection;
   try {
-    // 데이터베이스 연결
-    connection = await pool.getConnection();
-
     // 인증 코드 생성
     const authCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6자리 랜덤 숫자
 
-    // 인증 코드의 만료 시간을 설정 (예: 10분 후)
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    // 인증 코드의 만료 시간을 설정 (예: 5분 후)
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    // 데이터베이스 연결
+    connection = await pool.getConnection();
 
     // 인증 코드 DB에 저장 (기존의 코드를 업데이트하거나 새로 삽입)
     await connection.execute(
@@ -891,7 +891,7 @@ router.post("/send-code", async (req, res) => {
     res.status(200).json({ message: "Authentication code sent to email" });
   } catch (error) {
     console.error("Error requesting reset code:", error);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release(); // 연결 종료
   }
@@ -922,7 +922,7 @@ router.post("/send-code", async (req, res) => {
  *       400:
  *         description: Missing required fields
  *       401:
- *         description: Invalid authentication code
+ *         description: Invalid or expired authentication code
  *       500:
  *         description: Database error
  * */
@@ -970,7 +970,7 @@ router.post("/verify-code", async (req, res) => {
     res.status(200).json({ token });
   } catch (error) {
     console.error("Error verifying reset code:", error);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release(); // 연결 종료
   }
@@ -1114,7 +1114,7 @@ router.get("/user-info", verifyToken, async (req, res) => {
  *         description: 생성 이력 조회
  *       500:
  *         description: Database error
- *       401:
+ *       403:
  *         description: Unauthorized
  */
 router.get("/generate-history/:pk", verifyToken, async (req, res) => {
@@ -1174,7 +1174,7 @@ router.get("/generate-history/:pk", verifyToken, async (req, res) => {
  *         description: generate license 취소 완료
  *       500:
  *         description: Database error
- *       401:
+ *       403:
  *         description: Unauthorized
  *     security:
  *       - bearerAuth: []
@@ -1200,7 +1200,7 @@ router.put("/history-cancel/:id", verifyToken, async (req, res) => {
     res.status(200).json({ message: "License canceled successfully" });
   } catch (error) {
     console.error("Error updating license count:", error);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release(); // 연결 종료
   }

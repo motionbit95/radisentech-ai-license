@@ -48,7 +48,7 @@ const CompanyEdit = (props) => {
         }
       })
       .catch((error) => {
-        if (error.status === 401) {
+        if (error.status === 403) {
           navigate("/login");
         }
       });

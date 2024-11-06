@@ -77,7 +77,7 @@ router.use(bodyParser.json());
  *         description: User not found
  *       400:
  *         description: Missing required fields
- *       401:
+ *       403:
  *         description: Unauthorized
  */
 router.get("/list", verifyToken, async (req, res) => {
@@ -207,7 +207,7 @@ router.get("/list", verifyToken, async (req, res) => {
  *                 description: UpdatedAt
  *       500:
  *         description: Database error
- *       401:
+ *       403:
  *         description: Unauthorized
  * */
 router.get("/list/:DealerCompany", verifyToken, async (req, res) => {
@@ -332,7 +332,7 @@ router.get("/list/:DealerCompany", verifyToken, async (req, res) => {
  *
  *       400:
  *         description: Bad Request
- *       401:
+ *       403:
  *         description: Unauthorized
  * */
 router.post("/add", verifyToken, async (req, res) => {
@@ -550,7 +550,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
     });
   } catch (err) {
     console.error("Database error:", err);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     // 데이터베이스 연결 종료
     if (connection) {
@@ -591,7 +591,7 @@ router.put("/withdrawal-subscription/:pk", verifyToken, async (req, res) => {
     res.status(200).json({ message: "Subscription withdrawn successfully" });
   } catch (err) {
     console.error("Database error:", err);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) {
       await connection.release();
@@ -656,7 +656,7 @@ router.get("/license-history/:pk", verifyToken, async (req, res) => {
     res.status(200).json(historyRows);
   } catch (err) {
     console.error("Database error:", err);
-    res.status(500).json({ error: "Database error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     // 데이터베이스 연결 종료
     if (connection) {

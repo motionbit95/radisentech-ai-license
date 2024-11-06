@@ -20,12 +20,12 @@ const verifyToken = (req, res, next) => {
     return;
   }
 
-  if (!token) return res.status(401).json({ message: "Access token missing" });
+  if (!token) return res.status(403).json({ message: "Access token missing" });
 
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
       console.error("JWT verification error:", err);
-      return res.status(401).json({ message: "Authentication failed" });
+      return res.status(403).json({ message: "Authentication failed" });
     }
 
     req.user = {
