@@ -34,7 +34,6 @@ const ForgotPw = () => {
           message.error("Failed to send code. Please try again.");
           setLoading(false);
           form.resetFields();
-          console.error("Error sending email: ", error);
         });
     } else if (!resetpwForm) {
       // 2. 코드가 일치하는지 확인
@@ -60,7 +59,6 @@ const ForgotPw = () => {
         .catch((error) => {
           message.error("Code is incorrect. Please try again.");
           setLoading(false);
-          form.resetFields();
           console.error("Error verifying code: ", error);
         });
     } else {

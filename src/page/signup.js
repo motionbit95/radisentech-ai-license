@@ -92,8 +92,7 @@ const SignUp = () => {
       .catch(() => false);
 
     if (!isValid) {
-      setLoading(false);
-      return setIsCheckedId(false); // 유효하지 않으면 함수 종료
+      return setIsCheckedId(false), setLoading(false); // 유효하지 않으면 함수 종료
     }
 
     const userId = form.getFieldValue("user_id");
@@ -129,6 +128,7 @@ const SignUp = () => {
       })
       .catch((error) => {
         console.error("Error sending email: ", error);
+        message.error("The ID and email must be entered. Please try again.");
         setLoading(false);
       });
   };
