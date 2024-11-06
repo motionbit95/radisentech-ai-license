@@ -62,9 +62,10 @@ const License = (props) => {
         throw new Error("Unauthorized");
       }
     } catch (error) {
-      console.log(error);
-      if (error.status === 403) {
+      if (error.status === 401) {
         navigate("/login");
+      } else {
+        console.error("Error:", error.message);
       }
     }
   };
@@ -294,7 +295,7 @@ const License = (props) => {
         />
         <AdvancedSearchForm onSearch={(filter) => setSearchFilters(filter)} />
         <Table
-          rowSelection={rowSelection}
+          // rowSelection={rowSelection}
           loading={loading}
           pagination={{
             defaultCurrent: 1,
@@ -348,7 +349,8 @@ const CompanyInfo = (props) => {
         </Space>
       </Descriptions.Item>
       <Descriptions.Item label="License Count [Rem/Total]">
-        {props.currentUser.license_cnt} / {props.license_cnt}
+        {props.currentUser.license_cnt - props.license_cnt} /{" "}
+        {props.currentUser.license_cnt}
       </Descriptions.Item>
     </Descriptions>
   );

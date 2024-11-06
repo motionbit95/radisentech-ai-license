@@ -158,6 +158,7 @@ const LicenseHistoryModal = (props) => {
         onCancel={handleCancel}
         centered
         width={1000}
+        footer={null}
       >
         <Table
           dataSource={history}
