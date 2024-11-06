@@ -5,7 +5,7 @@ const bodyParser = require("body-parser"); // json 파싱
 const router = express.Router();
 const cors = require("cors"); // cors 패키지 불러오기
 const { verifyToken, generateToken } = require("../controller/auth");
-const { pool } = require("../controller/mysql");
+const { pool, createConnection } = require("../controller/mysql");
 const {
   generateRandomCode,
   generateUniqueCopyValue,
@@ -1063,10 +1063,18 @@ router.post("/reset-password", verifyToken, async (req, res) => {
 router.get("/user-info", verifyToken, async (req, res) => {
   const user = req.user; // verifyToken에서 설정한 userId 사용
 
+  // if (!pool) {
+  //   return res.status(500).json({ error: "Database connection error" });
+  // }
+
   let connection;
   try {
     // 데이터베이스 연결
     connection = await pool.getConnection();
+
+    if (!connection) {
+      connection = await createConnection();
+    }
 
     const [rows] = await connection.query(
       "SELECT * FROM company WHERE id = ?",
