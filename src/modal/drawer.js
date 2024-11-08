@@ -11,7 +11,7 @@ import {
   Space,
 } from "antd";
 import { useNavigate } from "react-router-dom";
-import { AxiosPut } from "../api";
+import { AxiosPut, log } from "../api";
 
 const CompanyEdit = (props) => {
   const navigate = useNavigate();
@@ -30,11 +30,11 @@ const CompanyEdit = (props) => {
   };
 
   const onValuesChange = (changedValues) => {
-    console.log("Changed values: ", changedValues);
+    log("Changed values: ", changedValues);
   };
 
   const onFinish = async (values) => {
-    console.log("Received values of form: ", values, data);
+    log("Received values of form: ", values, data);
     setLoading(true);
 
     await AxiosPut(`/company/update/${data?.id}`, {

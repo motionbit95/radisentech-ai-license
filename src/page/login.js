@@ -3,14 +3,14 @@ import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { Button, Form, Input, Flex, Row, Col, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "antd/es/form/Form";
-import { AxiosPost } from "../api";
+import { AxiosPost, log } from "../api";
 const LoginForm = () => {
   const [form] = useForm();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
 
   const onFinish = (values) => {
-    console.log(
+    log(
       "Received values of form: ",
       values
       // JSON.stringify({
@@ -22,7 +22,7 @@ const LoginForm = () => {
     AxiosPost("/company/login", values)
       .then((result) => {
         // 로그인 성공
-        console.log(result);
+        log(result);
         localStorage.setItem("token", result.data.token);
         navigate("/license", { state: { isLoggedIn: true } });
       })

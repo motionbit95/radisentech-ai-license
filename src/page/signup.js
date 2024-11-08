@@ -13,7 +13,7 @@ import {
 } from "antd";
 import { SmileOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { AxiosGet, AxiosPost } from "../api";
+import { AxiosGet, AxiosPost, log } from "../api";
 
 const formItemLayout = {
   labelCol: {
@@ -55,7 +55,7 @@ const SignUp = () => {
   const [isCheckedEmail, setIsCheckedEmail] = useState(false);
   const [loading, setLoading] = useState(false);
   const onFinish = (values) => {
-    console.log("Received values of form: ", values);
+    log("Received values of form: ", values);
     setLoading(true);
 
     // if (!ischeckedId) {
@@ -99,7 +99,7 @@ const SignUp = () => {
 
     AxiosGet(`/company/check-user-id/${userId}`)
       .then((response) => {
-        console.log(response);
+        log(response);
         if (response.status === 200) {
           message.success(response.data.message);
           setIsCheckedId(true);

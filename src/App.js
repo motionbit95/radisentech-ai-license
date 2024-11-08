@@ -5,7 +5,7 @@ import { Footer, Header } from "antd/es/layout/layout";
 import { useNavigate } from "react-router-dom";
 import Company from "./page/company";
 import LicenseDealer from "./page/license-dealer";
-import { AxiosGet } from "./api";
+import { AxiosGet, log } from "./api";
 
 function App({ page }) {
   const navigate = useNavigate();
@@ -18,15 +18,15 @@ function App({ page }) {
     const getUser = async () => {
       AxiosGet("/company/user-info")
         .then((response) => {
-          console.log(response);
+          log(response);
           if (response.status === 200) {
-            // console.log("CURRENT_USER", response.data);
+            // log("CURRENT_USER", response.data);
             setCurrentUser(response.data);
             setPermissionFlag(response.data.permission_flag);
           }
         })
         .catch((error) => {
-          console.log(error);
+          log(error);
           if (error.response.status === 403) {
             navigate("/login");
           }
