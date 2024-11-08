@@ -1274,13 +1274,15 @@ router.post("/transfer", verifyToken, async (req, res) => {
     // 데이터베이스 연결
     connection = await getConnection();
 
+    console.log("sourceId:", sourceId, "targetId:", targetId);
+
     // sourceId와 targetId의 유저 정보 조회
     const [sourceUser] = await connection.execute(
-      "SELECT unique_code FROM company WHERE id = ?",
+      "SELECT unique_code, license_cnt FROM company WHERE id = ?",
       [sourceId]
     );
     const [targetUser] = await connection.execute(
-      "SELECT unique_code FROM company WHERE id = ?",
+      "SELECT unique_code, license_cnt FROM company WHERE id = ?",
       [targetId]
     );
 

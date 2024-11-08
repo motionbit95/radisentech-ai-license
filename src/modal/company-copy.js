@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Button, Input, Modal, Space, Table, message } from "antd";
+import { Button, Input, Modal, Popconfirm, Space, Table, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
@@ -19,8 +19,6 @@ const CompanyCopy = (props) => {
     setIsModalOpen(true);
   };
   const handleOk = () => {
-    console.log(data?.id, selectedCopyCompany?.id);
-
     AxiosPost("/company/transfer", {
       sourceId: data.id,
       targetId: selectedCopyCompany.id,
@@ -29,6 +27,7 @@ const CompanyCopy = (props) => {
         if (response.status === 200) {
           message.success("Company copied successfully.");
           setIsModalOpen(false);
+          setSelectedCopyCompany(null);
           onComplete();
         }
       })
@@ -235,10 +234,25 @@ const CompanyCopy = (props) => {
       <Modal
         title="Transfer Company"
         open={isModalOpen}
-        onOk={handleOk}
         onCancel={handleCancel}
         centered
         width={1000}
+        footer={[
+          <Button key="cancel" onClick={handleCancel}>
+            Cancel
+          </Button>,
+          <Popconfirm
+            key="confirm"
+            title="Are you sure you want to proceed with the transfer?"
+            onConfirm={handleOk}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button disabled={selectedRowKeys.length === 0} type="primary">
+              Transfer
+            </Button>
+          </Popconfirm>,
+        ]}
       >
         <Table
           dataSource={
