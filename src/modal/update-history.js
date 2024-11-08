@@ -83,6 +83,7 @@ const UpdateHistoryModal = (props) => {
         onCancel={handleCancel}
         centered
         width={800}
+        footer={null}
       >
         <Table
           dataSource={updateHistory}

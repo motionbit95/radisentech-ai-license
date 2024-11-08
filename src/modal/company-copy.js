@@ -241,7 +241,9 @@ const CompanyCopy = (props) => {
         width={1000}
       >
         <Table
-          dataSource={list}
+          dataSource={
+            data?.id ? list.filter((item) => item.id !== data.id) : list
+          }
           rowSelection={rowSelection}
           columns={companyColumns}
           pagination={{
