@@ -1284,6 +1284,17 @@ router.post("/transfer", verifyToken, async (req, res) => {
       [targetId]
     );
 
+    // sourceId와 targetId의 license_cnt 변경
+    await connection.execute(
+      "UPDATE company SET license_cnt = ? WHERE id = ?",
+      [sourceUser[0].license_cnt, targetId]
+    );
+
+    await connection.execute(
+      "UPDATE company SET license_cnt = ? WHERE id = ?",
+      [targetUser[0].license_cnt, sourceId]
+    );
+
     if (sourceUser.length === 0) {
       return res.status(404).json({ error: "Source user not found" });
     }
