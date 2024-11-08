@@ -409,7 +409,7 @@ const Company = (props) => {
                     }}
                     setLoading={setLoading}
                   />
-                  <ButtonGroup>
+                  <Space>
                     {/* <Popconfirm
                       title="Copy the Account?"
                       description="Are you sure to copy this account?"
@@ -482,7 +482,7 @@ const Company = (props) => {
                         Delete
                       </Button>
                     </Popconfirm>
-                  </ButtonGroup>
+                  </Space>
                 </Row>
               )}
               pagination={{

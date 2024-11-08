@@ -36,16 +36,15 @@ const License = (props) => {
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
-    // console.log(props.currentUser.id);
     updateDealerLicenseList();
   }, []);
 
   const updateDealerLicenseList = async () => {
     setLoading(true);
     try {
-      // console.log(props.currentUser.company_name);
+      console.log(props.currentUser.unique_code);
       const result = await AxiosGet(
-        `/license/list/${props.currentUser.company_name}`
+        `/license/list/${props.currentUser.unique_code}`
       );
       if (result.status === 200) {
         console.log(result.data.data);

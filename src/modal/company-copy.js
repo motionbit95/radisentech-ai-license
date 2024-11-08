@@ -1,12 +1,13 @@
 import React, { useRef, useState } from "react";
-import { Button, Input, Modal, Space, Table } from "antd";
+import { Button, Input, Modal, Space, Table, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
+import { AxiosPost } from "../api";
 
 const CompanyCopy = (props) => {
   const navigate = useNavigate();
-  const { data, list, disabled, onCancel, setloading } = props;
+  const { data, list, disabled, onComplete, setloading } = props;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCopyCompany, setSelectedCopyCompany] = useState(null); // 선택된 Company data
 
@@ -16,12 +17,25 @@ const CompanyCopy = (props) => {
 
   const showModal = () => {
     setIsModalOpen(true);
-    console.log(list);
   };
   const handleOk = () => {
-    setIsModalOpen(false);
+    console.log(data?.id, selectedCopyCompany?.id);
 
-    // 여기에 함수 넣기
+    AxiosPost("/company/transfer", {
+      sourceId: data.id,
+      targetId: selectedCopyCompany.id,
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          message.success("Company copied successfully.");
+          setIsModalOpen(false);
+          onComplete();
+        }
+      })
+      .catch((error) => {
+        console.error("Error copying company: ", error);
+        message.error("Failed to copy company. Please try again.");
+      });
   };
   const handleCancel = () => {
     setIsModalOpen(false);
@@ -216,7 +230,7 @@ const CompanyCopy = (props) => {
   return (
     <>
       <Button disabled={disabled} onClick={showModal}>
-        Copy
+        Transfer
       </Button>
       <Modal
         title="Transfer Company"
