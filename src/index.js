@@ -5,7 +5,7 @@ import "./index.css";
 import App from "./App";
 import LoginForm from "./page/login";
 import SignUp from "./page/signup";
-import { Button, Result } from "antd";
+import { Button, ConfigProvider, Result } from "antd";
 import ForgotPw from "./page/find-password";
 
 const router = createBrowserRouter([
@@ -48,9 +48,23 @@ const router = createBrowserRouter([
   },
 ]);
 
+const lightTheme = {
+  token: {
+    colorPrimary: "blue",
+  },
+};
+
+const darkTheme = {
+  token: {
+    colorPrimary: "black",
+  },
+};
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <ConfigProvider>
+      <RouterProvider router={router} />
+    </ConfigProvider>
   </React.StrictMode>
 );

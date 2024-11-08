@@ -253,10 +253,12 @@ const SignUp = () => {
             ]}
           >
             <Row gutter={8}>
-              <Col span={16}>
-                <Input onChange={() => setIsCheckedId(false)} />
+              <Col span={24}>
+                <Input
+                // onChange={() => setIsCheckedId(false)}
+                />
               </Col>
-              <Col span={8}>
+              {/* <Col span={8}>
                 <Button
                   className="w-full"
                   onClick={handleCheckDuplicateId}
@@ -265,7 +267,7 @@ const SignUp = () => {
                   Check ID
                   {ischeckedId && <SmileOutlined style={{ marginLeft: 3 }} />}
                 </Button>
-              </Col>
+              </Col> */}
             </Row>
           </Form.Item>
 

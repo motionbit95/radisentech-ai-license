@@ -317,7 +317,8 @@ const Company = (props) => {
       key: "phone",
       ...getColumnSearchProps("phone"),
     },
-    ...(props.currentUser.permission_flag === "D"
+    ...(props.currentUser.permission_flag === "D" ||
+    props.currentUser.permission_flag === "Y"
       ? [
           {
             title: "Permission",
@@ -327,7 +328,11 @@ const Company = (props) => {
               <Tag
                 color={text === "D" ? "red" : text === "Y" ? "blue" : "green"}
               >
-                {text === "D" ? "Developer" : text === "Y" ? "Admin" : "Dealer"}
+                {text === "D"
+                  ? "Supervisor"
+                  : text === "Y"
+                  ? "Admin"
+                  : "Dealer"}
               </Tag>
             ),
 

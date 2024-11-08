@@ -208,7 +208,7 @@ const CompanyEdit = (props) => {
             </Col>
           </Row>
           {/* 슈퍼바이저 컨트롤러 */}
-          {props.permission_flag === "D" && (
+          {(props.permission_flag === "D" || props.permission_flag === "Y") && (
             <Row gutter={16}>
               <Col span={24}>
                 <Form.Item name="permission_flag" label="Supervisor">
