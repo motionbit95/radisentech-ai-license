@@ -145,11 +145,12 @@ router.get("/list", verifyToken, async (req, res) => {
  *         required: true
  *         description: 인증 토큰 헤더(Bearer [Access Token])
  *       - in: path
- *         name: pk
+ *         name: UniqueCode
  *         schema:
- *           type: integer
+ *           type: string
  *         required: true
- *         description: license pk
+ *         description: UniqueCode
+ *         example: "RADISENTECH"
  *     responses:
  *       200:
  *         description: license table list를 조회
@@ -211,8 +212,8 @@ router.get("/list", verifyToken, async (req, res) => {
  *       403:
  *         description: Unauthorized
  * */
-router.get("/list/:DealerCompany", verifyToken, async (req, res) => {
-  console.log(req.params.DealerCompany);
+router.get("/list/:UniqueCode", verifyToken, async (req, res) => {
+  console.log(req.params.UniqueCode);
   let connection;
   try {
     // 데이터베이스 연결
@@ -220,8 +221,8 @@ router.get("/list/:DealerCompany", verifyToken, async (req, res) => {
 
     // LicenseManagement 테이블의 모든 데이터를 가져오는 쿼리
     const [rows] = await connection.execute(
-      "SELECT * FROM LicenseManagement WHERE DealerCompany = ?",
-      [req.params.DealerCompany]
+      "SELECT * FROM LicenseManagement WHERE UniqueCode = ?",
+      [req.params.UniqueCode]
     );
 
     // 결과를 클라이언트에 JSON 형식으로 반환
