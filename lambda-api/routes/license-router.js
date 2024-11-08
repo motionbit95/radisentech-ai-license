@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser"); // json 파싱
 const cors = require("cors");
-const { pool } = require("../controller/mysql");
+const { pool, getConnection } = require("../controller/mysql");
 const { formatDateToYYYYMMDD } = require("../controller/common");
 const { verifyToken } = require("../controller/auth");
 const dayjs = require("dayjs");
@@ -85,7 +85,7 @@ router.get("/list", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // LicenseManagement 테이블의 모든 데이터를 가져오는 쿼리
     const [rows] = await connection.execute("SELECT * FROM LicenseManagement");
@@ -216,7 +216,7 @@ router.get("/list/:DealerCompany", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // LicenseManagement 테이블의 모든 데이터를 가져오는 쿼리
     const [rows] = await connection.execute(
@@ -391,7 +391,7 @@ router.post("/add", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // LicenseManagement 테이블에 데이터 추가하는 쿼리
     const insertQuery = `
@@ -493,7 +493,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
 
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // ExpireDate 변환: LocalTerminateDate와 UTCTerminateDate 계산
     const expireDateObj = new Date(ExpireDate);
@@ -580,7 +580,7 @@ router.put("/withdrawal-subscription/:pk", verifyToken, async (req, res) => {
   let connection;
 
   try {
-    connection = await pool.getConnection();
+    connection = await getConnection();
     // 업데이트 쿼리 작성
     const updateQuery = `
       UPDATE LicenseManagement 
@@ -651,7 +651,7 @@ router.get("/license-history/:pk", verifyToken, async (req, res) => {
 
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // license_history에서 특정 license_pk의 변경 이력 조회
     const [historyRows] = await connection.execute(

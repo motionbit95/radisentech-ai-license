@@ -5,7 +5,7 @@ const bodyParser = require("body-parser"); // json 파싱
 const router = express.Router();
 const cors = require("cors"); // cors 패키지 불러오기
 const { verifyToken, generateToken } = require("../controller/auth");
-const { pool, createConnection } = require("../controller/mysql");
+const { getConnection } = require("../controller/mysql");
 const {
   generateRandomCode,
   generateUniqueCopyValue,
@@ -73,7 +73,7 @@ router.post("/login", async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // user_id로 사용자 검색
     const query = "SELECT * FROM company WHERE user_id = ?";
@@ -171,7 +171,7 @@ router.post("/login", async (req, res) => {
 router.get("/list", verifyToken, async (req, res) => {
   let connection;
   try {
-    connection = await pool.getConnection();
+    connection = await getConnection();
     const [rows] = await connection.query("SELECT * FROM company"); // 'your_table_name'을 실제 테이블 이름으로 변경
     res.status(200).json(rows);
   } catch (error) {
@@ -253,7 +253,7 @@ router.post("/add", async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // 데이터 삽입 쿼리 실행
     const query = `
@@ -380,7 +380,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // 수정할 데이터가 있는지 확인
     const [existingUser] = await connection.execute(
@@ -469,7 +469,7 @@ router.get("/check-user-id/:user_id", async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // user_id 존재 여부 확인
     const [results] = await connection.execute(
@@ -550,7 +550,7 @@ router.put("/update-license/:id", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // user_id 존재 여부 확인
     const [existingUser] = await connection.execute(
@@ -645,7 +645,7 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // generate history가 있으면 삭제시킵니다.
     const deleteQuery = "DELETE FROM generate_history WHERE company_pk = ?";
@@ -721,7 +721,7 @@ router.post("/copy-user/:id", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // 기존 행 조회
     const [existingUser] = await connection.execute(
@@ -808,7 +808,7 @@ router.post("/request-reset-code", async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // 사용자 조회
     const [rows] = await connection.execute(
@@ -893,7 +893,7 @@ router.post("/send-code", async (req, res) => {
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // 인증 코드 DB에 저장 (기존의 코드를 업데이트하거나 새로 삽입)
     await connection.execute(
@@ -954,7 +954,7 @@ router.post("/verify-code", async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // DB에서 인증 코드 조회
     const [rows] = await connection.execute(
@@ -1037,7 +1037,7 @@ router.post("/reset-password", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // 비밀번호 해싱
     const hashedPassword = await bcrypt.hash(new_password, 10);
@@ -1090,11 +1090,7 @@ router.get("/user-info", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
-
-    if (!connection) {
-      connection = await createConnection();
-    }
+    connection = await getConnection();
 
     const [rows] = await connection.query(
       "SELECT * FROM company WHERE id = ?",
@@ -1154,7 +1150,7 @@ router.get("/generate-history/:pk", verifyToken, async (req, res) => {
   let connection;
   try {
     // Create a database connection
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // Execute the query
     const [rows] = await connection.query(
@@ -1214,7 +1210,7 @@ router.put("/history-cancel/:id", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // 이력 변경 쿼리
     const updateQuery = `
@@ -1276,7 +1272,7 @@ router.post("/transfer", verifyToken, async (req, res) => {
   let connection;
   try {
     // 데이터베이스 연결
-    connection = await pool.getConnection();
+    connection = await getConnection();
 
     // sourceId와 targetId의 유저 정보 조회
     const [sourceUser] = await connection.execute(
