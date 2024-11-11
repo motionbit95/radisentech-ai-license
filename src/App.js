@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from "react";
 import License from "./page/license-admin";
-import { Button, Col, Image, Layout, Menu, Result, Space, Spin } from "antd";
+import {
+  Button,
+  Col,
+  Image,
+  Layout,
+  Menu,
+  Result,
+  Space,
+  Spin,
+  Switch,
+} from "antd";
 import { Footer, Header } from "antd/es/layout/layout";
 import { useNavigate } from "react-router-dom";
 import Company from "./page/company";
@@ -10,7 +20,7 @@ import Product from "./page/product";
 import Logo from "./asset/logo-black.svg";
 import { googleLogout } from "@react-oauth/google";
 
-function App({ page }) {
+function App({ page, toggleTheme, isDarkMode }) {
   const navigate = useNavigate();
   const [permission_flag, setPermissionFlag] = useState(""); // D: Developer, Y: Admin, N: Delear
 
@@ -109,10 +119,23 @@ function App({ page }) {
           </Col>
 
           <Col span={12} direction style={{ textAlign: "right" }}>
-            {/* <Space> */}
-            {isLoggedIn ? (
-              <Space>
+            <Space>
+              {isLoggedIn ? (
+                <Space>
+                  <Button
+                    onClick={() => {
+                      // 저장된 토큰을 삭제합니다.
+                      localStorage.removeItem("token");
+                      setIsLoggedIn(false);
+                      navigate("/login");
+                    }}
+                  >
+                    Logout
+                  </Button>
+                </Space>
+              ) : (
                 <Button
+                  type="primary"
                   onClick={() => {
                     googleLogout();
                     // 저장된 토큰을 삭제합니다.
@@ -121,23 +144,11 @@ function App({ page }) {
                     navigate("/login");
                   }}
                 >
-                  Logout
+                  Login
                 </Button>
-              </Space>
-            ) : (
-              <Button
-                type="primary"
-                onClick={() => {
-                  navigate("/login");
-                }}
-              >
-                Login
-              </Button>
-            )}
-            {/* <div style={{ textAlign: "center" }}>
-                <Image preview={false} src={Logo} alt="logo" width={100} />
-              </div>
-            </Space> */}
+              )}
+              {/* <Switch checked={isDarkMode} onChange={toggleTheme} /> */}
+            </Space>
           </Col>
         </Header>
         <div></div>
