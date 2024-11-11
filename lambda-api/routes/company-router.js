@@ -118,13 +118,6 @@ router.post("/login", async (req, res) => {
  *     description: company table list를 조회
  *     produces:
  *       - application/json
- *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: 인증 토큰 헤더(Bearer [Access Token])
  *     responses:
  *       200:
  *         description: company table list를 조회
@@ -296,12 +289,6 @@ router.post("/add", async (req, res) => {
  *     summary: 회사정보 수정
  *     description: company table data 변경
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: 인증 토큰 헤더(Bearer [Access Token])
  *       - in: path
  *         name: id
  *         description: id
@@ -500,12 +487,6 @@ router.get("/check-user-id/:user_id", async (req, res) => {
  *     summary: 라이센스 수량 생성
  *     description: company table data 변경(라이센스 수량 생성)
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: 인증 토큰 헤더(Bearer [Access Token])
  *       - in: path
  *         name: id
  *         description: company pk
@@ -615,13 +596,6 @@ VALUES (?, ?, ?, ?, ?, ?)`;
  *     tags: [Company]
  *     summary: 사용자 삭제
  *     description: company table data 삭제
- *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: 인증 토큰 헤더(Bearer [Access Token])
  *       - in: path
  *         name: id
  *         description: id
@@ -694,12 +668,6 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
  *     summary: 사용자 복사
  *     description: company table data 복사
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: 인증 토큰 헤더(Bearer [Access Token])
  *       - in: path
  *         name: id
  *         description: id
@@ -1001,12 +969,6 @@ router.post("/verify-code", async (req, res) => {
  *     summary: 비밀번호 변경
  *     description: 비밀번호 변경
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         description: Bearer [Access Token]
- *         required: true
- *         schema:
- *           type: string
  *       - in: body
  *         name: body
  *         description: 비밀번호 변경
@@ -1065,13 +1027,6 @@ router.post("/reset-password", verifyToken, async (req, res) => {
  *     tags: [Company]
  *     summary: 사용자 정보 조회
  *     description: 사용자 정보 조회
- *     parameters:
- *       - in: header
- *         name: Authorization
- *         description: Bearer [Access Token]
- *         required: true
- *         schema:
- *           type: string
  *     responses:
  *       200:
  *         description: 사용자 정보 조회 *
@@ -1128,12 +1083,6 @@ router.get("/user-info", verifyToken, async (req, res) => {
  *         schema:
  *           type: string
  *         example: 1
- *       - in: header
- *         name: Authorization
- *         description: Bearer [Access Token]
- *         required: true
- *         schema:
- *           type: string
  *     responses:
  *       200:
  *         description: 생성 이력 조회
@@ -1188,12 +1137,6 @@ router.get("/generate-history/:pk", verifyToken, async (req, res) => {
  *         schema:
  *           type: string
  *         example: 1
- *       - in: header
- *         name: Authorization
- *         description: Bearer [Access Token]
- *         required: true
- *         schema:
- *           type: string
  *     responses:
  *       200:
  *         description: generate license 취소 완료
@@ -1239,12 +1182,6 @@ router.put("/history-cancel/:id", verifyToken, async (req, res) => {
  *     summary: 사용자 정보 이관
  *     description: 사용자 정보 이관
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         description: Bearer [Access Token]
- *         required: true
- *         schema:
- *           type: string
  *       - in: body
  *         name: body
  *         description: 사용자 정보 이관 from -> to ID

@@ -27,13 +27,6 @@ router.use(bodyParser.json());
  *     description: license table list를 조회
  *     produces:
  *       - application/json
- *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: 인증 토큰 헤더(Bearer [Access Token])
  *     responses:
  *       200:
  *         description: license table list를 조회
@@ -138,12 +131,6 @@ router.get("/list", verifyToken, async (req, res) => {
  *     produces:
  *       - application/json
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: 인증 토큰 헤더(Bearer [Access Token])
  *       - in: path
  *         name: UniqueCode
  *         schema:
@@ -253,12 +240,6 @@ router.get("/list/:UniqueCode", verifyToken, async (req, res) => {
  *     produces:
  *       - application/json
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: 인증 토큰 헤더(Bearer [Access Token])
  *       - in: body
  *         name: body
  *         description: License 추가 요청데이터
@@ -447,12 +428,6 @@ router.post("/add", verifyToken, async (req, res) => {
  *     description: 특정 ID의 ExpireDate를 기준으로 LocalTerminateDate와 UTCTerminateDate를 업데이트하는 엔드포인트
  *     tags: [License]
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: 인증 토큰 헤더(Bearer [Access Token])
  *       - in: path
  *         name: pk
  *         schema:
@@ -524,15 +499,15 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
     );
 
     if (currentRows.length === 0) {
-      return res.status(404).json({ error: "License not found" });
+      return res.status(401).json({ error: "License not found" });
     }
 
     const currentExpireDate = new Date(currentRows[0].UTCTerminateDate);
 
     // 이전과 새로운 ExpireDate 비교
     if (formatDateToYYYYMMDD(currentExpireDate) === utcTerminateDate) {
-      return res.status(500).json({
-        message: "No changes made. ExpireDate is the same.",
+      return res.status(402).json({
+        error: "No changes made. ExpireDate is the same.",
       });
     }
 
@@ -573,7 +548,28 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
   }
 });
 
-// 청약 철회 함수 추가
+/**
+ * @swagger
+ * /license/withdrawal-subscription/{pk}:
+ *   put:
+ *     summary: 청약 철회
+ *     description: 라이센스 목록 삭제
+ *     tags: [License]
+ *     parameters:
+ *       - in: path
+ *         name: pk
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: LicenseManagement pk
+ *     responses:
+ *       200:
+ *         description: SUCCESS
+ *       500:
+ *         description: Database error
+ *       403:
+ *         description: Forbidden
+ * */
 router.put("/withdrawal-subscription/:pk", verifyToken, async (req, res) => {
   const { pk } = req.params;
   console.log("license_pk:", pk);
@@ -621,12 +617,6 @@ router.put("/withdrawal-subscription/:pk", verifyToken, async (req, res) => {
  *     description: 특정 license_pk의 변경 이력 조회
  *     tags: [License]
  *     parameters:
- *       - in: header
- *         name: Authorization
- *         schema:
- *           type: string
- *         required: true
- *         description: 인증 토큰 헤더(Bearer [Access Token])
  *       - in: path
  *         name: pk
  *         schema:

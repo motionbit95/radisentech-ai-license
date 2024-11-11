@@ -23,11 +23,26 @@ const swaggerOptions = {
 - **사용자 ID**: \`Radisen\` (고유한 테스트용 ID)
 
 ⚠️ **주의**: 이 토큰은 실제 환경에서는 사용하지 마십시오.
-
       `,
     },
+    securityDefinitions: {
+      Bearer: {
+        type: "apiKey",
+        name: "Authorization",
+        in: "header",
+      },
+    },
+    security: [
+      {
+        Bearer: [],
+      },
+    ],
   },
-  apis: ["./routes/company-router.js", "./routes/license-router.js"],
+  apis: [
+    "./routes/company-router.js",
+    "./routes/license-router.js",
+    "./routes/product-router.js",
+  ],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
@@ -64,6 +79,9 @@ app.use("/company", companyRouter);
 
 const licenseRouter = require("./routes/license-router");
 app.use("/license", licenseRouter);
+
+const productRouter = require("./routes/product-router");
+app.use("/product", productRouter);
 
 // 로컬에서 실행될 때를 위한 서버 설정 (Lambda 배포 시에는 불필요)
 if (process.env.NODE_ENV !== "production") {
