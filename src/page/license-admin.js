@@ -11,6 +11,7 @@ import {
   Layout,
   Popconfirm,
   Row,
+  Select,
   Space,
   Table,
   theme,
@@ -209,6 +210,17 @@ const License = (props) => {
       ),
   });
 
+  const getColumnFilterProps = (dataIndex) => ({
+    filteredValue: filteredInfo[dataIndex] || [],
+    onFilter: (value, record) => record[dataIndex] === value,
+    filterSearch: true,
+    ellipsis: true,
+    filters: list // filter options 설정
+      .map((item) => item[dataIndex])
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .map((value) => ({ text: value, value })),
+  });
+
   const getCompanyCode = (company_name) => {
     return list.find((item) => item.Company === company_name).UniqueCode;
   };
@@ -275,7 +287,7 @@ const License = (props) => {
         return a.AIType.localeCompare(b.AIType);
       },
 
-      ...getColumnSearchProps("AIType"),
+      ...getColumnFilterProps("AIType"),
     },
     {
       title: "Hospital Name",
@@ -368,7 +380,10 @@ const License = (props) => {
       }}
     >
       <Space size={"large"} direction="vertical" className="w-full">
-        <AdvancedSearchForm onSearch={(filter) => setSearchFilters(filter)} />
+        <AdvancedSearchForm
+          data={list}
+          onSearch={(filter) => setSearchFilters(filter)}
+        />
         <Table
           rowClassName={(record) => (record.Deleted === 0 ? "" : "deleted-row")}
           rowSelection={rowSelection}
@@ -447,18 +462,6 @@ const AdvancedSearchForm = (props) => {
     padding: 24,
   };
 
-  const options = [
-    {
-      value: "option1",
-    },
-    {
-      value: "option2",
-    },
-    {
-      value: "option3",
-    },
-  ];
-
   const getFields = () => {
     const children = [];
     children.push(
@@ -507,15 +510,19 @@ const AdvancedSearchForm = (props) => {
     children.push(
       <Col span={8} key={"product"}>
         <Form.Item name={"product"} label={`Product`}>
-          <AutoComplete
-            className="w-full"
-            options={options}
-            placeholder="search..."
-            filterOption={(inputValue, option) =>
-              option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !==
-              -1
-            }
-          />
+          <Select
+            mode="multiple"
+            style={{ width: "100%" }}
+            placeholder="Please select"
+          >
+            {props.data
+              .map((item) => item.AIType)
+              .map((item) => (
+                <Select.Option key={item} value={item}>
+                  {item}
+                </Select.Option>
+              ))}
+          </Select>
         </Form.Item>
       </Col>
     );
@@ -576,9 +583,3 @@ const AdvancedSearchForm = (props) => {
 };
 
 export default License;
-
-const Title = (props) => (
-  <Flex align="center" justify="space-between">
-    {props.title}
-  </Flex>
-);
