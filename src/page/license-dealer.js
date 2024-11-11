@@ -16,7 +16,7 @@ import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { AxiosGet } from "../api";
+import { AxiosGet, log } from "../api";
 import IniFileDownload from "../component/button/download";
 
 const { Content } = Layout;
@@ -42,12 +42,12 @@ const License = (props) => {
   const updateDealerLicenseList = async () => {
     setLoading(true);
     try {
-      console.log(props.currentUser.unique_code);
+      log(props.currentUser.unique_code);
       const result = await AxiosGet(
         `/license/list/${props.currentUser.unique_code}`
       );
       if (result.status === 200) {
-        console.log(result.data.data);
+        log(result.data.data);
         setList(
           result.data.data
             .filter((item) => item.Deleted === 0)
@@ -80,7 +80,7 @@ const License = (props) => {
   };
 
   const handleChange = (pagination, filters, sorter) => {
-    console.log("Various parameters", pagination, filters, sorter);
+    log("Various parameters", pagination, filters, sorter);
     setFilteredInfo(filters);
     setSortedInfo(sorter);
   };
@@ -256,9 +256,9 @@ const License = (props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const onSelectChange = (newSelectedRowKeys) => {
-    console.log("selectedRowKeys changed: ", newSelectedRowKeys);
+    log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
-    console.log(list.find((c) => c.key === newSelectedRowKeys[0]));
+    log(list.find((c) => c.key === newSelectedRowKeys[0]));
     setSelectedLicense(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 
@@ -398,7 +398,7 @@ const AdvancedSearchForm = (props) => {
     return children;
   };
   const onFinish = (values) => {
-    console.log("Received values of form: ", values);
+    log("Received values of form: ", values);
 
     // 모든 검색 값들을 소문자로 변환
     const normalizedFilters = Object.fromEntries(

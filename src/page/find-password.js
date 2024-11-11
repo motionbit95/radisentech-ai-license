@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { MailOutlined, UserOutlined, UnlockOutlined } from "@ant-design/icons";
 import { SmileOutlined } from "@ant-design/icons";
-import { AxiosPost } from "../api";
+import { AxiosPost, log } from "../api";
 
 const ForgotPw = () => {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ const ForgotPw = () => {
           }
         })
         .catch((error) => {
-          console.log(error);
+          log(error);
           message.error("Failed to send code. Please try again.");
           setLoading(false);
           form.resetFields();
@@ -40,7 +40,7 @@ const ForgotPw = () => {
       // 2. 코드가 일치하는지 확인
       setLoading(true);
 
-      // console.log("Received values of form: ", values);
+      // log("Received values of form: ", values);
 
       AxiosPost("/company/verify-code", {
         user_id: savedUserId,

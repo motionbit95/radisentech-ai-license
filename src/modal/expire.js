@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, DatePicker, Form, Input, Modal, message } from "antd";
 import dayjs from "dayjs";
-import { AxiosPut } from "../api";
+import { AxiosPut, log } from "../api";
 const UpdateLicense = (props) => {
   const { title, type, disabled, data, onComplete } = props;
   const [modalOpen, setModalOpen] = useState(false);
@@ -28,7 +28,7 @@ const UpdateLicense = (props) => {
   };
 
   const onFinish = async (values) => {
-    console.log("Received values of form: ", values);
+    log("Received values of form: ", values);
 
     try {
       const { expire_date } = values; // 폼에서 가져온 expire_date
@@ -52,10 +52,9 @@ const UpdateLicense = (props) => {
           form.resetFields();
         })
         .catch((error) => {
-          console.log(error);
+          log(error);
         });
     } catch (error) {
-      console.error("Update failed:", error);
       message.error("Update failed. Please try again."); // 오류 메시지 표시
     }
   };

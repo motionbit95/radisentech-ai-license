@@ -3,7 +3,7 @@ import { Button, Input, Modal, Popconfirm, Space, Table, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
-import { AxiosPost } from "../api";
+import { AxiosPost, log } from "../api";
 
 const CompanyCopy = (props) => {
   const navigate = useNavigate();
@@ -214,9 +214,9 @@ const CompanyCopy = (props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const onSelectChange = (newSelectedRowKeys) => {
-    console.log("selectedRowKeys changed: ", newSelectedRowKeys);
+    log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
-    console.log(list.find((c) => c.key === newSelectedRowKeys[0]));
+    log(list.find((c) => c.key === newSelectedRowKeys[0]));
     setSelectedCopyCompany(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 

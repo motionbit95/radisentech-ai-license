@@ -20,7 +20,7 @@ import GenerateModal from "../modal/generate";
 import CompanyEdit from "../modal/drawer";
 import { useNavigate } from "react-router-dom";
 import LicenseHistoryModal from "../modal/license-history";
-import { AxiosDelete, AxiosGet, AxiosPost } from "../api";
+import { AxiosDelete, AxiosGet, AxiosPost, log } from "../api";
 import IniFileDownload from "../component/button/download";
 import CompanyCopy from "../modal/company-copy";
 const { Content } = Layout;
@@ -117,7 +117,7 @@ const Company = (props) => {
   };
 
   const handleChange = (pagination, filters, sorter) => {
-    console.log("Various parameters", pagination, filters, sorter);
+    log("Various parameters", pagination, filters, sorter);
     setFilteredInfo(filters);
     setSortedInfo(sorter);
   };
@@ -317,7 +317,8 @@ const Company = (props) => {
       key: "phone",
       ...getColumnSearchProps("phone"),
     },
-    ...(props.currentUser.permission_flag === "D"
+    ...(props.currentUser.permission_flag === "D" ||
+    props.currentUser.permission_flag === "Y"
       ? [
           {
             title: "Permission",
@@ -327,7 +328,11 @@ const Company = (props) => {
               <Tag
                 color={text === "D" ? "red" : text === "Y" ? "blue" : "green"}
               >
-                {text === "D" ? "Developer" : text === "Y" ? "Admin" : "Dealer"}
+                {text === "D"
+                  ? "Supervisor"
+                  : text === "Y"
+                  ? "Admin"
+                  : "Dealer"}
               </Tag>
             ),
 
@@ -359,9 +364,9 @@ const Company = (props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const onSelectChange = (newSelectedRowKeys) => {
-    console.log("selectedRowKeys changed: ", newSelectedRowKeys);
+    log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
-    console.log(list.find((c) => c.key === newSelectedRowKeys[0]));
+    log(list.find((c) => c.key === newSelectedRowKeys[0]));
     setSelectedCompany(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 

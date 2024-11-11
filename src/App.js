@@ -5,7 +5,8 @@ import { Footer, Header } from "antd/es/layout/layout";
 import { useNavigate } from "react-router-dom";
 import Company from "./page/company";
 import LicenseDealer from "./page/license-dealer";
-import { AxiosGet } from "./api";
+import { AxiosGet, log } from "./api";
+import Product from "./page/product";
 
 function App({ page }) {
   const navigate = useNavigate();
@@ -18,15 +19,15 @@ function App({ page }) {
     const getUser = async () => {
       AxiosGet("/company/user-info")
         .then((response) => {
-          console.log(response);
+          log(response);
           if (response.status === 200) {
-            // console.log("CURRENT_USER", response.data);
+            // log("CURRENT_USER", response.data);
             setCurrentUser(response.data);
             setPermissionFlag(response.data.permission_flag);
           }
         })
         .catch((error) => {
-          console.log(error);
+          log(error);
           if (error.response.status === 403) {
             navigate("/login");
           }
@@ -47,6 +48,14 @@ function App({ page }) {
           {
             key: "company",
             label: "Company List",
+          },
+        ]),
+    ...(permission_flag === "N"
+      ? []
+      : [
+          {
+            key: "product",
+            label: "Product List",
           },
         ]),
     {
@@ -91,6 +100,7 @@ function App({ page }) {
               }}
             />
           </Col>
+
           <Col span={12} direction style={{ textAlign: "right" }}>
             {isLoggedIn ? (
               <Space>
@@ -148,6 +158,29 @@ function App({ page }) {
               <>
                 {permission_flag === "Y" || permission_flag === "D" ? (
                   <Company currentUser={currentUser} />
+                ) : (
+                  <div>
+                    <Result
+                      status="403"
+                      title="403"
+                      subTitle="Sorry, you are not authorized to access this page."
+                      extra={
+                        <Button
+                          type="primary"
+                          onClick={() => navigate("/login")}
+                        >
+                          Login Account
+                        </Button>
+                      }
+                    />
+                  </div>
+                )}
+              </>
+            )}
+            {page === "product" && permission_flag && (
+              <>
+                {permission_flag === "Y" || permission_flag === "D" ? (
+                  <Product currentUser={currentUser} />
                 ) : (
                   <div>
                     <Result

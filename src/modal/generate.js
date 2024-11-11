@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form, Input, InputNumber, Modal } from "antd";
-import { AxiosPut } from "../api";
+import { AxiosPut, log } from "../api";
 const GenerateModal = (props) => {
   const { title, type, disabled, data, onComplete, setLoading } = props;
   const [modalOpen, setModalOpen] = useState(false);
@@ -26,14 +26,14 @@ const GenerateModal = (props) => {
     })
       .then((response) => {
         // 업데이트에 성공하면 아래 구문 실행
-        console.log(response);
+        log(response);
         setLoading(false);
         form.resetFields();
         setModalOpen(false);
         onComplete(values);
       })
       .catch((error) => {
-        console.log(error);
+        log(error);
         setLoading(false);
       });
   };

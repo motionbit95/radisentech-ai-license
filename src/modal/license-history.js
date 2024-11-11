@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, Col, Modal, Table, Tag, Typography, message } from "antd";
-import { AxiosGet, AxiosPut } from "../api";
+import { AxiosGet, AxiosPut, log } from "../api";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { CloseOutlined } from "@ant-design/icons";
@@ -12,7 +12,7 @@ const LicenseHistoryModal = (props) => {
   const [loading, setLoading] = useState(false);
 
   const fetchHistoryList = async (data) => {
-    console.log("data", data);
+    log("data", data);
     setLoading(true);
     if (data) {
       try {
@@ -50,7 +50,7 @@ const LicenseHistoryModal = (props) => {
   };
 
   const handleHistoryCancel = (data) => {
-    console.log("data", data);
+    log("data", data);
     setLoading(true);
     AxiosPut(`/company/update-license/${data?.company_pk}`, {
       license_cnt: data?.prev_cnt - data?.new_cnt,
@@ -58,11 +58,11 @@ const LicenseHistoryModal = (props) => {
       canceled: 1,
     })
       .then((response) => {
-        console.log(response);
+        log(response);
         AxiosPut(`/company/history-cancel/${data?.id}`, {
           canceled: 1,
         }).then((response) => {
-          console.log(response);
+          log(response);
           // 히스토리 데이터는 부모 테이블에서 받아온 데이터 기준으로 다시 받아와야하므로 props로 받아온 데이터를 넘긴다
           // 여기 함수에서 받은 data는 X 버튼을 클릭한 행의 데이터임.
           fetchHistoryList(props.data);
@@ -71,7 +71,7 @@ const LicenseHistoryModal = (props) => {
         });
       })
       .catch((error) => {
-        console.log(error);
+        log(error);
         setLoading(false);
       });
   };

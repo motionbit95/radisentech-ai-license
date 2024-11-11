@@ -21,7 +21,7 @@ import UpdateHistoryModal from "../modal/update-history";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import ADDLicense from "../modal/add-license";
-import { AxiosGet, AxiosPut } from "../api";
+import { AxiosGet, AxiosPut, log } from "../api";
 import ButtonGroup from "antd/es/button/button-group";
 
 const { Content } = Layout;
@@ -81,7 +81,7 @@ const License = (props) => {
       setLoading(true);
       AxiosPut(`/license/withdrawal-subscription/${selectedLicense.pk}`)
         .then((result) => {
-          console.log(result);
+          log(result);
           if (result.status === 200) {
             updateLicenseList();
             setSelectedLicense(null);
@@ -89,7 +89,7 @@ const License = (props) => {
           }
         })
         .catch((error) => {
-          console.log(error);
+          log(error);
           if (error.status === 403) {
             navigate("/login");
           }
@@ -108,7 +108,7 @@ const License = (props) => {
   };
 
   const handleChange = (pagination, filters, sorter) => {
-    console.log("Various parameters", pagination, filters, sorter);
+    log("Various parameters", pagination, filters, sorter);
     setFilteredInfo(filters);
     setSortedInfo(sorter);
   };
@@ -329,9 +329,9 @@ const License = (props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const onSelectChange = (newSelectedRowKeys) => {
-    console.log("selectedRowKeys changed: ", newSelectedRowKeys);
+    log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
-    console.log(list.find((c) => c.key === newSelectedRowKeys[0]));
+    log(list.find((c) => c.key === newSelectedRowKeys[0]));
     setSelectedLicense(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 
@@ -345,7 +345,7 @@ const License = (props) => {
   const applyFilters = (item) => {
     const { company, country, hospital, expire_date, deleted } = searchFilters;
 
-    // console.log("item", item, searchFilters);
+    // log("item", item, searchFilters);
 
     return (
       // deleted 플래그가 false일 경우 삭제된 라이센스는 보이지 않습니다.
@@ -493,7 +493,7 @@ const AdvancedSearchForm = (props) => {
     return children;
   };
   const onFinish = (values) => {
-    console.log("Received values of form: ", values);
+    log("Received values of form: ", values);
 
     // 모든 검색 값들을 소문자로 변환
     const normalizedFilters = Object.fromEntries(
