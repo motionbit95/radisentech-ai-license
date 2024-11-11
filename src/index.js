@@ -34,6 +34,10 @@ const router = createBrowserRouter([
     element: <App page="company" />,
   },
   {
+    path: "/product",
+    element: <App page="product" />,
+  },
+  {
     path: "/*",
     element: (
       <div className="center">
