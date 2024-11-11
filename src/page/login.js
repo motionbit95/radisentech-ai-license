@@ -65,7 +65,7 @@ const LoginForm = () => {
         title={
           <div style={{ textAlign: "center" }}>
             <Space direction="vertical">
-              <Image preview={false} src={Logo} alt="logo" width={100} />
+              {/* <Image preview={false} src={Logo} alt="logo" width={100} /> */}
               <h2>AI License Manager</h2>
             </Space>
           </div>
