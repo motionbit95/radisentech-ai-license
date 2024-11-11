@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Checkbox,
@@ -12,7 +12,7 @@ import {
   message,
 } from "antd";
 import { SmileOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AxiosGet, AxiosPost, log } from "../api";
 
 const formItemLayout = {
@@ -47,6 +47,10 @@ const tailFormItemLayout = {
 };
 const SignUp = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const user = location.state?.user;
+
   const [form] = Form.useForm();
   const [isRegistered, setIsRegistered] = useState(false);
   const [ischeckedId, setIsCheckedId] = useState(false);
@@ -54,9 +58,53 @@ const SignUp = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const [isCheckedEmail, setIsCheckedEmail] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const onFinish = (values) => {
-    log("Received values of form: ", values);
+    log("Received values of form: ", user ? { ...values, ...user } : values);
     setLoading(true);
+
+    const data = user
+      ? {
+          ...values,
+          user_id: user.id,
+          email: user.email,
+          user_name: user.name,
+        }
+      : values;
+
+    // 아이디, 이메일, 전화번호 중복 체크
+    AxiosPost("/company/account-validate", {
+      user_id: data.user_id,
+      email: data.email,
+      phone: data.phone,
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          console.log(response.data);
+
+          // 회원가입 처리
+          AxiosPost("/company/add", data)
+            .then((response) => {
+              if (response.status === 200) {
+                setIsRegistered(true);
+                setLoading(false);
+              }
+            })
+            .catch((error) => {
+              message.error(error.response.data.message);
+              setLoading(false);
+            });
+        }
+      })
+      .catch((error) => {
+        console.error("Error checking account:", error);
+        if (error.response.status === 401) {
+          message.error(error.response.data.message);
+          setLoading(false);
+          return;
+        }
+        setLoading(false);
+      });
 
     // if (!ischeckedId) {
     //   message.error("Please check the ID before submitting.");
@@ -64,22 +112,22 @@ const SignUp = () => {
     // }
 
     // Id 체크, Email 인증 확인 후 진행
-    if (isCheckedEmail && ischeckedId) {
-      AxiosPost("/company/add", values)
-        .then((response) => {
-          if (response.status === 200) {
-            setIsRegistered(true);
-            setLoading(false);
-          }
-        })
-        .catch((error) => {
-          message.error(error.response.data.message);
-          setLoading(false);
-        });
-    } else {
-      message.error("Please check the ID and Email before submitting.");
-      setLoading(false);
-    }
+    // if (isCheckedEmail && ischeckedId) {
+    //   AxiosPost("/company/add", values)
+    //     .then((response) => {
+    //       if (response.status === 200) {
+    //         setIsRegistered(true);
+    //         setLoading(false);
+    //       }
+    //     })
+    //     .catch((error) => {
+    //       message.error(error.response.data.message);
+    //       setLoading(false);
+    //     });
+    // } else {
+    //   message.error("Please check the ID and Email before submitting.");
+    //   setLoading(false);
+    // }
   };
 
   // ID 중복 체크
@@ -202,9 +250,6 @@ const SignUp = () => {
           form={form}
           name="register"
           onFinish={onFinish}
-          initialValues={{
-            prefix: "82",
-          }}
           style={{
             minWidth: 600,
           }}
@@ -221,44 +266,46 @@ const SignUp = () => {
               zIndex: 999,
             }}
           />
-          <Form.Item
-            name="user_id"
-            label="ID"
-            tooltip="You need to check for ID duplicates."
-            rules={[
-              {
-                required: true,
-                message: "Please input your id!",
-                whitespace: true,
-              },
-              {
-                max: 20, // 최대 길이
-                message: "ID cannot be longer than 20 characters.",
-              },
-              {
-                validator: (_, value) => {
-                  if (!value || value.length < 4) {
-                    return Promise.reject(
-                      new Error("ID must be at least 4 characters long.")
-                    );
-                  }
-                  if (!/^[a-zA-Z0-9]+$/.test(value)) {
-                    return Promise.reject(
-                      new Error("ID must contain only letters and numbers.")
-                    );
-                  }
-                  return Promise.resolve();
-                },
-              },
-            ]}
-          >
-            <Row gutter={8}>
-              <Col span={24}>
-                <Input
-                // onChange={() => setIsCheckedId(false)}
-                />
-              </Col>
-              {/* <Col span={8}>
+          {!user && (
+            <>
+              <Form.Item
+                name="user_id"
+                label="ID"
+                tooltip="You need to check for ID duplicates."
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input your id!",
+                    whitespace: true,
+                  },
+                  {
+                    max: 20, // 최대 길이
+                    message: "ID cannot be longer than 20 characters.",
+                  },
+                  {
+                    validator: (_, value) => {
+                      if (!value || value.length < 4) {
+                        return Promise.reject(
+                          new Error("ID must be at least 4 characters long.")
+                        );
+                      }
+                      if (!/^[a-zA-Z0-9]+$/.test(value)) {
+                        return Promise.reject(
+                          new Error("ID must contain only letters and numbers.")
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+              >
+                <Row gutter={8}>
+                  <Col span={24}>
+                    <Input
+                    // onChange={() => setIsCheckedId(false)}
+                    />
+                  </Col>
+                  {/* <Col span={8}>
                 <Button
                   className="w-full"
                   onClick={handleCheckDuplicateId}
@@ -268,130 +315,149 @@ const SignUp = () => {
                   {ischeckedId && <SmileOutlined style={{ marginLeft: 3 }} />}
                 </Button>
               </Col> */}
-            </Row>
-          </Form.Item>
+                </Row>
+              </Form.Item>
 
-          <Form.Item
-            name="password"
-            label="Password"
-            rules={[
-              {
-                required: true,
-                message: "Please input your password!",
-              },
-              {
-                validator: (_, value) => {
-                  if (!value || value.length < 8) {
-                    return Promise.reject(
-                      new Error("Password must be at least 8 characters long.")
-                    );
-                  }
-                  if (!/[!@#$%^&*]/.test(value)) {
-                    return Promise.reject(
-                      new Error(
-                        "Password must contain at least one special character."
-                      )
-                    );
-                  }
-                  return Promise.resolve();
-                },
-              },
-            ]}
-            hasFeedback
-          >
-            <Input.Password />
-          </Form.Item>
+              <Form.Item
+                name="password"
+                label="Password"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input your password!",
+                  },
+                  {
+                    validator: (_, value) => {
+                      if (!value || value.length < 8) {
+                        return Promise.reject(
+                          new Error(
+                            "Password must be at least 8 characters long."
+                          )
+                        );
+                      }
+                      if (!/[!@#$%^&*]/.test(value)) {
+                        return Promise.reject(
+                          new Error(
+                            "Password must contain at least one special character."
+                          )
+                        );
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
+                hasFeedback
+              >
+                <Input.Password />
+              </Form.Item>
 
-          <Form.Item
-            name="confirm"
-            label="Confirm Password"
-            dependencies={["password"]}
-            hasFeedback
-            rules={[
-              {
-                required: true,
-                message: "Please confirm your password!",
-              },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue("password") === value) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(
-                    new Error("The new password that you entered do not match!")
-                  );
-                },
-              }),
-            ]}
-          >
-            <Input.Password />
-          </Form.Item>
+              <Form.Item
+                name="confirm"
+                label="Confirm Password"
+                dependencies={["password"]}
+                hasFeedback
+                rules={[
+                  {
+                    required: true,
+                    message: "Please confirm your password!",
+                  },
+                  ({ getFieldValue }) => ({
+                    validator(_, value) {
+                      if (!value || getFieldValue("password") === value) {
+                        return Promise.resolve();
+                      }
+                      return Promise.reject(
+                        new Error(
+                          "The new password that you entered do not match!"
+                        )
+                      );
+                    },
+                  }),
+                ]}
+              >
+                <Input.Password />
+              </Form.Item>
 
-          <Form.Item
-            name="email"
-            label="E-mail"
-            rules={[
-              {
-                type: "email",
-                message: "The input is not valid E-mail!",
-              },
-              {
-                required: true,
-                message: "Please input your E-mail!",
-              },
-            ]}
-          >
-            <Row gutter={8}>
-              <Col span={16}>
-                <Input
-                  onChange={() => {
-                    setIsCheckedEmail(false);
-                    setIsSendEmail(false);
-                  }}
-                />
-              </Col>
-              <Col span={8}>
-                <Button
-                  className="w-full"
-                  onClick={sendEmailCode}
-                  style={
-                    isSendEmail || isCheckedEmail
-                      ? { borderColor: "#52c41a" }
-                      : {}
-                  }
+              <Form.Item
+                name="email"
+                label="E-mail"
+                rules={[
+                  {
+                    type: "email",
+                    message: "The input is not valid E-mail!",
+                  },
+                  {
+                    required: true,
+                    message: "Please input your E-mail!",
+                  },
+                ]}
+              >
+                <Row gutter={8}>
+                  <Col span={16}>
+                    <Input
+                      onChange={() => {
+                        setIsCheckedEmail(false);
+                        setIsSendEmail(false);
+                      }}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Button
+                      className="w-full"
+                      onClick={sendEmailCode}
+                      style={
+                        isSendEmail || isCheckedEmail
+                          ? { borderColor: "#52c41a" }
+                          : {}
+                      }
+                    >
+                      {isCheckedEmail
+                        ? "Successful!"
+                        : isSendEmail
+                        ? "Sent Email"
+                        : "Send code"}
+                      {isSendEmail ||
+                        (isCheckedEmail && (
+                          <SmileOutlined style={{ marginLeft: 3 }} />
+                        ))}
+                    </Button>
+                  </Col>
+                </Row>
+              </Form.Item>
+              {isSendEmail && (
+                <Form.Item
+                  name={"code"}
+                  label={"Code"}
+                  rules={[{ required: true }]}
                 >
-                  {isCheckedEmail
-                    ? "Successful!"
-                    : isSendEmail
-                    ? "Sent Email"
-                    : "Send code"}
-                  {isSendEmail ||
-                    (isCheckedEmail && (
-                      <SmileOutlined style={{ marginLeft: 3 }} />
-                    ))}
-                </Button>
-              </Col>
-            </Row>
-          </Form.Item>
-          {isSendEmail && (
-            <Form.Item
-              name={"code"}
-              label={"Code"}
-              rules={[{ required: true }]}
-            >
-              <Row gutter={8}>
-                <Col span={16}>
-                  <Input />
-                </Col>
-                <Col span={8}>
-                  <Button className="w-full" onClick={handleCheckCode}>
-                    Code Check
-                  </Button>
-                </Col>
-              </Row>
-            </Form.Item>
-          )}
+                  <Row gutter={8}>
+                    <Col span={16}>
+                      <Input />
+                    </Col>
+                    <Col span={8}>
+                      <Button className="w-full" onClick={handleCheckCode}>
+                        Code Check
+                      </Button>
+                    </Col>
+                  </Row>
+                </Form.Item>
+              )}
 
+              <Form.Item
+                name="user_name"
+                label="User Name"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please input your name!",
+                    whitespace: true,
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </>
+          )}
           <Form.Item
             name="company_name"
             label="Company Name"
@@ -399,20 +465,6 @@ const SignUp = () => {
               {
                 required: true,
                 message: "Please input your company name!",
-                whitespace: true,
-              },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="user_name"
-            label="User Name"
-            rules={[
-              {
-                required: true,
-                message: "Please input your name!",
                 whitespace: true,
               },
             ]}

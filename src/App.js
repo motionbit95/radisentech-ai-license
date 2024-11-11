@@ -7,7 +7,8 @@ import Company from "./page/company";
 import LicenseDealer from "./page/license-dealer";
 import { AxiosGet, log } from "./api";
 import Product from "./page/product";
-import Logo from "./asset/logo.svg";
+import Logo from "./asset/logo-black.svg";
+import { googleLogout } from "@react-oauth/google";
 
 function App({ page }) {
   const navigate = useNavigate();
@@ -113,6 +114,7 @@ function App({ page }) {
               <Space>
                 <Button
                   onClick={() => {
+                    googleLogout();
                     // 저장된 토큰을 삭제합니다.
                     localStorage.removeItem("token");
                     setIsLoggedIn(false);

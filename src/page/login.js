@@ -1,13 +1,31 @@
 import React from "react";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Form, Input, Flex, Row, Col, message } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  Flex,
+  Row,
+  Col,
+  message,
+  Divider,
+  Image,
+  Space,
+  Card,
+  theme,
+} from "antd";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "antd/es/form/Form";
 import { AxiosPost, log } from "../api";
+import GoogleLoginButton from "../component/button/google-login";
+import Logo from "../asset/logo.svg";
 const LoginForm = () => {
   const [form] = useForm();
   const navigate = useNavigate();
   const [messageApi, contextHolder] = message.useMessage();
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken();
 
   const onFinish = (values) => {
     log(
@@ -38,69 +56,89 @@ const LoginForm = () => {
 
   return (
     <div className="center">
-      <Form
-        form={form}
-        name="login"
+      <Card
         style={{
-          minWidth: 360,
+          padding: "1rem",
+          backgroundColor: colorBgContainer,
+          borderRadius: borderRadiusLG,
         }}
-        onFinish={onFinish}
+        title={
+          <div style={{ textAlign: "center" }}>
+            <Space direction="vertical">
+              <Image preview={false} src={Logo} alt="logo" width={100} />
+              <h2>AI License Manager</h2>
+            </Space>
+          </div>
+        }
+        bordered={false}
       >
-        <Form.Item
-          name="user_id"
-          rules={[
-            {
-              required: true,
-              message: "Please input your User ID!",
-            },
-          ]}
+        <Space direction="vertical" style={{ width: "100%" }}></Space>
+        <Form
+          form={form}
+          name="login"
+          style={{
+            minWidth: 360,
+          }}
+          onFinish={onFinish}
         >
-          <Input prefix={<UserOutlined />} placeholder="ID" />
-        </Form.Item>
-        <Form.Item
-          name="password"
-          rules={[
-            {
-              required: true,
-              message: "Please input your Password!",
-            },
-          ]}
-        >
-          <Input
-            prefix={<LockOutlined />}
-            type="password"
-            placeholder="Password"
-          />
-        </Form.Item>
+          <Form.Item
+            name="user_id"
+            rules={[
+              {
+                required: true,
+                message: "Please input your User ID!",
+              },
+            ]}
+          >
+            <Input prefix={<UserOutlined />} placeholder="ID" />
+          </Form.Item>
+          <Form.Item
+            name="password"
+            rules={[
+              {
+                required: true,
+                message: "Please input your Password!",
+              },
+            ]}
+          >
+            <Input
+              prefix={<LockOutlined />}
+              type="password"
+              placeholder="Password"
+            />
+          </Form.Item>
 
-        <Form.Item>
-          <Row gutter={8}>
-            <Col span={12}>
-              <Button block type="primary" htmlType="submit">
-                Login
-              </Button>
+          <Form.Item>
+            <Row gutter={8}>
+              <Col span={12}>
+                <Button block type="primary" htmlType="submit">
+                  Login
+                </Button>
+              </Col>
+              <Col span={12}>
+                {/* 회원가입 페이지로 이동 */}
+                <Button
+                  block
+                  htmlType="submit"
+                  onClick={() => navigate("/signup")}
+                >
+                  Join
+                </Button>
+              </Col>
+            </Row>
+          </Form.Item>
+          <div>{contextHolder}</div>
+          <Form.Item>
+            <Col span={24}>
+              <Flex justify="flex-end" align="center">
+                <a href="/forgot">Forgot password</a>
+              </Flex>
             </Col>
-            <Col span={12}>
-              {/* 회원가입 페이지로 이동 */}
-              <Button
-                block
-                htmlType="submit"
-                onClick={() => navigate("/signup")}
-              >
-                Join
-              </Button>
-            </Col>
-          </Row>
-        </Form.Item>
-        <div>{contextHolder}</div>
-        <Form.Item>
-          <Col span={24}>
-            <Flex justify="flex-end" align="center">
-              <a href="/forgot">Forgot password</a>
-            </Flex>
-          </Col>
-        </Form.Item>
-      </Form>
+          </Form.Item>
+          <Divider plain>Other Login Options</Divider>
+          <GoogleLoginButton />
+        </Form>
+      </Card>
     </div>
   );
 };

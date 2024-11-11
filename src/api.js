@@ -74,6 +74,6 @@ export const AxiosDelete = async (url, config = {}) => {
   }
 };
 
-export const log = (arg) => {
+export const log = (...arg) => {
   console.log(arg);
 };

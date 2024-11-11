@@ -4,6 +4,8 @@ const bcrypt = require("bcryptjs"); // 비밀번호 해싱을 위한 패키지 �
 const bodyParser = require("body-parser"); // json 파싱
 const router = express.Router();
 const cors = require("cors"); // cors 패키지 불러오기
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const { verifyToken, generateToken } = require("../controller/auth");
 const { getConnection } = require("../controller/mysql");
 const {
@@ -230,8 +232,25 @@ router.get("/list", verifyToken, async (req, res) => {
  *         description: Database error
  * */
 router.post("/add", async (req, res) => {
-  const { user_id, password, email, company_name, user_name, address, phone } =
-    req.body;
+  const {
+    user_id,
+    password = "default",
+    email,
+    company_name,
+    user_name,
+    address,
+    phone,
+  } = req.body;
+
+  console.log(
+    user_id,
+    password,
+    email,
+    company_name,
+    user_name,
+    address,
+    phone
+  );
 
   // 비밀번호 해싱
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -479,6 +498,52 @@ router.get("/check-user-id/:user_id", async (req, res) => {
   }
 });
 
+router.post("/account-validate", async (req, res) => {
+  const { user_id, email, phone } = req.body;
+
+  console.log(user_id, email, phone);
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await getConnection();
+
+    const [isEmail] = await connection.execute(
+      "SELECT * FROM company WHERE email = ?",
+      [email]
+    );
+
+    const [isPhone] = await connection.execute(
+      "SELECT * FROM company WHERE phone = ?",
+      [phone]
+    );
+
+    const [isId] = await connection.execute(
+      "SELECT * FROM company WHERE user_id = ?",
+      [user_id]
+    );
+
+    if (isEmail.length > 0) {
+      return res.status(401).json({ message: "Email already exists" });
+    }
+
+    if (isPhone.length > 0) {
+      return res.status(401).json({ message: "Phone already exists" });
+    }
+
+    if (isId.length > 0) {
+      return res.status(401).json({ message: "User ID already exists" });
+    }
+
+    return res.status(200).json({ message: "Account is available" });
+  } catch (error) {
+    console.error("Error checking account:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (connection) await connection.release(); // 연결 종료
+  }
+});
+
 /**
  * @swagger
  * /company/update-license/{user_id}:
@@ -596,9 +661,10 @@ VALUES (?, ?, ?, ?, ?, ?)`;
  *     tags: [Company]
  *     summary: 사용자 삭제
  *     description: company table data 삭제
+ *     parameters:
  *       - in: path
  *         name: id
- *         description: id
+ *         description: company pk
  *         required: true
  *         schema:
  *           type: integer
@@ -1276,6 +1342,36 @@ router.post("/transfer", verifyToken, async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release();
+  }
+});
+
+router.post("/auth/google", async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    // Google 토큰 검증
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    console.log("payload:", payload);
+    const { sub, name, email, picture } = payload;
+
+    // 필요한 경우 사용자 정보를 데이터베이스에 저장
+    res.status(200).json({
+      message: "Google Login Successful",
+      user: {
+        id: sub,
+        name,
+        email,
+        picture,
+      },
+    });
+  } catch (error) {
+    console.error("Google Login Failed:", error);
+    res.status(401).json({ message: "Google Login Failed" });
   }
 });
 
