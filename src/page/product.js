@@ -225,13 +225,15 @@ const Product = (props) => {
       dataIndex: "created_at",
       key: "created_at",
 
-      render: (text) => dayjs(text).format("MM-DD-YYYY HH:mm:ss"),
+      render: (text) =>
+        text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : "-",
     },
     {
       title: "Updated At",
       dataIndex: "updated_at",
       key: "updated_at",
-      render: (text) => dayjs(text).format("MM-DD-YYYY HH:mm:ss"),
+      render: (text) =>
+        text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : "-",
     },
   ];
 
