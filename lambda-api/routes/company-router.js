@@ -345,6 +345,12 @@ router.post("/add", async (req, res) => {
  *             unique_code:
  *               type: string
  *               description: unique_code
+ *             permission_flag:
+ *               type: string
+ *               description: permission_flag
+ *             productList:
+ *               type: string
+ *               description: 선택된 제품 목록
  *     responses:
  *       200:
  *         description: company table data 변경
@@ -368,6 +374,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
     phone,
     unique_code,
     permission_flag,
+    productList, // 추가된 필드: 선택된 제품 목록
   } = req.body;
 
   // 필수 필드가 누락된 경우 에러 응답
@@ -397,7 +404,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
       return res.status(401).json({ error: "User not found" });
     }
 
-    // 데이터 수정 쿼리 실행
+    // 데이터 수정 쿼리 실행 (productList 필드 추가)
     const query = `
         UPDATE company 
         SET 
@@ -408,7 +415,8 @@ router.put("/update/:id", verifyToken, async (req, res) => {
           address = COALESCE(?, address), 
           phone = COALESCE(?, phone), 
           unique_code = COALESCE(?, unique_code),
-          permission_flag = COALESCE(?, permission_flag) 
+          permission_flag = COALESCE(?, permission_flag),
+          product = COALESCE(?, product)  
         WHERE id = ?
       `;
 
@@ -421,9 +429,11 @@ router.put("/update/:id", verifyToken, async (req, res) => {
       phone,
       unique_code,
       permission_flag,
+      productList, // productList 값도 로그에 추가
       id
     );
 
+    // 제품 목록을 JSON 형식으로 DB에 삽입
     await connection.execute(query, [
       user_id,
       email,
@@ -433,6 +443,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
       phone,
       unique_code,
       permission_flag,
+      JSON.stringify(productList), // JSON 형식으로 저장
       id,
     ]);
 
