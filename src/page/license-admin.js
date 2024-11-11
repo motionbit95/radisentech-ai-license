@@ -461,6 +461,21 @@ const AdvancedSearchForm = (props) => {
     borderRadius: borderRadiusLG,
     padding: 24,
   };
+  useEffect(() => {
+    fetchProductList();
+  }, []);
+
+  const [product, setProduct] = useState([]);
+
+  const fetchProductList = async () => {
+    try {
+      const response = await AxiosGet("/product/list"); // 제품 목록을 불러오는 API 요청
+      setProduct(response.data); // 받아온 데이터를 상태에 저장
+    } catch (error) {
+      console.error("Error fetching product list:", error);
+    }
+    // console.log(product.map((item) => item.name));
+  };
 
   const getFields = () => {
     const children = [];
@@ -515,8 +530,8 @@ const AdvancedSearchForm = (props) => {
             style={{ width: "100%" }}
             placeholder="Please select"
           >
-            {props.data
-              .map((item) => item.AIType)
+            {product
+              .map((item) => item.name)
               .map((item) => (
                 <Select.Option key={item} value={item}>
                   {item}

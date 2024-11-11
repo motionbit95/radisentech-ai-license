@@ -8,6 +8,7 @@ import {
   Input,
   Layout,
   Row,
+  Select,
   Space,
   Table,
   theme,
@@ -292,7 +293,10 @@ const License = (props) => {
           currentUser={props.currentUser}
           license_cnt={list.length}
         />
-        <AdvancedSearchForm onSearch={(filter) => setSearchFilters(filter)} />
+        <AdvancedSearchForm
+          currentUser={props.currentUser}
+          onSearch={(filter) => setSearchFilters(filter)}
+        />
         <Table
           // rowSelection={rowSelection}
           loading={loading}
@@ -369,6 +373,21 @@ const AdvancedSearchForm = (props) => {
     padding: 24,
   };
 
+  const [product, setProduct] = useState([]);
+
+  useEffect(() => {
+    try {
+      const parsedProduct = JSON.parse(props.currentUser.product);
+      if (Array.isArray(parsedProduct)) {
+        setProduct(parsedProduct);
+      } else {
+        log("Parsing 결과가 배열이 아닙니다.");
+      }
+    } catch (error) {
+      log("JSON 파싱 오류:", error);
+    }
+  }, [props.currentUser.product]);
+
   const getFields = () => {
     const children = [];
     children.push(
@@ -392,6 +411,23 @@ const AdvancedSearchForm = (props) => {
             format={"MM-DD-YYYY"}
             placeholder={["Start Date", "End Date"]}
           />
+        </Form.Item>
+      </Col>
+    );
+    children.push(
+      <Col span={8} key={"product"}>
+        <Form.Item name={"product"} label={`Product`}>
+          <Select
+            mode="multiple"
+            style={{ width: "100%" }}
+            placeholder="Please select"
+          >
+            {product.map((item) => (
+              <Select.Option key={item} value={item}>
+                {item}
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
       </Col>
     );

@@ -279,7 +279,6 @@ const Product = (props) => {
                   <div></div>
                   <Space>
                     <ProductAdd
-                      onAddFinish={() => console.log("add")}
                       onComplete={(data) => {
                         fetchProductList();
                         setSelectedProduct(data);

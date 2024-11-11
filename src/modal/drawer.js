@@ -33,7 +33,7 @@ const CompanyEdit = (props) => {
     } catch (error) {
       console.error("Error fetching product list:", error);
     }
-    console.log(product.map((item) => item.name));
+    // console.log(product.map((item) => item.name));
   };
 
   const showDrawer = () => {
@@ -54,8 +54,11 @@ const CompanyEdit = (props) => {
     log("Received values of form: ", values, data);
     setLoading(true);
 
+    log("여기서 받습니다", values?.product);
+
     await AxiosPut(`/company/update/${data?.id}`, {
       permission_flag: data?.permission_flag,
+      productList: JSON.stringify(values?.product),
       ...values,
     })
       .then((result) => {
