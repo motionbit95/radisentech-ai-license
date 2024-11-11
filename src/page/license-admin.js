@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
+  AutoComplete,
   Button,
   Checkbox,
   Col,
   DatePicker,
+  Flex,
   Form,
   Input,
   Layout,
@@ -445,6 +447,18 @@ const AdvancedSearchForm = (props) => {
     padding: 24,
   };
 
+  const options = [
+    {
+      value: "option1",
+    },
+    {
+      value: "option2",
+    },
+    {
+      value: "option3",
+    },
+  ];
+
   const getFields = () => {
     const children = [];
     children.push(
@@ -487,6 +501,21 @@ const AdvancedSearchForm = (props) => {
           valuePropName="checked"
         >
           <Checkbox />
+        </Form.Item>
+      </Col>
+    );
+    children.push(
+      <Col span={8} key={"product"}>
+        <Form.Item name={"product"} label={`Product`}>
+          <AutoComplete
+            className="w-full"
+            options={options}
+            placeholder="search..."
+            filterOption={(inputValue, option) =>
+              option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !==
+              -1
+            }
+          />
         </Form.Item>
       </Col>
     );
@@ -547,3 +576,9 @@ const AdvancedSearchForm = (props) => {
 };
 
 export default License;
+
+const Title = (props) => (
+  <Flex align="center" justify="space-between">
+    {props.title}
+  </Flex>
+);

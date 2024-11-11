@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import License from "./page/license-admin";
-import { Button, Col, Layout, Menu, Result, Space, Spin } from "antd";
+import { Button, Col, Image, Layout, Menu, Result, Space, Spin } from "antd";
 import { Footer, Header } from "antd/es/layout/layout";
 import { useNavigate } from "react-router-dom";
 import Company from "./page/company";
 import LicenseDealer from "./page/license-dealer";
 import { AxiosGet, log } from "./api";
 import Product from "./page/product";
+import Logo from "./asset/logo.svg";
 
 function App({ page }) {
   const navigate = useNavigate();
@@ -89,19 +90,25 @@ function App({ page }) {
           }}
         >
           <Col span={12}>
-            <Menu
-              theme="dark"
-              mode="horizontal"
-              defaultSelectedKeys={page ? [page] : ["license"]}
-              items={items}
-              style={{ flex: 1, minWidth: 0 }}
-              onClick={({ key }) => {
-                navigate(`/${key}`);
-              }}
-            />
+            <Space size="large">
+              <div style={{ textAlign: "center" }}>
+                <Image preview={false} src={Logo} alt="logo" width={100} />
+              </div>
+              <Menu
+                theme="dark"
+                mode="horizontal"
+                defaultSelectedKeys={page ? [page] : ["license"]}
+                items={items}
+                style={{ flex: 1, minWidth: 0 }}
+                onClick={({ key }) => {
+                  navigate(`/${key}`);
+                }}
+              />
+            </Space>
           </Col>
 
           <Col span={12} direction style={{ textAlign: "right" }}>
+            {/* <Space> */}
             {isLoggedIn ? (
               <Space>
                 <Button
@@ -125,8 +132,13 @@ function App({ page }) {
                 Login
               </Button>
             )}
+            {/* <div style={{ textAlign: "center" }}>
+                <Image preview={false} src={Logo} alt="logo" width={100} />
+              </div>
+            </Space> */}
           </Col>
         </Header>
+        <div></div>
         {/* 로그인 되어있지 않은 사용자의 경우 접근 제한 / 로그인 유도 */}
         {!isLoggedIn ? (
           <div>

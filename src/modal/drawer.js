@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   Button,
+  Checkbox,
   Col,
   Drawer,
   Form,
@@ -207,6 +208,21 @@ const CompanyEdit = (props) => {
               </Form.Item>
             </Col>
           </Row>
+          <Form.Item name={"product"} label="Product">
+            <Checkbox.Group
+              gutter={16}
+              style={{ width: "100%" }}
+              onChange={log}
+            >
+              <Row>
+                {["A", "B", "C", "D"].map((value) => (
+                  <Col span={3}>
+                    <Checkbox value={value}>{value}</Checkbox>
+                  </Col>
+                ))}
+              </Row>
+            </Checkbox.Group>
+          </Form.Item>
           {/* 슈퍼바이저 컨트롤러 */}
           {(props.permission_flag === "D" || props.permission_flag === "Y") && (
             <Row gutter={16}>
