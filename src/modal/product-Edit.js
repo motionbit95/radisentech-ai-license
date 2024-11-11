@@ -11,7 +11,7 @@ import {
   Space,
 } from "antd";
 import { useNavigate } from "react-router-dom";
-import { log } from "../api";
+import { AxiosPut, log } from "../api";
 
 const ProductEdit = (props) => {
   const navigate = useNavigate();
@@ -36,6 +36,21 @@ const ProductEdit = (props) => {
   const onFinish = async (values) => {
     log("Received values of form: ", values, data);
     setLoading(true);
+
+    await AxiosPut(`/product/update/${data?.id}`, {
+      ...values,
+    })
+      .then((result) => {
+        if (result.status === 200) {
+          setOpen(false);
+          onComplete(values);
+        }
+      })
+      .catch((error) => {
+        if (error.status === 403) {
+          navigate("/login");
+        }
+      });
   };
 
   return (
@@ -81,7 +96,40 @@ const ProductEdit = (props) => {
           form={form}
           onFinish={onFinish}
           onValuesChange={onValuesChange}
-        ></Form>
+        >
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="name"
+                label="Name"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter product name",
+                  },
+                ]}
+              >
+                <Input placeholder="Please enter product name" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="description"
+                label="Description"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter product description",
+                  },
+                ]}
+              >
+                <Input placeholder="Please enter product description" />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
       </Drawer>
     </>
   );

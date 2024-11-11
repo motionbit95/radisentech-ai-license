@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Checkbox,
@@ -12,13 +12,29 @@ import {
   Space,
 } from "antd";
 import { useNavigate } from "react-router-dom";
-import { AxiosPut, log } from "../api";
+import { AxiosGet, AxiosPut, log } from "../api";
 
 const CompanyEdit = (props) => {
   const navigate = useNavigate();
   const { disabled, data, onComplete, setLoading } = props;
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
+
+  const [product, setProduct] = useState([]);
+
+  useEffect(() => {
+    fetchProductList();
+  }, []);
+
+  const fetchProductList = async () => {
+    try {
+      const response = await AxiosGet("/product/list"); // 제품 목록을 불러오는 API 요청
+      setProduct(response.data); // 받아온 데이터를 상태에 저장
+    } catch (error) {
+      console.error("Error fetching product list:", error);
+    }
+    console.log(product.map((item) => item.name));
+  };
 
   const showDrawer = () => {
     setOpen(true);
@@ -215,11 +231,13 @@ const CompanyEdit = (props) => {
               onChange={log}
             >
               <Row>
-                {["A", "B", "C", "D"].map((value) => (
-                  <Col span={3}>
-                    <Checkbox value={value}>{value}</Checkbox>
-                  </Col>
-                ))}
+                {product
+                  .map((item) => item.name)
+                  .map((value) => (
+                    <Col span={3}>
+                      <Checkbox value={value}>{value}</Checkbox>
+                    </Col>
+                  ))}
               </Row>
             </Checkbox.Group>
           </Form.Item>

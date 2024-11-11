@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
   Input,
@@ -8,14 +8,16 @@ import {
   Row,
   Space,
   Table,
+  message,
 } from "antd";
 import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
 import CompanyEdit from "../modal/drawer";
 import { useNavigate } from "react-router-dom";
-import { log } from "../api";
+import { AxiosDelete, AxiosGet, log } from "../api";
 import ProductEdit from "../modal/product-Edit";
 import ProductAdd from "../modal/product-Add";
+import dayjs from "dayjs";
 const { Content } = Layout;
 
 const Product = (props) => {
@@ -30,6 +32,42 @@ const Product = (props) => {
   const [list, setList] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false); // 로딩 플래그
+
+  useEffect(() => {
+    fetchProductList();
+  }, []);
+
+  const fetchProductList = async () => {
+    try {
+      const response = await AxiosGet("/product/list"); // 제품 목록을 불러오는 API 요청
+      setList(response.data.map((item) => ({ ...item, key: item.id }))); // 받아온 데이터를 상태에 저장
+    } catch (error) {
+      console.error("Error fetching product list:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteProduct = async () => {
+    setLoading(true);
+
+    try {
+      await AxiosDelete(`/product/delete/${selectedProduct?.id}`);
+      await fetchProductList(); // 데이터 갱신 후 로딩 해제
+      setSelectedProduct(null);
+      setSelectedRowKeys([]);
+    } catch (error) {
+      if (error.response?.status === 403) {
+        navigate("/login");
+      } else if (error.response?.status === 500) {
+        message.error("Failed to delete company. Licenses History exists.");
+      } else {
+        console.error("Error:", error.message);
+      }
+    } finally {
+      setLoading(false); // fetchCompanyList가 완료된 후 로딩 해제
+    }
+  };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -173,13 +211,27 @@ const Product = (props) => {
     },
     {
       title: "Product",
-      dataIndex: "product_name",
-      key: "product_name",
+      dataIndex: "name",
+      key: "name",
+      width: 150,
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
+    },
+    {
+      title: "Created At",
+      dataIndex: "created_at",
+      key: "created_at",
+
+      render: (text) => dayjs(text).format("MM-DD-YYYY HH:mm:ss"),
+    },
+    {
+      title: "Updated At",
+      dataIndex: "updated_at",
+      key: "updated_at",
+      render: (text) => dayjs(text).format("MM-DD-YYYY HH:mm:ss"),
     },
   ];
 
@@ -227,8 +279,12 @@ const Product = (props) => {
                   <div></div>
                   <Space>
                     <ProductAdd
-                      disabled={!hasSelected}
                       onAddFinish={() => console.log("add")}
+                      onComplete={(data) => {
+                        fetchProductList();
+                        setSelectedProduct(data);
+                        setSelectedRowKeys([]);
+                      }}
                     />
                     <Button
                       disabled={!hasSelected}
@@ -240,13 +296,18 @@ const Product = (props) => {
                       disabled={!hasSelected}
                       data={selectedProduct}
                       setLoading={setLoading}
+                      onComplete={(data) => {
+                        fetchProductList();
+                        setSelectedProduct(data);
+                        setSelectedRowKeys([]);
+                      }}
                     />
                     <Popconfirm
                       title="Delete the Product?"
                       description={
                         "Are you sure you want to delete this product?"
                       }
-                      onConfirm={console.log("delete")}
+                      onConfirm={handleDeleteProduct}
                       onCancel={() => {}}
                       okText="Yes"
                       cancelText="No"
