@@ -179,6 +179,16 @@ const License = (props) => {
         text
       ),
   });
+  const getColumnFilterProps = (dataIndex) => ({
+    filteredValue: filteredInfo[dataIndex] || [],
+    onFilter: (value, record) => record[dataIndex] === value,
+    filterSearch: true,
+    ellipsis: true,
+    filters: list // filter options 설정
+      .map((item) => item[dataIndex])
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .map((value) => ({ text: value, value })),
+  });
 
   // table column
   const DealerlicenseColumns = [
@@ -227,7 +237,8 @@ const License = (props) => {
         return a.AIType.localeCompare(b.AIType);
       },
 
-      ...getColumnSearchProps("AIType"),
+      // ...getColumnSearchProps("AIType"),
+      ...getColumnFilterProps("AIType"),
     },
     {
       title: "Hospital Name",
