@@ -6,6 +6,7 @@ import {
   Input,
   Modal,
   Row,
+  Select,
   message,
 } from "antd";
 import React, { useState } from "react";
@@ -120,12 +121,27 @@ const ADDLicense = (props) => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item
+              {/* <Form.Item
                 name="AIType"
                 label="AI Type"
                 rules={[{ required: true, message: "Please input AI Type" }]}
               >
                 <Input placeholder="AI Type" />
+              </Form.Item> */}
+              <Form.Item name={"AIType"} label={`AI Type`}>
+                <Select
+                  mode="multiple"
+                  style={{ width: "100%" }}
+                  placeholder="Please select"
+                >
+                  {props.product
+                    .map((item) => item.name)
+                    .map((item) => (
+                      <Select.Option key={item} value={item}>
+                        {item}
+                      </Select.Option>
+                    ))}
+                </Select>
               </Form.Item>
             </Col>
           </Row>

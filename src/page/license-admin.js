@@ -47,10 +47,12 @@ const License = (props) => {
   const [selectedLicense, setSelectedLicense] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [product, setProduct] = useState([]);
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
     updateLicenseList();
+    fetchProductList();
   }, []);
 
   const updateLicenseList = async () => {
@@ -76,6 +78,15 @@ const License = (props) => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProductList = async () => {
+    try {
+      const response = await AxiosGet("/product/list"); // 제품 목록을 불러오는 API 요청
+      setProduct(response.data); // 받아온 데이터를 상태에 저장
+    } catch (error) {
+      console.error("Error fetching product list:", error);
     }
   };
 
@@ -287,6 +298,17 @@ const License = (props) => {
         return a.AIType.localeCompare(b.AIType);
       },
 
+      render: (text) => {
+        try {
+          return Array.isArray(JSON.parse(text))
+            ? JSON.parse(text).join(", ")
+            : text;
+        } catch (e) {
+          // JSON 파싱 오류가 나면 원본 텍스트 반환
+          return text;
+        }
+      },
+
       ...getColumnFilterProps("AIType"),
     },
     {
@@ -357,13 +379,15 @@ const License = (props) => {
   const hasSelected = selectedRowKeys.length > 0;
 
   const applyFilters = (item) => {
-    const { company, country, hospital, expire_date, deleted } = searchFilters;
+    const { company, country, hospital, expire_date, deleted, AIType } =
+      searchFilters;
 
-    // log("item", item, searchFilters);
+    log("item", item, searchFilters);
 
     return (
       // deleted 플래그가 false일 경우 삭제된 라이센스는 보이지 않습니다.
       ((!deleted && item.Deleted === 0) || deleted) &&
+      (!AIType || item.AIType.toLowerCase().includes(AIType)) &&
       (!company || item.Company.toLowerCase().includes(company)) &&
       (!country || item.Country.toLowerCase().includes(country)) &&
       (!hospital || item.Hospital.toLowerCase().includes(hospital)) &&
@@ -382,6 +406,7 @@ const License = (props) => {
       <Space size={"large"} direction="vertical" className="w-full">
         <AdvancedSearchForm
           data={list}
+          product={product}
           onSearch={(filter) => setSearchFilters(filter)}
         />
         <Table
@@ -403,7 +428,10 @@ const License = (props) => {
               />
               {props.currentUser.permission_flag === "D" && (
                 <ButtonGroup>
-                  <ADDLicense onAddFinish={() => updateLicenseList()} />
+                  <ADDLicense
+                    product={product}
+                    onAddFinish={() => updateLicenseList()}
+                  />
                   {/* delete 상태 변경 */}
                   <Popconfirm
                     title="Are you sure to delete this license?"
@@ -461,21 +489,6 @@ const AdvancedSearchForm = (props) => {
     borderRadius: borderRadiusLG,
     padding: 24,
   };
-  useEffect(() => {
-    fetchProductList();
-  }, []);
-
-  const [product, setProduct] = useState([]);
-
-  const fetchProductList = async () => {
-    try {
-      const response = await AxiosGet("/product/list"); // 제품 목록을 불러오는 API 요청
-      setProduct(response.data); // 받아온 데이터를 상태에 저장
-    } catch (error) {
-      console.error("Error fetching product list:", error);
-    }
-    // console.log(product.map((item) => item.name));
-  };
 
   const getFields = () => {
     const children = [];
@@ -523,14 +536,14 @@ const AdvancedSearchForm = (props) => {
       </Col>
     );
     children.push(
-      <Col span={8} key={"product"}>
-        <Form.Item name={"product"} label={`Product`}>
+      <Col span={8} key={"AIType"}>
+        <Form.Item name={"AIType"} label={`AI Type`}>
           <Select
             mode="multiple"
             style={{ width: "100%" }}
             placeholder="Please select"
           >
-            {product
+            {props.product
               .map((item) => item.name)
               .map((item) => (
                 <Select.Option key={item} value={item}>

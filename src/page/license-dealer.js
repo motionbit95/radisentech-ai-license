@@ -34,6 +34,20 @@ const License = (props) => {
   const [selectedLicense, setSelectedLicense] = useState(null); // 선택된 Company data
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [product, setProduct] = useState([]);
+
+  useEffect(() => {
+    try {
+      const parsedProduct = JSON.parse(props.currentUser.product);
+      if (Array.isArray(parsedProduct)) {
+        setProduct(parsedProduct);
+      } else {
+        log("Parsing 결과가 배열이 아닙니다.");
+      }
+    } catch (error) {
+      log("JSON 파싱 오류:", error);
+    }
+  }, [props.currentUser.product]);
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
@@ -237,7 +251,17 @@ const License = (props) => {
         return a.AIType.localeCompare(b.AIType);
       },
 
-      // ...getColumnSearchProps("AIType"),
+      render: (text) => {
+        try {
+          return Array.isArray(JSON.parse(text))
+            ? JSON.parse(text).join(", ")
+            : text;
+        } catch (e) {
+          // JSON 파싱 오류가 나면 원본 텍스트 반환
+          return text;
+        }
+      },
+
       ...getColumnFilterProps("AIType"),
     },
     {
@@ -281,10 +305,11 @@ const License = (props) => {
   };
 
   const applyFilters = (item) => {
-    const { company, country, hospital, expire_date } = searchFilters;
+    const { company, country, hospital, expire_date, AIType } = searchFilters;
 
     return (
       (!company || item.Company.toLowerCase().includes(company)) &&
+      (!AIType || item.AIType.toLowerCase().includes(AIType)) &&
       (!country || item.Country.toLowerCase().includes(country)) &&
       (!hospital || item.Hospital.toLowerCase().includes(hospital)) &&
       (!expire_date ||
@@ -305,7 +330,7 @@ const License = (props) => {
           license_cnt={list.length}
         />
         <AdvancedSearchForm
-          currentUser={props.currentUser}
+          product={product}
           onSearch={(filter) => setSearchFilters(filter)}
         />
         <Table
@@ -384,21 +409,6 @@ const AdvancedSearchForm = (props) => {
     padding: 24,
   };
 
-  const [product, setProduct] = useState([]);
-
-  useEffect(() => {
-    try {
-      const parsedProduct = JSON.parse(props.currentUser.product);
-      if (Array.isArray(parsedProduct)) {
-        setProduct(parsedProduct);
-      } else {
-        log("Parsing 결과가 배열이 아닙니다.");
-      }
-    } catch (error) {
-      log("JSON 파싱 오류:", error);
-    }
-  }, [props.currentUser.product]);
-
   const getFields = () => {
     const children = [];
     children.push(
@@ -426,14 +436,14 @@ const AdvancedSearchForm = (props) => {
       </Col>
     );
     children.push(
-      <Col span={8} key={"product"}>
-        <Form.Item name={"product"} label={`Product`}>
+      <Col span={8} key={"AIType"}>
+        <Form.Item name={"AIType"} label={`AI Type`}>
           <Select
             mode="multiple"
             style={{ width: "100%" }}
             placeholder="Please select"
           >
-            {product.map((item) => (
+            {props.product.map((item) => (
               <Select.Option key={item} value={item}>
                 {item}
               </Select.Option>
