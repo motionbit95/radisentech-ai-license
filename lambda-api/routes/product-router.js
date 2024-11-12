@@ -3,7 +3,10 @@ const express = require("express");
 const bodyParser = require("body-parser"); // json 파싱
 const cors = require("cors");
 const { pool, getConnection } = require("../controller/mysql");
-const { formatDateToYYYYMMDD } = require("../controller/common");
+const {
+  formatDateToYYYYMMDD,
+  formatDateTime,
+} = require("../controller/common");
 const { verifyToken } = require("../controller/auth");
 
 const router = express.Router();
@@ -83,7 +86,7 @@ router.post("/add", verifyToken, async (req, res) => {
       VALUES (?, ?, ?)
     `;
 
-    const nowDate = formatDateToYYYYMMDD(new Date());
+    const nowDate = formatDateTime(new Date());
 
     console.log(nowDate);
 
@@ -155,7 +158,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
       WHERE id = ?
     `;
 
-    const nowDate = formatDateToYYYYMMDD(new Date());
+    const nowDate = formatDateTime(new Date());
 
     // 업데이트 쿼리 실행
     await connection.execute(updateQuery, [name, description, nowDate, id]);

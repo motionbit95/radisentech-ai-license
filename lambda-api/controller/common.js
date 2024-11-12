@@ -44,8 +44,22 @@ function formatDateToYYYYMMDD(date) {
   return `${year}-${month}-${day}`;
 }
 
+// 날짜 시간 포맷팅
+function formatDateTime(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // 월을 1부터 시작
+  const day = String(date.getDate()).padStart(2, "0"); // 일
+
+  const hours = String(date.getHours()).padStart(2, "0"); // 시
+  const minutes = String(date.getMinutes()).padStart(2, "0"); //분
+  const seconds = String(date.getSeconds()).padStart(2, "0"); // 시
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 module.exports = {
   generateRandomCode,
   generateUniqueCopyValue,
   formatDateToYYYYMMDD,
+  formatDateTime,
 };
