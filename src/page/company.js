@@ -310,7 +310,7 @@ const Company = (props) => {
       dataIndex: "unique_code",
       key: "unique_code",
 
-      ...getColumnSearchProps("unique_code"),
+      // ...getColumnSearchProps("unique_code"),
 
       render: (text) => (
         <Row gutter={8}>

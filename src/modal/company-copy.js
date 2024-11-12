@@ -208,7 +208,7 @@ const CompanyCopy = (props) => {
       dataIndex: "unique_code",
       key: "unique_code",
 
-      ...getColumnSearchProps("unique_code"),
+      // ...getColumnSearchProps("unique_code"),
     },
     {
       title: "User Name",

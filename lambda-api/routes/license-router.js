@@ -475,7 +475,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
     const localTerminateDate = expireDateObj.toISOString().split("T")[0]; // Local 날짜
     const utcTerminateDate = formatDateToYYYYMMDD(expireDateObj);
 
-    const nowDate = formatDateToYYYYMMDD(Date.now());
+    const nowDate = formatDateToYYYYMMDD(new Date());
 
     console.log("now : ", nowDate);
 
