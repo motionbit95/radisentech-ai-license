@@ -223,13 +223,38 @@ const License = (props) => {
 
   const getColumnFilterProps = (dataIndex) => ({
     filteredValue: filteredInfo[dataIndex] || [],
-    onFilter: (value, record) => record[dataIndex] === value,
+    onFilter: (value, record) => {
+      try {
+        const parsedValue = JSON.parse(record[dataIndex]);
+        // 배열로 변환된 값이 포함되어 있는지 확인 (includes 사용)
+        return Array.isArray(parsedValue) && parsedValue.includes(value);
+      } catch (e) {
+        // JSON 파싱 오류가 나면 원본 텍스트로 비교
+        return record[dataIndex] === value;
+      }
+    },
     filterSearch: true,
     ellipsis: true,
-    filters: list // filter options 설정
-      .map((item) => item[dataIndex])
-      .filter((value, index, self) => self.indexOf(value) === index)
-      .map((value) => ({ text: value, value })),
+    filters: list
+      .map((item) => {
+        try {
+          const parsedValue = JSON.parse(item[dataIndex]);
+          // 배열로 변환된 값이 있을 경우, 해당 값들을 개별 필터로 추가
+          return Array.isArray(parsedValue)
+            ? parsedValue.map((val) => ({ text: val, value: val }))
+            : [{ text: item[dataIndex], value: item[dataIndex] }];
+        } catch (e) {
+          return [{ text: item[dataIndex], value: item[dataIndex] }];
+        }
+      })
+      .flat() // 배열로 만들어진 필터를 모두 평평하게 처리
+      .filter(
+        (value, index, self) =>
+          index ===
+          self.findIndex(
+            (v) => v.text === value.text && v.value === value.value
+          )
+      ), // 중복 텍스트 제거
   });
 
   const getCompanyCode = (company_name) => {

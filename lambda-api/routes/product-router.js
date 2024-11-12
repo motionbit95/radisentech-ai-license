@@ -83,7 +83,9 @@ router.post("/add", verifyToken, async (req, res) => {
       VALUES (?, ?, ?)
     `;
 
-    const nowDate = formatDateToYYYYMMDD(Date.now());
+    const nowDate = formatDateToYYYYMMDD(new Date());
+
+    console.log(nowDate);
 
     const [result] = await connection.execute(insertQuery, [
       name,
@@ -153,7 +155,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
       WHERE id = ?
     `;
 
-    const nowDate = formatDateToYYYYMMDD(Date.now());
+    const nowDate = formatDateToYYYYMMDD(new Date());
 
     // 업데이트 쿼리 실행
     await connection.execute(updateQuery, [name, description, nowDate, id]);

@@ -19,7 +19,6 @@ const ProductAdd = (props) => {
   const [form] = Form.useForm();
 
   // 폼 제출 시 실행되는 함수
-  // 폼 제출 시 실행되는 함수
   const onAddFinish = async (values) => {
     try {
       // 서버에 데이터 전송
