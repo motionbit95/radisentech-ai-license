@@ -3,7 +3,10 @@ const express = require("express");
 const bodyParser = require("body-parser"); // json 파싱
 const cors = require("cors");
 const { pool, getConnection } = require("../controller/mysql");
-const { formatDateToYYYYMMDD } = require("../controller/common");
+const {
+  formatDateToYYYYMMDD,
+  formatDateTime,
+} = require("../controller/common");
 const { verifyToken } = require("../controller/auth");
 
 const router = express.Router();
@@ -475,7 +478,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
     const localTerminateDate = expireDateObj.toISOString().split("T")[0]; // Local 날짜
     const utcTerminateDate = formatDateToYYYYMMDD(expireDateObj);
 
-    const nowDate = formatDateToYYYYMMDD(new Date());
+    const nowDate = formatDateTime(new Date());
 
     console.log("now : ", nowDate);
 
