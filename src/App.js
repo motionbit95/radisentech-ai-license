@@ -32,7 +32,7 @@ function App({ page, toggleTheme, isDarkMode }) {
       AxiosGet("/company/user-info")
         .then((response) => {
           log(response);
-          if (response.status === 200) {
+          if (response?.status === 200) {
             // log("CURRENT_USER", response.data);
             setCurrentUser(response.data);
             setPermissionFlag(response.data.permission_flag);
@@ -40,7 +40,7 @@ function App({ page, toggleTheme, isDarkMode }) {
         })
         .catch((error) => {
           log(error);
-          if (error.response.status === 403) {
+          if (error?.response?.status === 403) {
             navigate("/login");
           }
         });

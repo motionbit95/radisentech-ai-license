@@ -1,13 +1,16 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
-const serverless = require("serverless-http"); // serverless-http 패키지 불러오기
-const mysql = require("mysql2/promise"); // mysql2 패키지 불러오기
+import dotenv from "dotenv"; // dotenv 모듈 가져오기
+import express from "express"; // express 모듈 가져오기
+import cors from "cors"; // cors 모듈 가져오기
+import serverless from "serverless-http"; // serverless-http 모듈 가져오기
+import mysql from "mysql2/promise"; // mysql2 모듈 가져오기
+import swaggerJsDoc from "swagger-jsdoc"; // swagger-jsdoc 모듈 가져오기
+import swaggerUi from "swagger-ui-express"; // swagger-ui-express 모듈 가져오기
+
+dotenv.config(); // 환경 변수 로드
+
 const app = express();
 
-const swaggerJsDoc = require("swagger-jsdoc");
-const swaggerUi = require("swagger-ui-express");
-
+// Swagger 설정
 const swaggerOptions = {
   swaggerDefinition: {
     info: {
@@ -74,13 +77,13 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 
 // 라우터 설정
-const companyRouter = require("./routes/company-router");
+import companyRouter from "./routes/company-router.js";
 app.use("/company", companyRouter);
 
-const licenseRouter = require("./routes/license-router");
+import licenseRouter from "./routes/license-router.js";
 app.use("/license", licenseRouter);
 
-const productRouter = require("./routes/product-router");
+import productRouter from "./routes/product-router.js";
 app.use("/product", productRouter);
 
 // 로컬에서 실행될 때를 위한 서버 설정 (Lambda 배포 시에는 불필요)
@@ -91,4 +94,4 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 // Lambda 핸들러로 Express 앱을 래핑
-module.exports.handler = serverless(app);
+export const handler = serverless(app);
