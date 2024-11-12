@@ -12,10 +12,15 @@ import {
   Col,
   Typography,
   message,
+  Tooltip,
+  Image,
 } from "antd";
 import Highlighter from "react-highlight-words";
-import { SearchOutlined } from "@ant-design/icons";
-import ButtonGroup from "antd/es/button/button-group";
+import {
+  SearchOutlined,
+  InfoCircleOutlined,
+  GoogleOutlined,
+} from "@ant-design/icons";
 import GenerateModal from "../modal/generate";
 import CompanyEdit from "../modal/drawer";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +28,7 @@ import LicenseHistoryModal from "../modal/license-history";
 import { AxiosDelete, AxiosGet, AxiosPost, log } from "../api";
 import IniFileDownload from "../component/button/download";
 import CompanyCopy from "../modal/company-copy";
+
 const { Content } = Layout;
 
 const Company = (props) => {
@@ -257,6 +263,25 @@ const Company = (props) => {
       sorter: (a, b) => {
         return a.user_id.localeCompare(b.user_id);
       },
+
+      render: (text) => (
+        <Space>
+          {parseFloat(text) ? (
+            <Image
+              preview={false}
+              width={20}
+              src={require(`../asset/pngwing.com.png`)}
+            />
+          ) : (
+            text
+          )}
+          {parseFloat(text) ? (
+            <Tooltip placement="top" title={text}>
+              <InfoCircleOutlined />
+            </Tooltip>
+          ) : null}
+        </Space>
+      ),
     },
     {
       title: "Email",
