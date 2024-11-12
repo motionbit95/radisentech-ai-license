@@ -1,7 +1,17 @@
 import React, { useRef, useState } from "react";
-import { Button, Input, Modal, Popconfirm, Space, Table, message } from "antd";
+import {
+  Button,
+  Image,
+  Input,
+  Modal,
+  Popconfirm,
+  Space,
+  Table,
+  Tooltip,
+  message,
+} from "antd";
 import { useNavigate } from "react-router-dom";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { AxiosPost, log } from "../api";
 
@@ -151,6 +161,25 @@ const CompanyCopy = (props) => {
       sorter: (a, b) => {
         return a.user_id.localeCompare(b.user_id);
       },
+
+      render: (text) => (
+        <Space>
+          {parseFloat(text) ? (
+            <Image
+              preview={false}
+              width={20}
+              src={require(`../asset/pngwing.com.png`)}
+            />
+          ) : (
+            text
+          )}
+          {parseFloat(text) ? (
+            <Tooltip placement="top" title={text}>
+              <InfoCircleOutlined />
+            </Tooltip>
+          ) : null}
+        </Space>
+      ),
     },
     {
       title: "Email",
@@ -236,7 +265,7 @@ const CompanyCopy = (props) => {
         open={isModalOpen}
         onCancel={handleCancel}
         centered
-        width={1000}
+        width={1300}
         footer={[
           <Button key="cancel" onClick={handleCancel}>
             Cancel
