@@ -28,6 +28,6 @@ yarn-error.log*
 /lambda-api/node_modules
 /lambda-api/package-lock.json
 /lambda-api/.env
-/lambda-api/api.zip
+/lambda-api/license-node-api.zip
 # Local Netlify folder
 .netlify

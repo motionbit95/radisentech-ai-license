@@ -5,7 +5,6 @@ const cors = require("cors");
 const { pool, getConnection } = require("../controller/mysql");
 const { formatDateToYYYYMMDD } = require("../controller/common");
 const { verifyToken } = require("../controller/auth");
-const dayjs = require("dayjs");
 
 const router = express.Router();
 router.use(cors());
@@ -84,7 +83,7 @@ router.post("/add", verifyToken, async (req, res) => {
       VALUES (?, ?, ?)
     `;
 
-    const nowDate = dayjs(Date.now()).format("YYYY-MM-DDTHH:mm:ss");
+    const nowDate = formatDateToYYYYMMDD(Date.now());
 
     const [result] = await connection.execute(insertQuery, [
       name,
@@ -154,7 +153,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
       WHERE id = ?
     `;
 
-    const nowDate = dayjs(Date.now()).format("YYYY-MM-DDTHH:mm:ss");
+    const nowDate = formatDateToYYYYMMDD(Date.now());
 
     // 업데이트 쿼리 실행
     await connection.execute(updateQuery, [name, description, nowDate, id]);

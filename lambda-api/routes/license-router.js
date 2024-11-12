@@ -5,7 +5,6 @@ const cors = require("cors");
 const { pool, getConnection } = require("../controller/mysql");
 const { formatDateToYYYYMMDD } = require("../controller/common");
 const { verifyToken } = require("../controller/auth");
-const dayjs = require("dayjs");
 
 const router = express.Router();
 router.use(cors());
@@ -476,7 +475,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
     const localTerminateDate = expireDateObj.toISOString().split("T")[0]; // Local 날짜
     const utcTerminateDate = formatDateToYYYYMMDD(expireDateObj);
 
-    const nowDate = dayjs(Date.now()).format("YYYY-MM-DDTHH:mm:ss");
+    const nowDate = formatDateToYYYYMMDD(Date.now());
 
     console.log("now : ", nowDate);
 
