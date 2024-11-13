@@ -219,16 +219,24 @@ const Product = (props) => {
       dataIndex: "name",
       key: "name",
       width: 150,
+
+      sorter: (a, b) => a.name.localeCompare(b.name),
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
+
+      ...getColumnSearchProps("description"),
     },
     {
       title: "Created At",
       dataIndex: "created_at",
       key: "created_at",
+
+      sorter: (a, b) => {
+        return new Date(a.created_at) - new Date(b.created_at);
+      },
 
       render: (text) =>
         text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : "-",
@@ -237,6 +245,11 @@ const Product = (props) => {
       title: "Updated At",
       dataIndex: "updated_at",
       key: "updated_at",
+
+      sorter: (a, b) => {
+        return new Date(a.updated_at) - new Date(b.updated_at);
+      },
+
       render: (text) =>
         text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : "-",
     },
