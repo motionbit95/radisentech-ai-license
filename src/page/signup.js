@@ -14,6 +14,7 @@ import {
 import { SmileOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AxiosGet, AxiosPost, log } from "../api";
+import Agreement from "../modal/agreement";
 
 const formItemLayout = {
   labelCol: {
@@ -53,7 +54,7 @@ const SignUp = () => {
 
   const [form] = Form.useForm();
   const [isRegistered, setIsRegistered] = useState(false);
-  const [ischeckedId, setIsCheckedId] = useState(false);
+  // const [ischeckedId, setIsCheckedId] = useState(false);
   const [isSendEmail, setIsSendEmail] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
   const [isCheckedEmail, setIsCheckedEmail] = useState(false);
@@ -131,35 +132,35 @@ const SignUp = () => {
   };
 
   // ID 중복 체크
-  const handleCheckDuplicateId = async () => {
-    setLoading(true);
-    // userId 필드가 유효할 때만 중복 체크 실행
-    const isValid = await form
-      .validateFields(["user_id"])
-      .then(() => true)
-      .catch(() => false);
+  // const handleCheckDuplicateId = async () => {
+  //   setLoading(true);
+  //   // userId 필드가 유효할 때만 중복 체크 실행
+  //   const isValid = await form
+  //     .validateFields(["user_id"])
+  //     .then(() => true)
+  //     .catch(() => false);
 
-    if (!isValid) {
-      return setIsCheckedId(false), setLoading(false); // 유효하지 않으면 함수 종료
-    }
+  //   if (!isValid) {
+  //     return setIsCheckedId(false), setLoading(false); // 유효하지 않으면 함수 종료
+  //   }
 
-    const userId = form.getFieldValue("user_id");
+  //   const userId = form.getFieldValue("user_id");
 
-    AxiosGet(`/company/check-user-id/${userId}`)
-      .then((response) => {
-        log(response);
-        if (response.status === 200) {
-          message.success(response.data.message);
-          setIsCheckedId(true);
-          setLoading(false);
-        }
-      })
-      .catch((error) => {
-        message.error(error.response.data.message);
-        setIsCheckedId(false);
-        setLoading(false);
-      });
-  };
+  //   AxiosGet(`/company/check-user-id/${userId}`)
+  //     .then((response) => {
+  //       log(response);
+  //       if (response.status === 200) {
+  //         message.success(response.data.message);
+  //         setIsCheckedId(true);
+  //         setLoading(false);
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       message.error(error.response.data.message);
+  //       setIsCheckedId(false);
+  //       setLoading(false);
+  //     });
+  // };
 
   const sendEmailCode = async () => {
     setLoading(true);
@@ -173,7 +174,7 @@ const SignUp = () => {
       return setLoading(false), setIsSendEmail(false);
     }
 
-    if (ischeckedId && isValid) {
+    if (isValid) {
       AxiosPost("/company/send-code", {
         user_id: form.getFieldValue("user_id"),
         email: form.getFieldValue("email"),
@@ -191,7 +192,7 @@ const SignUp = () => {
           setLoading(false);
         });
     } else {
-      message.error("Please check the ID before submitting.");
+      message.error("Please check the Email before submitting.");
       setLoading(false);
     }
   };
@@ -301,20 +302,8 @@ const SignUp = () => {
               >
                 <Row gutter={8}>
                   <Col span={24}>
-                    <Input
-                    // onChange={() => setIsCheckedId(false)}
-                    />
+                    <Input />
                   </Col>
-                  {/* <Col span={8}>
-                <Button
-                  className="w-full"
-                  onClick={handleCheckDuplicateId}
-                  style={ischeckedId ? { borderColor: "#52c41a" } : {}}
-                >
-                  Check ID
-                  {ischeckedId && <SmileOutlined style={{ marginLeft: 3 }} />}
-                </Button>
-              </Col> */}
                 </Row>
               </Form.Item>
 
@@ -513,7 +502,7 @@ const SignUp = () => {
             {...tailFormItemLayout}
           >
             <Checkbox>
-              I have read the <a href="">agreement</a>
+              I have read the <Agreement />
             </Checkbox>
           </Form.Item>
           <div>{contextHolder}</div>
