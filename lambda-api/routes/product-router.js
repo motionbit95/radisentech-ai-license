@@ -193,26 +193,98 @@ router.put("/update/:id", verifyToken, async (req, res) => {
  *       500:
  *         description: Product(AI Type) 정보제
  * */
-router.delete("/delete/:id", verifyToken, async (req, res) => {
-  const id = req.params.id; // URL에서 row id를 가져옵니다.
+// router.delete("/delete/:id", verifyToken, async (req, res) => {
+//   const id = req.params.id; // URL에서 row id를 가져옵니다.
+
+//   let connection;
+//   try {
+//     // 데이터베이스 연결
+//     connection = await getConnection();
+
+//     // 이력 삭제 쿼리
+//     const deleteQuery = "DELETE FROM product WHERE id = ?";
+
+//     // 삭제 쿼리 실행
+//     await connection.execute(deleteQuery, [id]);
+
+//     res.status(200).json({ message: "Product deleted successfully" });
+//   } catch (error) {
+//     console.error("Error deleting product:", error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   } finally {
+//     if (connection) await connection.release(); // 연결 종료
+//   }
+// });
+
+/**
+ * @swagger
+ * /product/delete/{name}:
+ *   delete:
+ *     tags: [Product]
+ *     summary: Product(AI Type) 정보 삭제
+ *     description: Product(AI Type) 정보 제거
+ *     parameters:
+ *       - in: path
+ *         name: name
+ *         description: Product(AI Type) 이름
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: name
+ *     responses:
+ *       200:
+ *         description: Product(AI Type) 정보 제거 성공
+ *       401:
+ *         description: ProductType에 사용되고 있는 경우, 삭제 제한
+ *         code: "PRODUCT_IN_USE"
+ *       404:
+ *         description: Product not found.
+ *       500:
+ *         description: Database error
+ */
+router.delete("/delete/:name", verifyToken, async (req, res) => {
+  const { name } = req.params;
 
   let connection;
+
   try {
     // 데이터베이스 연결
     connection = await getConnection();
 
-    // 이력 삭제 쿼리
-    const deleteQuery = "DELETE FROM product WHERE id = ?";
+    // LicenseManagement 테이블에서 ProductType에 `name`이 포함된 경우 확인
+    const [licenseResults] = await connection.query(
+      `
+      SELECT pk FROM LicenseManagement 
+      WHERE FIND_IN_SET(?, ProductType) > 0
+    `,
+      [name]
+    );
 
-    // 삭제 쿼리 실행
-    await connection.execute(deleteQuery, [id]);
+    console.log("licenseResults:", licenseResults);
 
-    res.status(200).json({ message: "Product deleted successfully" });
+    if (licenseResults.length > 0) {
+      // ProductType에 사용되고 있는 경우, 삭제 제한 응답
+      return res.status(401).json({
+        error:
+          "Cannot delete product with name in use in LicenseManagement ProductType field.",
+        code: "PRODUCT_IN_USE",
+      });
+    }
+
+    // product 테이블에서 삭제 진행
+    const [deleteResult] = await connection.query(
+      "DELETE FROM product WHERE name = ?",
+      [name]
+    );
+
+    if (deleteResult.affectedRows === 0) {
+      return res.status(404).json({ message: "Product not found." });
+    }
+
+    res.status(200).json({ message: "Product deleted successfully." });
   } catch (error) {
-    console.error("Error deleting product:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  } finally {
-    if (connection) await connection.release(); // 연결 종료
+    console.error(error);
+    res.status(500).json({ error: "Internal server error." });
   }
 });
 

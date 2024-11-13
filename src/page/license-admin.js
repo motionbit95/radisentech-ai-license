@@ -26,6 +26,7 @@ import dayjs from "dayjs";
 import ADDLicense from "../modal/add-license";
 import { AxiosGet, AxiosPut, log } from "../api";
 import ButtonGroup from "antd/es/button/button-group";
+import Product from "./product";
 
 const { Content } = Layout;
 
@@ -337,6 +338,28 @@ const License = (props) => {
       ...getColumnFilterProps("AIType"),
     },
     {
+      title: "Product Type",
+      dataIndex: "ProductType",
+      key: "ProductType",
+
+      sorter: (a, b) => {
+        return a.ProductType.localeCompare(b.ProductType);
+      },
+
+      render: (text) => {
+        try {
+          return Array.isArray(JSON.parse(text))
+            ? JSON.parse(text).join(", ")
+            : text;
+        } catch (e) {
+          // JSON 파싱 오류가 나면 원본 텍스트 반환
+          return text;
+        }
+      },
+
+      ...getColumnFilterProps("ProductType"),
+    },
+    {
       title: "Hospital Name",
       dataIndex: "Hospital",
       key: "Hospital",
@@ -404,14 +427,22 @@ const License = (props) => {
   const hasSelected = selectedRowKeys.length > 0;
 
   const applyFilters = (item) => {
-    const { company, country, hospital, expire_date, deleted, AIType } =
-      searchFilters;
+    const {
+      company,
+      country,
+      hospital,
+      expire_date,
+      deleted,
+      AIType,
+      ProductType,
+    } = searchFilters;
 
     log("item", item, searchFilters);
 
     return (
       // deleted 플래그가 false일 경우 삭제된 라이센스는 보이지 않습니다.
       ((!deleted && item.Deleted === 0) || deleted) &&
+      (!ProductType || ProductType?.includes(item?.ProductType)) &&
       (!AIType || item.AIType.toLowerCase().includes(AIType)) &&
       (!company || item.Company.toLowerCase().includes(company)) &&
       (!country || item.Country.toLowerCase().includes(country)) &&
@@ -518,6 +549,25 @@ const AdvancedSearchForm = (props) => {
   const getFields = () => {
     const children = [];
     children.push(
+      <Col span={8} key={"ProductType"}>
+        <Form.Item name={"ProductType"} label={`Product`}>
+          <Select
+            mode="multiple"
+            style={{ width: "100%" }}
+            placeholder="Please select"
+          >
+            {props.product
+              .map((item) => item.name)
+              .map((item) => (
+                <Select.Option key={item} value={item}>
+                  {item}
+                </Select.Option>
+              ))}
+          </Select>
+        </Form.Item>
+      </Col>
+    );
+    children.push(
       <Col span={8} key={"company"}>
         <Form.Item name={`company`} label={`Company`}>
           <Input placeholder="search..." />
@@ -560,25 +610,7 @@ const AdvancedSearchForm = (props) => {
         </Form.Item>
       </Col>
     );
-    children.push(
-      <Col span={8} key={"AIType"}>
-        <Form.Item name={"AIType"} label={`AI Type`}>
-          <Select
-            mode="multiple"
-            style={{ width: "100%" }}
-            placeholder="Please select"
-          >
-            {props.product
-              .map((item) => item.name)
-              .map((item) => (
-                <Select.Option key={item} value={item}>
-                  {item}
-                </Select.Option>
-              ))}
-          </Select>
-        </Form.Item>
-      </Col>
-    );
+
     return children;
   };
   const onFinish = (values) => {

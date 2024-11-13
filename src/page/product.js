@@ -52,12 +52,17 @@ const Product = (props) => {
     setLoading(true);
 
     try {
-      await AxiosDelete(`/product/delete/${selectedProduct?.id}`);
+      await AxiosDelete(`/product/delete/${selectedProduct?.name}`);
       await fetchProductList(); // 데이터 갱신 후 로딩 해제
       setSelectedProduct(null);
       setSelectedRowKeys([]);
     } catch (error) {
-      if (error.response?.status === 403) {
+      if (error.response?.status === 401) {
+        // 이미 라이센스에 등록된 product type의 경우 삭제 제한
+        message.error(
+          "Cannot delete product with name in use in LicenseManagement ProductType field."
+        );
+      } else if (error.response?.status === 403) {
         navigate("/login");
       } else if (error.response?.status === 500) {
         message.error("Failed to delete company. Licenses History exists.");

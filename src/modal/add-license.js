@@ -121,16 +121,21 @@ const ADDLicense = (props) => {
               </Form.Item>
             </Col>
             <Col span={12}>
-              {/* <Form.Item
+              <Form.Item
                 name="AIType"
                 label="AI Type"
                 rules={[{ required: true, message: "Please input AI Type" }]}
               >
                 <Input placeholder="AI Type" />
-              </Form.Item> */}
-              <Form.Item name={"AIType"} label={`AI Type`}>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name={"ProductType"} label={`Product Type`}>
                 <Select
-                  mode="multiple"
+                  // mode="multiple"
                   style={{ width: "100%" }}
                   placeholder="Please select"
                 >

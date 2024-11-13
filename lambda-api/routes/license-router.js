@@ -354,6 +354,7 @@ router.post("/add", verifyToken, async (req, res) => {
     LocalTerminateDate,
     UTCActivateStartDate,
     UTCTerminateDate,
+    ProductType,
   } = req.body;
 
   // 필수 필드 확인
@@ -380,9 +381,9 @@ router.post("/add", verifyToken, async (req, res) => {
     // LicenseManagement 테이블에 데이터 추가하는 쿼리
     const insertQuery = `
       INSERT INTO LicenseManagement
-      (DealerCompany, Company, Country, AIType, Hospital, UserEmail, UserName, HardWareInfo, DetectorSerialNumber, LocalActivateStartDate, LocalTerminateDate, UTCActivateStartDate, UTCTerminateDate, UniqueCode, ActivateCount)
+      (DealerCompany, Company, Country, AIType, Hospital, UserEmail, UserName, HardWareInfo, DetectorSerialNumber, LocalActivateStartDate, LocalTerminateDate, UTCActivateStartDate, UTCTerminateDate, UniqueCode, ActivateCount, ProductType)
       VALUES
-      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+      (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
     `;
 
     const parameters = [
@@ -400,6 +401,7 @@ router.post("/add", verifyToken, async (req, res) => {
       UTCActivateStartDate,
       UTCTerminateDate,
       UniqueCode,
+      ProductType || null,
     ].map((param) => (param === undefined ? null : param)); // undefined를 null로 변경
 
     const [result] = await connection.execute(insertQuery, parameters);
