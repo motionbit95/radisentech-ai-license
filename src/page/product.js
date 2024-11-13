@@ -221,6 +221,8 @@ const Product = (props) => {
       width: 150,
 
       sorter: (a, b) => a.name.localeCompare(b.name),
+
+      ...getColumnSearchProps("name"),
     },
     {
       title: "Description",
