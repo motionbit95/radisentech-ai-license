@@ -290,6 +290,26 @@ const License = (props) => {
       ...getColumnFilterProps("AIType"),
     },
     {
+      title: "Product Type",
+      dataIndex: "ProductType",
+      key: "ProductType",
+
+      sorter: (a, b) => {
+        return a.ProductType.localeCompare(b.ProductType);
+      },
+
+      render: (text) => {
+        try {
+          return Array.isArray(JSON.parse(text))
+            ? JSON.parse(text).join(", ")
+            : text;
+        } catch (e) {
+          // JSON 파싱 오류가 나면 원본 텍스트 반환
+          return text;
+        }
+      },
+    },
+    {
       title: "Hospital Name",
       dataIndex: "Hospital",
       key: "Hospital",
@@ -330,11 +350,12 @@ const License = (props) => {
   };
 
   const applyFilters = (item) => {
-    const { company, country, hospital, expire_date, AIType } = searchFilters;
+    const { company, country, hospital, expire_date, ProductType } =
+      searchFilters;
 
     return (
       (!company || item.Company.toLowerCase().includes(company)) &&
-      (!AIType || item.AIType.toLowerCase().includes(AIType)) &&
+      (!ProductType || item.ProductType.toLowerCase().includes(ProductType)) &&
       (!country || item.Country.toLowerCase().includes(country)) &&
       (!hospital || item.Hospital.toLowerCase().includes(hospital)) &&
       (!expire_date ||
@@ -437,6 +458,23 @@ const AdvancedSearchForm = (props) => {
   const getFields = () => {
     const children = [];
     children.push(
+      <Col span={8} key={"ProductType"}>
+        <Form.Item name={"ProductType"} label={`Product`}>
+          <Select
+            mode="multiple"
+            style={{ width: "100%" }}
+            placeholder="Please select"
+          >
+            {props.product.map((item) => (
+              <Select.Option key={item} value={item}>
+                {item}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+      </Col>
+    );
+    children.push(
       <Col span={8} key={"country"}>
         <Form.Item name={`country`} label={`Country`}>
           <Input placeholder="search..." />
@@ -455,28 +493,13 @@ const AdvancedSearchForm = (props) => {
         <Form.Item name={`expire_date`} label={`Expire Date`}>
           <DatePicker.RangePicker
             format={"MM-DD-YYYY"}
+            className="w-full"
             placeholder={["Start Date", "End Date"]}
           />
         </Form.Item>
       </Col>
     );
-    children.push(
-      <Col span={8} key={"AIType"}>
-        <Form.Item name={"AIType"} label={`AI Type`}>
-          <Select
-            mode="multiple"
-            style={{ width: "100%" }}
-            placeholder="Please select"
-          >
-            {props.product.map((item) => (
-              <Select.Option key={item} value={item}>
-                {item}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-      </Col>
-    );
+
     return children;
   };
   const onFinish = (values) => {

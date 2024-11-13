@@ -356,8 +356,6 @@ const License = (props) => {
           return text;
         }
       },
-
-      ...getColumnFilterProps("ProductType"),
     },
     {
       title: "Hospital Name",

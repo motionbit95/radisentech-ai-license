@@ -54,6 +54,7 @@ const Product = (props) => {
     try {
       await AxiosDelete(`/product/delete/${selectedProduct?.name}`);
       await fetchProductList(); // 데이터 갱신 후 로딩 해제
+      message.success("Product deleted successfully");
       setSelectedProduct(null);
       setSelectedRowKeys([]);
     } catch (error) {
