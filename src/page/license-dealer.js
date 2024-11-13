@@ -455,6 +455,11 @@ const AdvancedSearchForm = (props) => {
     padding: 24,
   };
 
+  const handleSelectChange = (value) => {
+    const newValue = value.length === 0 ? undefined : value;
+    form.setFieldsValue({ ProductType: newValue });
+  };
+
   const getFields = () => {
     const children = [];
     children.push(
@@ -464,6 +469,8 @@ const AdvancedSearchForm = (props) => {
             mode="multiple"
             style={{ width: "100%" }}
             placeholder="Please select"
+            onChange={handleSelectChange} // 선택 변경 시 실행
+            allowClear
           >
             {props.product.map((item) => (
               <Select.Option key={item} value={item}>
