@@ -673,4 +673,6 @@ router.get("/license-history/:pk", verifyToken, async (req, res) => {
   }
 });
 
+// 라이센스 남은 수량 체크
+
 module.exports = router;

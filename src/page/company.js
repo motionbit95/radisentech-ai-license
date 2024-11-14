@@ -376,6 +376,7 @@ const Company = (props) => {
       fixed: "right",
       render: (text, record, index) => (
         <LicenseHistoryModal
+          currentUser={props.currentUser}
           data={record}
           title={text}
           onCancel={() => {

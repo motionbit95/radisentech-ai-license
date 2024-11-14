@@ -11,6 +11,7 @@ const { getConnection } = require("../controller/mysql");
 const {
   generateRandomCode,
   generateUniqueCopyValue,
+  formatDateTime,
 } = require("../controller/common");
 const { sendVerifyEmail } = require("../controller/mailer");
 router.use(cors());
@@ -632,8 +633,8 @@ router.put("/update-license/:id", verifyToken, async (req, res) => {
     // 라이센스 변경 내역을 DB에 저장
     // Insert data into generate_history
     const insertQuery = `
-INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled)
-VALUES (?, ?, ?, ?, ?, ?)`;
+    INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled)
+    VALUES (?, ?, ?, ?, ?, ?)`;
 
     const values = [
       new Date(), // create_time
@@ -1170,9 +1171,6 @@ router.get("/user-info", verifyToken, async (req, res) => {
  */
 router.get("/generate-history/:pk", verifyToken, async (req, res) => {
   const licensePk = req.params.pk;
-
-  console.log("user_id:", req.params.pk);
-
   let connection;
   try {
     // Create a database connection
@@ -1184,14 +1182,38 @@ router.get("/generate-history/:pk", verifyToken, async (req, res) => {
       [licensePk]
     );
 
+    let newArr = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      if (rows[i].source && rows[i].target) {
+        const [source] = await connection.query(
+          "SELECT user_name FROM company WHERE id = ?",
+          [rows[i].source]
+        );
+        const [target] = await connection.query(
+          "SELECT user_name FROM company WHERE id = ?",
+          [rows[i].target]
+        );
+        newArr.push({
+          ...rows[i],
+          source: source[0].user_name,
+          target: target[0].user_name,
+        });
+      } else {
+        newArr.push(rows[i]);
+      }
+    }
+
+    console.log(newArr);
+
     if (rows.length > 0) {
-      res.status(200).json(rows); // Return the records
+      res.status(200).json(newArr);
     } else {
-      res.status(404).json({ error: "No records found" }); // No records found
+      res.status(404).json({ error: "History not found" });
     }
   } catch (err) {
     console.error("Database connection error:", err);
-    res.status(500).json({ error: "Database connection error" });
+    res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) {
       await connection.release(); // Close the connection
@@ -1221,8 +1243,6 @@ router.get("/generate-history/:pk", verifyToken, async (req, res) => {
  *         description: Database error
  *       403:
  *         description: Unauthorized
- *     security:
- *       - bearerAuth: []
  * */
 router.put("/history-cancel/:id", verifyToken, async (req, res) => {
   const id = req.params.id; // URL에서 history id를 가져옵니다.
@@ -1250,6 +1270,59 @@ router.put("/history-cancel/:id", verifyToken, async (req, res) => {
     if (connection) await connection.release(); // 연결 종료
   }
 });
+
+/**
+ * @swagger
+ * /company/available-transfer/{unique_code}:
+ *   get:
+ *     tags: [Company]
+ *     summary: 사용자 정보 이관
+ *     description: 사용자 정보 이관
+ *     parameters:
+ *       - in: path
+ *         name: unique_code
+ *         description: unique_code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "RADISENTECH"
+ *     responses:
+ *       200:
+ *         description: 사용자 정보 이관
+ *       500:
+ *         description: Database error
+ *       403:
+ *         description: Unauthorized
+ * */
+router.get(
+  "/available-transfer/:unique_code",
+  verifyToken,
+  async (req, res) => {
+    const uniqueCode = req.params.unique_code;
+    let connection;
+    try {
+      // 데이터베이스 연결
+      connection = await getConnection();
+
+      // company 목록 중 unique code가 동일한 리스트만 가지고옴
+      const [rows] = await connection.query(
+        "SELECT * FROM company WHERE unique_code = ?",
+        [uniqueCode]
+      );
+      res.status(200).json(rows);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      res.status(500).json({
+        status: "error",
+        message: "Database error",
+        error: error.message,
+      });
+    } finally {
+      // 데이터베이스 연결 해제
+      if (connection) await connection.release();
+    }
+  }
+);
 
 /**
  * @swagger
@@ -1292,11 +1365,11 @@ router.post("/transfer", verifyToken, async (req, res) => {
 
     // sourceId와 targetId의 유저 정보 조회
     const [sourceUser] = await connection.execute(
-      "SELECT unique_code, license_cnt FROM company WHERE id = ?",
+      "SELECT unique_code, license_cnt, id FROM company WHERE id = ?",
       [sourceId]
     );
     const [targetUser] = await connection.execute(
-      "SELECT unique_code, license_cnt FROM company WHERE id = ?",
+      "SELECT unique_code, license_cnt, id FROM company WHERE id = ?",
       [targetId]
     );
 
@@ -1343,6 +1416,25 @@ router.post("/transfer", verifyToken, async (req, res) => {
       sourceUniqueCode,
     ]);
 
+    // generate history에 이관내역 저장 - target 쪽 / source 쪽
+    const insertGenerateHistory = `INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled, source, target)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    const nowDate = formatDateTime(new Date());
+
+    console.log(sourceUser, targetUser);
+
+    await connection.execute(insertGenerateHistory, [
+      nowDate,
+      "Transfer",
+      sourceId,
+      sourceUser[0].license_cnt,
+      0, // 몰수
+      0,
+      sourceUser[0].id,
+      targetUser[0].id,
+    ]);
+
     console.log("license_history transferred!!");
 
     res.status(200).json({
@@ -1350,6 +1442,101 @@ router.post("/transfer", verifyToken, async (req, res) => {
     });
   } catch (error) {
     console.error("Error transferring user data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (connection) await connection.release();
+  }
+});
+
+router.post("/transfer-cancel", verifyToken, async (req, res) => {
+  const { sourceId, targetId } = req.body;
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await getConnection();
+
+    console.log("sourceId:", sourceId, "targetId:", targetId);
+
+    // sourceId와 targetId의 유저 정보 조회
+    const [sourceUser] = await connection.execute(
+      "SELECT unique_code, license_cnt, id FROM company WHERE id = ?",
+      [sourceId]
+    );
+    const [targetUser] = await connection.execute(
+      "SELECT unique_code, license_cnt, id FROM company WHERE id = ?",
+      [targetId]
+    );
+
+    if (sourceUser.length === 0) {
+      return res.status(404).json({ error: "Source user not found" });
+    }
+    if (targetUser.length === 0) {
+      return res.status(404).json({ error: "Target user not found" });
+    }
+
+    const sourceUniqueCode = sourceUser[0].unique_code;
+    const targetUniqueCode = targetUser[0].unique_code;
+
+    // generate_history에서 해당 Transfer 내역을 취소 처리
+    const cancelTransfer = `UPDATE generate_history SET canceled = 1 WHERE source = ? AND target = ? AND canceled = 0`;
+    await connection.execute(cancelTransfer, [sourceId, targetId]);
+
+    console.log("generate_history entry marked as canceled!");
+
+    // 원래 license_cnt 값으로 복구
+    await connection.execute(
+      "UPDATE company SET license_cnt = ? WHERE id = ?",
+      [sourceUser[0].license_cnt, targetId]
+    );
+    await connection.execute(
+      "UPDATE company SET license_cnt = ? WHERE id = ?",
+      [targetUser[0].license_cnt, sourceId]
+    );
+
+    // LicenseManagement의 UniqueCode 복구
+    await connection.execute(
+      "UPDATE LicenseManagement SET UniqueCode = ? WHERE UniqueCode = ?",
+      [sourceUniqueCode, targetUniqueCode]
+    );
+
+    // license_history의 unique_code 복구
+    await connection.execute(
+      "UPDATE license_history SET unique_code = ? WHERE unique_code = ?",
+      [sourceUniqueCode, targetUniqueCode]
+    );
+
+    console.log("License counts and unique codes reverted to original state!");
+
+    // 취소 내역을 기록
+    const nowDate = formatDateTime(new Date());
+    const insertRevertHistory = `INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled, source, target)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    await connection.execute(insertRevertHistory, [
+      nowDate,
+      "Transfer Canceled",
+      sourceId, // company_pk는 원래 targetId로 기록
+      sourceUser[0].license_cnt, // 이전의 source 라이선스 수량
+      targetUser[0].license_cnt, // 취소 후 target 라이선스 수량
+      1,
+      targetUser[0].id, // 원래 target
+      sourceUser[0].id, // 원래 source
+    ]);
+
+    console.log("Transfer cancellation recorded in history.");
+
+    // generate-history 복구
+    await connection.execute(
+      "UPDATE generate_history SET company_pk = ? WHERE company_pk = ?",
+      [sourceId, targetId]
+    );
+
+    res.status(200).json({
+      message: "Transfer has been successfully canceled and data reverted.",
+    });
+  } catch (error) {
+    console.error("Error canceling transfer:", error);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release();

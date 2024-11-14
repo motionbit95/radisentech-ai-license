@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Col, Modal, Table, Tag, Typography, message } from "antd";
-import { AxiosGet, AxiosPut, log } from "../api";
+import { AxiosGet, AxiosPost, AxiosPut, log } from "../api";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { CloseOutlined } from "@ant-design/icons";
@@ -24,18 +24,23 @@ const LicenseHistoryModal = (props) => {
           setHistoryList(sortedData);
           setLoading(false);
         } else {
+          setLoading(false);
           throw new Error("Unauthorized");
         }
       } catch (error) {
         if (error.response?.status === 403) {
           navigate("/login");
-        } else {
-          console.error("Error:", error.message);
-          setLoading(false);
+        } else if (error.response?.status === 404) {
           message.error(error.response.data.error);
+          setHistoryList([]);
+          setLoading(false);
+        } else {
+          console.error("Error:", error);
+          setLoading(false);
         }
       }
     }
+    setLoading(false);
   };
 
   const showModal = () => {
@@ -52,28 +57,47 @@ const LicenseHistoryModal = (props) => {
   const handleHistoryCancel = (data) => {
     log("data", data);
     setLoading(true);
-    AxiosPut(`/company/update-license/${data?.company_pk}`, {
-      license_cnt: data?.prev_cnt - data?.new_cnt,
-      description: "Canceled",
-      canceled: 1,
-    })
-      .then((response) => {
-        log(response);
-        AxiosPut(`/company/history-cancel/${data?.id}`, {
-          canceled: 1,
-        }).then((response) => {
-          log(response);
-          // 히스토리 데이터는 부모 테이블에서 받아온 데이터 기준으로 다시 받아와야하므로 props로 받아온 데이터를 넘긴다
-          // 여기 함수에서 받은 data는 X 버튼을 클릭한 행의 데이터임.
+    // 이관 데이터를 취소하는 과정 예외처리 추가
+    if (data?.description === "Transfer") {
+      console.log(data);
+      // 재이관
+      AxiosPost("/company/transfer-cancel", {
+        sourceId: data?.source,
+        targetId: data?.target,
+      })
+        .then((response) => {
           fetchHistoryList(props.data);
           onCancel();
           setLoading(false);
+        })
+        .catch((error) => {
+          log(error);
         });
+      setLoading(false);
+    } else {
+      AxiosPut(`/company/update-license/${data?.company_pk}`, {
+        license_cnt: data?.prev_cnt - data?.new_cnt,
+        description: "Canceled",
+        canceled: 1,
       })
-      .catch((error) => {
-        log(error);
-        setLoading(false);
-      });
+        .then((response) => {
+          log(response);
+          AxiosPut(`/company/history-cancel/${data?.id}`, {
+            canceled: 1,
+          }).then((response) => {
+            log(response);
+            // 히스토리 데이터는 부모 테이블에서 받아온 데이터 기준으로 다시 받아와야하므로 props로 받아온 데이터를 넘긴다
+            // 여기 함수에서 받은 data는 X 버튼을 클릭한 행의 데이터임.
+            fetchHistoryList(props.data);
+            onCancel();
+            setLoading(false);
+          });
+        })
+        .catch((error) => {
+          log(error);
+          setLoading(false);
+        });
+    }
   };
 
   // table column
@@ -85,12 +109,19 @@ const LicenseHistoryModal = (props) => {
       width: 50,
     },
     {
-      title: "Previous Count",
+      title: "Update Time",
+      dataIndex: "create_time",
+      key: "create_time",
+
+      render: (text) => (text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : ""),
+    },
+    {
+      title: "Previous",
       dataIndex: "prev_cnt",
       key: "prev_cnt",
     },
     {
-      title: "Added Count",
+      title: "Added",
       dataIndex: "new_cnt",
       key: "new_cnt",
       render: (text, record, index) => (
@@ -102,16 +133,19 @@ const LicenseHistoryModal = (props) => {
       ),
     },
     {
-      title: "Total Count",
+      title: "Total",
       dataIndex: "new_cnt",
       key: "new_cnt",
     },
     {
-      title: "Update Time",
-      dataIndex: "create_time",
-      key: "create_time",
-
-      render: (text) => (text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : ""),
+      title: "Source",
+      dataIndex: "source",
+      key: "source",
+    },
+    {
+      title: "Target",
+      dataIndex: "target",
+      key: "target",
     },
     {
       title: "Description",
@@ -119,7 +153,17 @@ const LicenseHistoryModal = (props) => {
       key: "description",
 
       render: (text, record, index) => (
-        <Tag color={text === "Canceled" ? "red" : "green"}>{text}</Tag>
+        <Tag
+          color={
+            text === "Canceled"
+              ? "red"
+              : text === "Generated"
+              ? "green"
+              : "blue"
+          }
+        >
+          {text}
+        </Tag>
       ),
     },
     {
@@ -152,7 +196,7 @@ const LicenseHistoryModal = (props) => {
         {title}
       </Col>
       <Modal
-        title="License History"
+        title={`[${data?.user_name}] License History`}
         open={isModalOpen}
         onOk={handleOk}
         onCancel={handleCancel}

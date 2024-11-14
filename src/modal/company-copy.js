@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Button,
   Image,
@@ -13,17 +13,35 @@ import {
 import { useNavigate } from "react-router-dom";
 import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
-import { AxiosPost, log } from "../api";
+import { AxiosGet, AxiosPost, log } from "../api";
 
 const CompanyCopy = (props) => {
   const navigate = useNavigate();
-  const { data, list, disabled, onComplete, setloading } = props;
+  const [list, setList] = useState([]);
+  const { data, disabled, onComplete, setloading } = props;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCopyCompany, setSelectedCopyCompany] = useState(null); // 선택된 Company data
 
   const searchInput = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
+
+  useEffect(() => {
+    if (isModalOpen) {
+      AxiosGet(`/company/available-transfer/${data.unique_code}`).then(
+        (response) => {
+          if (response.status === 200) {
+            setList(
+              response.data.map((item) => ({
+                ...item,
+                key: item.id,
+              }))
+            );
+          }
+        }
+      );
+    }
+  }, [isModalOpen]);
 
   const showModal = () => {
     setIsModalOpen(true);
