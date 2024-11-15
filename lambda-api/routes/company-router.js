@@ -375,7 +375,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
     phone,
     unique_code,
     permission_flag,
-    productList, // 추가된 필드: 선택된 제품 목록
+    productList = undefined, // 추가된 필드: 선택된 제품 목록
   } = req.body;
 
   // 필수 필드가 누락된 경우 에러 응답
