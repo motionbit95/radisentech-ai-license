@@ -16,7 +16,7 @@ import { AxiosGet, AxiosPut, log } from "../api";
 
 const CompanyEdit = (props) => {
   const navigate = useNavigate();
-  const { disabled, data, onComplete, setLoading } = props;
+  const { disabled, data, onComplete, setLoading, isLicense } = props;
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -130,7 +130,10 @@ const CompanyEdit = (props) => {
                   },
                 ]}
               >
-                <Input placeholder="Please enter company code" />
+                <Input
+                  disabled={isLicense}
+                  placeholder="Please enter company code"
+                />
               </Form.Item>
             </Col>
           </Row>

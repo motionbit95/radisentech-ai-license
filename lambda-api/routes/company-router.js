@@ -1404,22 +1404,6 @@ router.post("/transfer", verifyToken, async (req, res) => {
 
     console.log("generate_history transferred!");
 
-    // LicenseManagement의 UniqueCode 먼저 업데이트
-    const updateLicenseManagement = `UPDATE LicenseManagement SET UniqueCode = ? WHERE UniqueCode = ?`;
-    await connection.execute(updateLicenseManagement, [
-      targetUniqueCode,
-      sourceUniqueCode,
-    ]);
-
-    console.log("LicenseManagement transferred!");
-
-    // // license_history의 unique_code 업데이트
-    const updateLicenseHistory = `UPDATE license_history SET unique_code = ? WHERE unique_code = ?`;
-    await connection.execute(updateLicenseHistory, [
-      targetUniqueCode,
-      sourceUniqueCode,
-    ]);
-
     // generate history에 이관내역 저장 - target 쪽 / source 쪽
     const insertGenerateHistory = `INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled, source, target)
 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -1503,20 +1487,6 @@ router.post("/transfer-cancel", verifyToken, async (req, res) => {
       "UPDATE company SET license_cnt = ? WHERE id = ?",
       [targetUser[0].license_cnt, sourceId]
     );
-
-    // LicenseManagement의 UniqueCode 복구
-    await connection.execute(
-      "UPDATE LicenseManagement SET UniqueCode = ? WHERE UniqueCode = ?",
-      [sourceUniqueCode, targetUniqueCode]
-    );
-
-    // license_history의 unique_code 복구
-    await connection.execute(
-      "UPDATE license_history SET unique_code = ? WHERE unique_code = ?",
-      [sourceUniqueCode, targetUniqueCode]
-    );
-
-    console.log("License counts and unique codes reverted to original state!");
 
     // 취소 내역을 기록
     const nowDate = formatDateTime(new Date());
