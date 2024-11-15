@@ -535,16 +535,16 @@ router.post("/account-validate", async (req, res) => {
       [user_id]
     );
 
+    if (isId.length > 0) {
+      return res.status(401).json({ message: "User ID already exists" });
+    }
+
     if (isEmail.length > 0) {
       return res.status(401).json({ message: "Email already exists" });
     }
 
     if (isPhone.length > 0) {
       return res.status(401).json({ message: "Phone already exists" });
-    }
-
-    if (isId.length > 0) {
-      return res.status(401).json({ message: "User ID already exists" });
     }
 
     return res.status(200).json({ message: "Account is available" });
@@ -940,6 +940,19 @@ router.post("/send-code", async (req, res) => {
 
     // 데이터베이스 연결
     connection = await getConnection();
+
+    // 이미 존재하는 이메일인지 확인
+    const [rows] = await connection.execute(
+      "SELECT * FROM company WHERE email = ?",
+      [email]
+    );
+
+    console.log(rows);
+
+    if (rows.length > 0) {
+      res.status(403).json({ error: "Email already exists" });
+      return;
+    }
 
     // 인증 코드 DB에 저장 (기존의 코드를 업데이트하거나 새로 삽입)
     await connection.execute(

@@ -83,6 +83,13 @@ const SignUp = () => {
         if (response.status === 200) {
           console.log(response.data);
 
+          // 구글 로그인시에는 생략
+          if (!user && !isCheckedEmail) {
+            message.error("Please verify your email.");
+            setLoading(false);
+            return;
+          }
+
           // 회원가입 처리
           AxiosPost("/company/add", data)
             .then((response) => {
@@ -106,61 +113,7 @@ const SignUp = () => {
         }
         setLoading(false);
       });
-
-    // if (!ischeckedId) {
-    //   message.error("Please check the ID before submitting.");
-    //   return;
-    // }
-
-    // Id 체크, Email 인증 확인 후 진행
-    // if (isCheckedEmail && ischeckedId) {
-    //   AxiosPost("/company/add", values)
-    //     .then((response) => {
-    //       if (response.status === 200) {
-    //         setIsRegistered(true);
-    //         setLoading(false);
-    //       }
-    //     })
-    //     .catch((error) => {
-    //       message.error(error.response.data.message);
-    //       setLoading(false);
-    //     });
-    // } else {
-    //   message.error("Please check the ID and Email before submitting.");
-    //   setLoading(false);
-    // }
   };
-
-  // ID 중복 체크
-  // const handleCheckDuplicateId = async () => {
-  //   setLoading(true);
-  //   // userId 필드가 유효할 때만 중복 체크 실행
-  //   const isValid = await form
-  //     .validateFields(["user_id"])
-  //     .then(() => true)
-  //     .catch(() => false);
-
-  //   if (!isValid) {
-  //     return setIsCheckedId(false), setLoading(false); // 유효하지 않으면 함수 종료
-  //   }
-
-  //   const userId = form.getFieldValue("user_id");
-
-  //   AxiosGet(`/company/check-user-id/${userId}`)
-  //     .then((response) => {
-  //       log(response);
-  //       if (response.status === 200) {
-  //         message.success(response.data.message);
-  //         setIsCheckedId(true);
-  //         setLoading(false);
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       message.error(error.response.data.message);
-  //       setIsCheckedId(false);
-  //       setLoading(false);
-  //     });
-  // };
 
   const sendEmailCode = async () => {
     setLoading(true);
@@ -188,11 +141,10 @@ const SignUp = () => {
         })
         .catch((error) => {
           console.error("Error sending email: ", error);
-          message.error("The ID and email must be entered. Please try again.");
+          message.error(error.response.data.error);
           setLoading(false);
         });
     } else {
-      message.error("Please check the Email before submitting.");
       setLoading(false);
     }
   };
@@ -215,6 +167,8 @@ const SignUp = () => {
         console.error("Error verifying code: ", error);
         message.error("Failed to verify code. Please try again.");
         setLoading(false);
+        setIsCheckedEmail(false);
+        setIsSendEmail(false);
       });
   };
 
@@ -394,6 +348,7 @@ const SignUp = () => {
                     <Button
                       className="w-full"
                       onClick={sendEmailCode}
+                      disabled={isSendEmail || isCheckedEmail}
                       style={
                         isSendEmail || isCheckedEmail
                           ? { borderColor: "#52c41a" }
@@ -482,6 +437,19 @@ const SignUp = () => {
               {
                 required: true,
                 message: "Please input your phone number!",
+              },
+              {
+                validator: (_, value) => {
+                  const phoneRegex = /^\d+$/; // 숫자만 허용
+                  if (!value || phoneRegex.test(value)) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(
+                    new Error(
+                      "Please enter a valid phone number (numbers only)!"
+                    )
+                  );
+                },
               },
             ]}
           >

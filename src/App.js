@@ -26,6 +26,9 @@ function App({ page, toggleTheme, isDarkMode }) {
 
   const [currentUser, setCurrentUser] = useState({});
 
+  // 로그인 페이지에서 라이센스 페이지로 이동할 때 로그인 플래그를 받습니다.
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+
   // 로그인한 유저 데이터 가져오기
   useEffect(() => {
     const getUser = async () => {
@@ -36,11 +39,14 @@ function App({ page, toggleTheme, isDarkMode }) {
             // log("CURRENT_USER", response.data);
             setCurrentUser(response.data);
             setPermissionFlag(response.data.permission_flag);
+            setIsLoggedIn(true);
           }
         })
         .catch((error) => {
           log(error);
-          if (error?.response?.status === 403) {
+          if (error?.response?.status === 404) {
+            setCurrentUser({});
+            setIsLoggedIn(false);
             navigate("/login");
           }
         });
@@ -77,11 +83,6 @@ function App({ page, toggleTheme, isDarkMode }) {
     },
   ];
 
-  // 로그인 페이지에서 라이센스 페이지로 이동할 때 로그인 플래그를 받습니다.
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    /*location.state?.isLoggedIn*/ true
-  );
-
   useEffect(() => {
     // 로그인 된 사용자의 경우 lisecse 페이지로 리다이렉트
     if (isLoggedIn && window.location.pathname === "/") {
@@ -89,7 +90,7 @@ function App({ page, toggleTheme, isDarkMode }) {
     }
 
     // 페이지를 로드할 때 로그인 토큰을 확인하여 기 로그인 사용자의 경우 로그인을 처리합니다.
-  }, []);
+  }, [isLoggedIn]);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
