@@ -435,21 +435,28 @@ router.put("/update/:id", verifyToken, async (req, res) => {
     );
 
     // 제품 목록을 JSON 형식으로 DB에 삽입
-    await connection.execute(query, [
-      user_id,
-      email,
-      company_name,
-      user_name,
-      address,
-      phone,
-      unique_code,
-      permission_flag,
-      JSON.stringify(productList), // JSON 형식으로 저장
-      id,
-    ]);
-
-    // 성공 응답
-    res.status(200).json({ message: "User updated successfully" });
+    await connection
+      .execute(query, [
+        user_id,
+        email,
+        company_name,
+        user_name,
+        address,
+        phone,
+        unique_code,
+        permission_flag,
+        JSON.stringify(productList), // JSON 형식으로 저장
+        id,
+      ])
+      .then((result) => {
+        // 성공 응답
+        res.status(200).json({ message: "User updated successfully" });
+      })
+      .catch((error) => {
+        console.error("Error updating user:", error);
+        res.status(405).json({ error: "DB Error" });
+        return;
+      });
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).json({ error: "Internal Server Error" });

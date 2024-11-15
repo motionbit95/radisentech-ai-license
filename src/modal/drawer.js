@@ -6,10 +6,12 @@ import {
   Drawer,
   Form,
   Input,
+  message,
   Popconfirm,
   Row,
   Select,
   Space,
+  Typography,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import { AxiosGet, AxiosPut, log } from "../api";
@@ -65,11 +67,17 @@ const CompanyEdit = (props) => {
         if (result.status === 200) {
           setOpen(false);
           onComplete(values);
+          setLoading(false);
         }
       })
       .catch((error) => {
         if (error.status === 403) {
           navigate("/login");
+          setLoading(false);
+        }
+        if (error.status === 405) {
+          message.error("Already exists data!");
+          setLoading(false);
         }
       });
   };
@@ -231,16 +239,12 @@ const CompanyEdit = (props) => {
             </Col>
           </Row>
           <Form.Item name={"product"} label="AI Type">
-            <Checkbox.Group
-              gutter={16}
-              style={{ width: "100%" }}
-              onChange={log}
-            >
+            <Checkbox.Group gutter={16} style={{ width: "100%" }}>
               <Row>
                 {product
                   .map((item) => item.name)
                   .map((value) => (
-                    <Col span={3}>
+                    <Col span={4} key={value}>
                       <Checkbox value={value}>{value}</Checkbox>
                     </Col>
                   ))}
