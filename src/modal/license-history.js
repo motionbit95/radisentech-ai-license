@@ -68,12 +68,11 @@ const LicenseHistoryModal = (props) => {
 
     setLoading(true);
     // 이관 데이터를 취소하는 과정 예외처리 추가
-    if (data?.description === "Transfer") {
-      console.log(data);
+    if (history?.description === "Transfer") {
       // 재이관
       AxiosPost("/company/transfer-cancel", {
-        sourceId: data?.source_id,
-        targetId: data?.target_id,
+        sourceId: history?.source_id,
+        targetId: history?.target_id,
       })
         .then((response) => {
           fetchHistoryList(props.data);
@@ -85,14 +84,15 @@ const LicenseHistoryModal = (props) => {
         });
       setLoading(false);
     } else {
-      AxiosPut(`/company/update-license/${data?.company_pk}`, {
-        license_cnt: data?.prev_cnt - data?.new_cnt,
+      AxiosPut(`/company/update-license/${history?.company_pk}`, {
+        license_cnt: history?.prev_cnt - history?.new_cnt,
         description: "Canceled",
         canceled: 1,
       })
         .then((response) => {
           log(response);
-          AxiosPut(`/company/history-cancel/${data?.id}`, {
+          setLoading(true);
+          AxiosPut(`/company/history-cancel/${history?.id}`, {
             canceled: 1,
           }).then((response) => {
             log(response);

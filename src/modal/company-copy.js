@@ -25,6 +25,7 @@ const CompanyCopy = (props) => {
   const searchInput = useRef(null);
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (isModalOpen) {
@@ -47,6 +48,7 @@ const CompanyCopy = (props) => {
     setIsModalOpen(true);
   };
   const handleOk = () => {
+    setLoading(true);
     AxiosPost("/company/transfer", {
       sourceId: data.id,
       targetId: selectedCopyCompany.id,
@@ -62,6 +64,7 @@ const CompanyCopy = (props) => {
           message.success("Company transferred successfully.");
           setIsModalOpen(false);
           setSelectedCopyCompany(null);
+          setLoading(false);
         }
       })
       .catch((error) => {
@@ -310,6 +313,7 @@ const CompanyCopy = (props) => {
           dataSource={
             data?.id ? list.filter((item) => item.id !== data.id) : list
           }
+          loading={loading}
           rowSelection={rowSelection}
           columns={companyColumns}
           pagination={{

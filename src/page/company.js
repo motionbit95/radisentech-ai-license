@@ -485,7 +485,9 @@ const Company = (props) => {
                     </Popconfirm> */}
                     <CompanyCopy
                       disabled={
-                        !hasSelected || selectedCompany?.permission_flag === "D"
+                        !hasSelected ||
+                        selectedCompany?.permission_flag === "D" ||
+                        selectedCompany?.license_cnt === 0
                       }
                       data={selectedCompany}
                       list={list}
