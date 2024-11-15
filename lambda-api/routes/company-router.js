@@ -1187,17 +1187,21 @@ router.get("/generate-history/:pk", verifyToken, async (req, res) => {
     for (let i = 0; i < rows.length; i++) {
       if (rows[i].source && rows[i].target) {
         const [source] = await connection.query(
-          "SELECT user_name FROM company WHERE id = ?",
+          "SELECT user_name, id FROM company WHERE id = ?",
           [rows[i].source]
         );
         const [target] = await connection.query(
-          "SELECT user_name FROM company WHERE id = ?",
+          "SELECT user_name, id FROM company WHERE id = ?",
           [rows[i].target]
         );
+
+        console.log(source, target);
         newArr.push({
           ...rows[i],
           source: source[0].user_name,
           target: target[0].user_name,
+          source_id: source[0].id,
+          target_id: target[0].id,
         });
       } else {
         newArr.push(rows[i]);
@@ -1437,6 +1441,12 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
     console.log("license_history transferred!!");
 
+    // 모두 이관을 하고나서 source user의 unique code를 재발급(리셋)
+    // await connection.execute(
+    //   "UPDATE company SET unique_code = ? WHERE id = ?",
+    //   [generateRandomCode(), sourceId]
+    // );
+
     res.status(200).json({
       message: "User data transferred successfully from source to target",
     });
@@ -1532,11 +1542,45 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
       [sourceId, targetId]
     );
 
+    // 원래의 unique-code 복구
+    await connection.execute(
+      "UPDATE company SET unique_code = ? WHERE id = ?",
+      [sourceUniqueCode, targetId]
+    );
+
+    // 원래의 unique-code 복구
+    await connection.execute(
+      "UPDATE company SET unique_code = ? WHERE id = ?",
+      [targetUniqueCode, sourceId]
+    );
+
     res.status(200).json({
       message: "Transfer has been successfully canceled and data reverted.",
     });
   } catch (error) {
     console.error("Error canceling transfer:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (connection) await connection.release();
+  }
+});
+
+router.get("/reset-unique-code/:id", async (req, res) => {
+  const id = req.params.id;
+
+  console.log("id:", id);
+  let connection;
+  try {
+    connection = await getConnection();
+
+    let newCode = await generateRandomCode();
+    const [rows] = await connection.query(
+      `UPDATE company SET unique_code = ? WHERE id = ?`,
+      [newCode, id]
+    );
+    res.status(200).json({ message: "Unique codes have been reset" });
+  } catch (error) {
+    console.error("Error resetting unique codes:", error);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
     if (connection) await connection.release();

@@ -62,8 +62,8 @@ const LicenseHistoryModal = (props) => {
       console.log(data);
       // 재이관
       AxiosPost("/company/transfer-cancel", {
-        sourceId: data?.source,
-        targetId: data?.target,
+        sourceId: data?.source_id,
+        targetId: data?.target_id,
       })
         .then((response) => {
           fetchHistoryList(props.data);

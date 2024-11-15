@@ -55,7 +55,30 @@ const Company = (props) => {
       const result = await AxiosGet("/company/list");
 
       if (result.status === 200) {
-        setList(result.data.map((item) => ({ ...item, key: item.user_id })));
+        let newArr = await Promise.all(
+          result.data.map(async (item, index) => {
+            const res = await AxiosGet(`/license/list/${item.unique_code}`);
+            if (res.status === 200) {
+              return {
+                ...item,
+                use_cnt: res.data.data.length || 0,
+                key: item.user_id,
+                originalIndex: index, // 원래 인덱스 저장
+              };
+            } else {
+              return {
+                ...item,
+                use_cnt: 0,
+                key: item.user_id,
+                originalIndex: index,
+              };
+            }
+          })
+        );
+
+        // 원래 인덱스 순서대로 정렬
+        newArr.sort((a, b) => a.originalIndex - b.originalIndex);
+        setList(newArr); // 정렬된 배열로 설정
       } else {
         throw new Error("Unauthorized");
       }
@@ -370,19 +393,21 @@ const Company = (props) => {
         ]
       : []),
     {
-      title: "License",
+      title: "License\n[used / total]",
       dataIndex: "license_cnt",
       key: "license_cnt",
       fixed: "right",
       render: (text, record, index) => (
-        <LicenseHistoryModal
-          currentUser={props.currentUser}
-          data={record}
-          title={text}
-          onCancel={() => {
-            fetchCompanyList();
-          }}
-        />
+        <Space>
+          <LicenseHistoryModal
+            currentUser={props.currentUser}
+            data={record}
+            title={`${record.use_cnt} / ${text}`}
+            onCancel={() => {
+              fetchCompanyList();
+            }}
+          />
+        </Space>
       ),
     },
   ];
@@ -507,7 +532,8 @@ const Company = (props) => {
                       <Button
                         disabled={
                           !hasSelected ||
-                          selectedCompany?.permission_flag === "D"
+                          selectedCompany?.permission_flag === "D" ||
+                          selectedCompany?.license_cnt > 0
                         }
                       >
                         Delete

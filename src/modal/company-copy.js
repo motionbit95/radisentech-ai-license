@@ -52,11 +52,16 @@ const CompanyCopy = (props) => {
       targetId: selectedCopyCompany.id,
     })
       .then((response) => {
+        // source의 unique_code 리셋
+        AxiosGet(`/company/reset-unique-code/${data?.id}`).then((response) => {
+          if (response.status === 200) {
+            onComplete();
+          }
+        });
         if (response.status === 200) {
-          message.success("Company copied successfully.");
+          message.success("Company transferred successfully.");
           setIsModalOpen(false);
           setSelectedCopyCompany(null);
-          onComplete();
         }
       })
       .catch((error) => {
