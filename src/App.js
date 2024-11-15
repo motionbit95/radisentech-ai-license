@@ -67,7 +67,7 @@ function App({ page, toggleTheme, isDarkMode }) {
       : [
           {
             key: "product",
-            label: "Product List",
+            label: "AI List",
           },
         ]),
     {

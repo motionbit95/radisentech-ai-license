@@ -425,23 +425,15 @@ const License = (props) => {
   const hasSelected = selectedRowKeys.length > 0;
 
   const applyFilters = (item) => {
-    const {
-      company,
-      country,
-      hospital,
-      expire_date,
-      deleted,
-      AIType,
-      ProductType,
-    } = searchFilters;
+    const { company, country, hospital, expire_date, deleted, AIType } =
+      searchFilters;
 
     log("item", item, searchFilters);
 
     return (
       // deleted 플래그가 false일 경우 삭제된 라이센스는 보이지 않습니다.
       ((!deleted && item.Deleted === 0) || deleted) &&
-      (!ProductType || ProductType?.includes(item?.ProductType)) &&
-      (!AIType || item.AIType.toLowerCase().includes(AIType)) &&
+      (!AIType || AIType?.includes(item?.AIType)) &&
       (!company || item.Company.toLowerCase().includes(company)) &&
       (!country || item.Country.toLowerCase().includes(country)) &&
       (!hospital || item.Hospital.toLowerCase().includes(hospital)) &&
@@ -546,14 +538,14 @@ const AdvancedSearchForm = (props) => {
 
   const handleSelectChange = (value) => {
     const newValue = value.length === 0 ? undefined : value;
-    form.setFieldsValue({ ProductType: newValue });
+    form.setFieldsValue({ AIType: newValue });
   };
 
   const getFields = () => {
     const children = [];
     children.push(
-      <Col span={8} key={"ProductType"}>
-        <Form.Item name={"ProductType"} label={`Product`}>
+      <Col span={8} key={"AIType"}>
+        <Form.Item name={"AIType"} label={`AI Type`}>
           <Select
             mode="multiple"
             style={{ width: "100%" }}

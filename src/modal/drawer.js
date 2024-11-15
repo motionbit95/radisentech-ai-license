@@ -230,7 +230,7 @@ const CompanyEdit = (props) => {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item name={"product"} label="Product">
+          <Form.Item name={"product"} label="AI Type">
             <Checkbox.Group
               gutter={16}
               style={{ width: "100%" }}

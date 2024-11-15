@@ -122,22 +122,24 @@ const ADDLicense = (props) => {
             </Col>
             <Col span={12}>
               <Form.Item
-                name="AIType"
-                label="AI Type"
-                rules={[{ required: true, message: "Please input AI Type" }]}
+                name="ProductType"
+                label="Product Type"
+                rules={[
+                  { required: true, message: "Please Input Product Type" },
+                ]}
               >
-                <Input placeholder="AI Type" />
+                <Input placeholder="Product Type" />
               </Form.Item>
             </Col>
           </Row>
 
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item name={"ProductType"} label={`Product Type`}>
+              <Form.Item name={"AIType"} label={`AI Type`}>
                 <Select
                   // mode="multiple"
                   style={{ width: "100%" }}
-                  placeholder="Please select"
+                  placeholder="Please select AI Type"
                 >
                   {props.product
                     .map((item) => item.name)
