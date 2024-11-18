@@ -61,7 +61,6 @@ const LicenseHistoryModal = (props) => {
       );
       return;
     }
-
     // 이관 데이터를 취소하는 과정 예외처리 추가
     if (history?.description === "Transfer") {
       // 재이관
@@ -77,8 +76,8 @@ const LicenseHistoryModal = (props) => {
         })
         .catch((error) => {
           log(error);
+          setLoading(false);
         });
-      setLoading(false);
     } else {
       AxiosPut(`/company/update-license/${history?.company_pk}`, {
         license_cnt: history?.prev_cnt - history?.new_cnt,
