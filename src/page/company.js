@@ -16,18 +16,14 @@ import {
   Image,
 } from "antd";
 import Highlighter from "react-highlight-words";
-import {
-  SearchOutlined,
-  InfoCircleOutlined,
-  GoogleOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import GenerateModal from "../modal/generate";
 import CompanyEdit from "../modal/drawer";
 import { useNavigate } from "react-router-dom";
 import LicenseHistoryModal from "../modal/license-history";
 import { AxiosDelete, AxiosGet, AxiosPost, log } from "../api";
 import IniFileDownload from "../component/button/download";
-import CompanyCopy from "../modal/company-copy";
+import CompanyTransfer from "../modal/company-copy";
 
 const { Content } = Layout;
 
@@ -43,6 +39,10 @@ const Company = (props) => {
   const [list, setList] = useState([]);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false); // 로딩 플래그
+
+  useEffect(() => {
+    console.log("select!!!! > ", selectedCompany);
+  }, [selectedCompany]);
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
@@ -114,26 +114,6 @@ const Company = (props) => {
       setLoading(false); // fetchCompanyList가 완료된 후 로딩 해제
     }
   };
-
-  // const copyUser = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const result = await AxiosPost(
-  //       `/company/copy-user/${selectedCompany?.id}`
-  //     );
-
-  //     if (result.status === 201) {
-  //       await fetchCompanyList(); // 데이터 갱신이 완료된 후 로딩 해제
-  //       setSelectedRowKeys([]);
-  //     } else if (result.status === 403) {
-  //       navigate("/login");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   } finally {
-  //     setLoading(false); // fetchCompanyList가 완료된 후 로딩 해제
-  //   }
-  // };
 
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -466,24 +446,7 @@ const Company = (props) => {
                     setLoading={setLoading}
                   />
                   <Space>
-                    {/* <Popconfirm
-                      title="Copy the Account?"
-                      description="Are you sure to copy this account?"
-                      onConfirm={copyUser}
-                      onCancel={() => {}}
-                      okText="Yes"
-                      cancelText="No"
-                    >
-                      <Button
-                        disabled={
-                          !hasSelected ||
-                          selectedCompany?.permission_flag === "D"
-                        }
-                      >
-                        Copy
-                      </Button>
-                    </Popconfirm> */}
-                    <CompanyCopy
+                    <CompanyTransfer
                       disabled={
                         !hasSelected ||
                         selectedCompany?.permission_flag === "D" ||

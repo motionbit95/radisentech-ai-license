@@ -15,7 +15,7 @@ import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { AxiosGet, AxiosPost, log } from "../api";
 
-const CompanyCopy = (props) => {
+const CompanyTransfer = (props) => {
   const navigate = useNavigate();
   const [list, setList] = useState([]);
   const { data, disabled, onComplete, setloading } = props;
@@ -326,4 +326,4 @@ const CompanyCopy = (props) => {
     </>
   );
 };
-export default CompanyCopy;
+export default CompanyTransfer;

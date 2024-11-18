@@ -24,14 +24,12 @@ const CompanyEdit = (props) => {
 
   const [product, setProduct] = useState([]);
   const [parsedProduct, setParsedProduct] = useState([]);
+  const [selectedProducts, setSelectedProducts] = useState([]);
 
   useEffect(() => {
-    console.log(">>>>>", data?.product, parsedProduct);
-    if (data?.product) {
-      const parsedProduct = JSON.parse(data?.product);
-      setParsedProduct(parsedProduct);
-    }
-  }, []);
+    console.log("모달에서 받은거는 ? > ", data);
+    setSelectedProducts(data?.product);
+  }, [data]);
 
   useEffect(() => {
     fetchProductList();
@@ -40,7 +38,7 @@ const CompanyEdit = (props) => {
   const fetchProductList = async () => {
     try {
       const response = await AxiosGet("/product/list"); // 제품 목록을 불러오는 API 요청
-      setProduct(response.data); // 받아온 데이터를 상태에 저장
+      setProduct(response.data.map((item) => item.name));
     } catch (error) {
       console.error("Error fetching product list:", error);
     }
@@ -64,16 +62,11 @@ const CompanyEdit = (props) => {
     log("Received values of form: ", values);
     setLoading(true);
 
-    const productList =
-      values?.AIType && values.AIType.length > 0
-        ? JSON.stringify(values.AIType)
-        : null; // undefined 대신 null을 사용
-
-    log("여기서 받습니다", values?.AIType);
+    log("여기서 받습니다", selectedProducts);
 
     await AxiosPut(`/company/update/${data?.id}`, {
       permission_flag: data?.permission_flag,
-      productList: productList,
+      productList: selectedProducts,
       ...values,
     })
       .then((result) => {
@@ -93,12 +86,6 @@ const CompanyEdit = (props) => {
           setLoading(false);
         }
       });
-  };
-
-  const handleSelectChange = (value) => {
-    console.log("Selected values:", value);
-    // const newValue = value.length === 0 ? undefined : value;
-    // form.setFieldsValue({ ProductType: newValue });
   };
 
   return (
@@ -259,17 +246,16 @@ const CompanyEdit = (props) => {
           </Row>
 
           <Form.Item label="AI Type">
-            <div>{parsedProduct}</div>
             <Select
               mode="multiple"
               style={{ width: "100%" }}
               placeholder="Please select"
               allowClear
-              defaultValue={parsedProduct}
-              onChange={handleSelectChange}
+              value={selectedProducts}
+              onChange={(e) => setSelectedProducts(e)}
             >
-              {product?.map((item) => (
-                <Select.Option key={item.name}>{item.name}</Select.Option>
+              {product.map((item) => (
+                <Select.Option key={item}>{item}</Select.Option>
               ))}
             </Select>
           </Form.Item>
