@@ -23,6 +23,15 @@ const CompanyEdit = (props) => {
   const [form] = Form.useForm();
 
   const [product, setProduct] = useState([]);
+  const [parsedProduct, setParsedProduct] = useState([]);
+
+  useEffect(() => {
+    console.log(data?.product);
+    if (data?.product) {
+      const parsedProduct = JSON.parse(data?.product);
+      setParsedProduct(parsedProduct);
+    }
+  }, []);
 
   useEffect(() => {
     fetchProductList();
@@ -35,7 +44,6 @@ const CompanyEdit = (props) => {
     } catch (error) {
       console.error("Error fetching product list:", error);
     }
-    // console.log(product.map((item) => item.name));
   };
 
   const showDrawer = () => {
@@ -56,11 +64,16 @@ const CompanyEdit = (props) => {
     log("Received values of form: ", values, data);
     setLoading(true);
 
+    const productList =
+      values?.product && values.product.length > 0
+        ? JSON.stringify(values.product)
+        : null; // undefined 대신 null을 사용
+
     log("여기서 받습니다", values?.product);
 
     await AxiosPut(`/company/update/${data?.id}`, {
       permission_flag: data?.permission_flag,
-      productList: JSON.stringify(values?.product),
+      productList: productList,
       ...values,
     })
       .then((result) => {
@@ -80,6 +93,11 @@ const CompanyEdit = (props) => {
           setLoading(false);
         }
       });
+  };
+
+  const handleSelectChange = (value) => {
+    const newValue = value.length === 0 ? undefined : value;
+    form.setFieldsValue({ ProductType: newValue });
   };
 
   return (
@@ -121,7 +139,7 @@ const CompanyEdit = (props) => {
         <Form
           layout="vertical"
           hideRequiredMark
-          initialValues={data}
+          // initialValues={data}
           form={form}
           onFinish={onFinish}
           onValuesChange={onValuesChange}
@@ -238,18 +256,19 @@ const CompanyEdit = (props) => {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item name={"product"} label="AI Type">
-            <Checkbox.Group gutter={16} style={{ width: "100%" }}>
-              <Row>
-                {product
-                  .map((item) => item.name)
-                  .map((value) => (
-                    <Col span={4} key={value}>
-                      <Checkbox value={value}>{value}</Checkbox>
-                    </Col>
-                  ))}
-              </Row>
-            </Checkbox.Group>
+
+          <Form.Item label="AI Type">
+            <Select
+              mode="multiple"
+              style={{ width: "100%" }}
+              placeholder="Please select"
+              allowClear
+              defaultValue={parsedProduct}
+            >
+              {product?.map((item) => (
+                <Select.Option key={item.name}>{item.name}</Select.Option>
+              ))}
+            </Select>
           </Form.Item>
           {/* 슈퍼바이저 컨트롤러 */}
           {(props.permission_flag === "D" || props.permission_flag === "Y") && (
