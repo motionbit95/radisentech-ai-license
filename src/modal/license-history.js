@@ -55,11 +55,7 @@ const LicenseHistoryModal = (props) => {
   };
 
   const handleHistoryCancel = (history) => {
-    log("data", data);
-
-    // 취소하고자 하는 수량과 현재 수량을 비교해서 차감이 이미 된 경우 삭제를 불가하게한다.
-
-    if (data.license_cnt - data.use_cnt < history.new_cnt) {
+    if (data.license_cnt - data.use_cnt < history.new_cnt - history.prev_cnt) {
       message.error(
         "The number of licenses to be canceled is greater than the number of licenses currently in use."
       );
