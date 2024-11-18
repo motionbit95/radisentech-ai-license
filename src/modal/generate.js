@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Button, Form, Input, InputNumber, Modal } from "antd";
+import {
+  Button,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Popconfirm,
+  Space,
+} from "antd";
 import { AxiosPut, log } from "../api";
 const GenerateModal = (props) => {
   const { title, type, disabled, data, onComplete, setLoading } = props;
@@ -53,12 +61,21 @@ const GenerateModal = (props) => {
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         footer={[
-          <Button key="back" onClick={() => setModalOpen(false)}>
-            Cancel
-          </Button>,
-          <Button key="submit" type="primary" onClick={() => form.submit()}>
-            Generate
-          </Button>,
+          <Space>
+            <Button key="back" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Popconfirm
+              title="Are you sure to generate license?"
+              onConfirm={() => form.submit()}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button key="submit" type="primary">
+                Generate
+              </Button>
+            </Popconfirm>
+          </Space>,
         ]}
       >
         <Form

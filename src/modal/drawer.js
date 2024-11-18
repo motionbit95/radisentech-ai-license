@@ -26,7 +26,7 @@ const CompanyEdit = (props) => {
   const [parsedProduct, setParsedProduct] = useState([]);
 
   useEffect(() => {
-    console.log(data?.product);
+    console.log(">>>>>", data?.product, parsedProduct);
     if (data?.product) {
       const parsedProduct = JSON.parse(data?.product);
       setParsedProduct(parsedProduct);
@@ -96,8 +96,9 @@ const CompanyEdit = (props) => {
   };
 
   const handleSelectChange = (value) => {
-    const newValue = value.length === 0 ? undefined : value;
-    form.setFieldsValue({ ProductType: newValue });
+    console.log("Selected values:", value);
+    // const newValue = value.length === 0 ? undefined : value;
+    // form.setFieldsValue({ ProductType: newValue });
   };
 
   return (
@@ -257,13 +258,15 @@ const CompanyEdit = (props) => {
             </Col>
           </Row>
 
-          <Form.Item name={"AIType"} label="AI Type">
+          <Form.Item label="AI Type">
+            <div>{parsedProduct}</div>
             <Select
               mode="multiple"
               style={{ width: "100%" }}
               placeholder="Please select"
               allowClear
               defaultValue={parsedProduct}
+              onChange={handleSelectChange}
             >
               {product?.map((item) => (
                 <Select.Option key={item.name}>{item.name}</Select.Option>

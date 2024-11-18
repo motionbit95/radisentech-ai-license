@@ -729,19 +729,21 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
     const { unique_code, user_id } = existingUser[0];
     console.log(unique_code, user_id);
 
-    try {
-      // Firebase Auth 사용자 삭제
-      await admin.auth().deleteUser(user_id);
-      console.log(`Firebase user with UID ${user_id} deleted successfully`);
-    } catch (error) {
-      if (error.code === "auth/user-not-found") {
-        console.warn(`Firebase user with UID ${user_id} not found.`);
-      } else {
-        console.error(
-          `Error deleting Firebase user with UID ${user_id}:`,
-          error
-        );
-        throw error; // 다른 예외는 상위로 전달
+    if (parseFloat(user_id)) {
+      try {
+        // Firebase Auth 사용자 삭제
+        await admin.auth().deleteUser(user_id);
+        console.log(`Firebase user with UID ${user_id} deleted successfully`);
+      } catch (error) {
+        if (error.code === "auth/user-not-found") {
+          console.warn(`Firebase user with UID ${user_id} not found.`);
+        } else {
+          console.error(
+            `Error deleting Firebase user with UID ${user_id}:`,
+            error
+          );
+          throw error; // 다른 예외는 상위로 전달
+        }
       }
     }
 
@@ -1239,14 +1241,33 @@ router.get("/generate-history/:pk", verifyToken, async (req, res) => {
           [rows[i].target]
         );
 
+        if (source.length === 0) {
+          newArr.push({
+            ...rows[i],
+            source: "Unknown",
+            target: target[0].user_name,
+            source_id: -1,
+            target_id: target[0].id,
+          });
+        } else if (target.length === 0) {
+          newArr.push({
+            ...rows[i],
+            source: source[0].user_name,
+            target: "Unknown",
+            source_id: source[0].id,
+            target_id: -1,
+          });
+        } else {
+          newArr.push({
+            ...rows[i],
+            source: source[0].user_name,
+            target: target[0].user_name,
+            source_id: source[0].id,
+            target_id: target[0].id,
+          });
+        }
+
         console.log(source, target);
-        newArr.push({
-          ...rows[i],
-          source: source[0].user_name,
-          target: target[0].user_name,
-          source_id: source[0].id,
-          target_id: target[0].id,
-        });
       } else {
         newArr.push(rows[i]);
       }
