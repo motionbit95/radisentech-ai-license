@@ -56,7 +56,7 @@ const ProductAdd = (props) => {
 
       {/* 추가 모달 */}
       <Modal
-        title="ADD Product"
+        title="ADD AI Type"
         centered
         open={addModalOpen}
         onCancel={() => setAddModalOpen(false)}
@@ -77,14 +77,14 @@ const ProductAdd = (props) => {
         >
           <Form.Item
             name="name"
-            label="Product Name"
+            label="AI Type Name"
             rules={[{ required: true, message: "Please enter product name" }]}
           >
             <Input placeholder="Please enter product name" />
           </Form.Item>
           <Form.Item
             name="description"
-            label="Product Description"
+            label="AI Type Description"
             rules={[
               { required: true, message: "Please enter product description" },
             ]}

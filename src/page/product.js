@@ -216,7 +216,7 @@ const Product = (props) => {
       width: 50,
     },
     {
-      title: "Product",
+      title: "AI Type",
       dataIndex: "name",
       key: "name",
       width: 150,
