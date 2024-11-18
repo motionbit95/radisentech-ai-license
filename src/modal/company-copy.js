@@ -70,6 +70,8 @@ const CompanyTransfer = (props) => {
       .catch((error) => {
         console.error("Error copying company: ", error);
         message.error("Failed to copy company. Please try again.");
+        setSelectedCopyCompany(null);
+        setIsModalOpen(false);
       });
   };
   const handleCancel = () => {

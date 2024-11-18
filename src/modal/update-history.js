@@ -86,6 +86,7 @@ const UpdateHistoryModal = (props) => {
         footer={null}
       >
         <Table
+          size="small"
           dataSource={updateHistory}
           loading={loading}
           columns={historyColumn}
