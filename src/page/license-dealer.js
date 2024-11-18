@@ -350,12 +350,12 @@ const License = (props) => {
   };
 
   const applyFilters = (item) => {
-    const { company, country, hospital, expire_date, ProductType } =
-      searchFilters;
+    const { company, country, hospital, expire_date, AIType } = searchFilters;
 
     return (
       (!company || item.Company.toLowerCase().includes(company)) &&
-      (!ProductType || item.ProductType.toLowerCase().includes(ProductType)) &&
+      // (!AIType || item.AIType.toLowerCase().includes(AIType)) &&
+      (!AIType || AIType?.includes(item?.AIType)) &&
       (!country || item.Country.toLowerCase().includes(country)) &&
       (!hospital || item.Hospital.toLowerCase().includes(hospital)) &&
       (!expire_date ||
@@ -457,14 +457,14 @@ const AdvancedSearchForm = (props) => {
 
   const handleSelectChange = (value) => {
     const newValue = value.length === 0 ? undefined : value;
-    form.setFieldsValue({ ProductType: newValue });
+    form.setFieldsValue({ AIType: newValue });
   };
 
   const getFields = () => {
     const children = [];
     children.push(
-      <Col span={8} key={"ProductType"}>
-        <Form.Item name={"ProductType"} label={`Product`}>
+      <Col span={8} key={"AIType"}>
+        <Form.Item name={"AIType"} label={`AIType`}>
           <Select
             mode="multiple"
             style={{ width: "100%" }}

@@ -61,15 +61,15 @@ const CompanyEdit = (props) => {
   };
 
   const onFinish = async (values) => {
-    log("Received values of form: ", values, data);
+    log("Received values of form: ", values);
     setLoading(true);
 
     const productList =
-      values?.product && values.product.length > 0
-        ? JSON.stringify(values.product)
+      values?.AIType && values.AIType.length > 0
+        ? JSON.stringify(values.AIType)
         : null; // undefined 대신 null을 사용
 
-    log("여기서 받습니다", values?.product);
+    log("여기서 받습니다", values?.AIType);
 
     await AxiosPut(`/company/update/${data?.id}`, {
       permission_flag: data?.permission_flag,
@@ -257,7 +257,7 @@ const CompanyEdit = (props) => {
             </Col>
           </Row>
 
-          <Form.Item label="AI Type">
+          <Form.Item name={"AIType"} label="AI Type">
             <Select
               mode="multiple"
               style={{ width: "100%" }}
