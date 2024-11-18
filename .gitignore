@@ -30,5 +30,6 @@ yarn-error.log*
 /lambda-api/.env
 /lambda-api/license-node-api.zip
 /lambda-api/serviceAccountKey.json
+/lambda-api/_serviceAccountKey.json
 # Local Netlify folder
 .netlify

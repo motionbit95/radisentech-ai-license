@@ -726,17 +726,34 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
       return res.status(401).json({ error: "User not found" });
     }
 
-    const uniqueCode = existingUser[0].unique_code;
+    const { unique_code, user_id } = existingUser[0];
+    console.log(unique_code, user_id);
+
+    try {
+      // Firebase Auth 사용자 삭제
+      await admin.auth().deleteUser(user_id);
+      console.log(`Firebase user with UID ${user_id} deleted successfully`);
+    } catch (error) {
+      if (error.code === "auth/user-not-found") {
+        console.warn(`Firebase user with UID ${user_id} not found.`);
+      } else {
+        console.error(
+          `Error deleting Firebase user with UID ${user_id}:`,
+          error
+        );
+        throw error; // 다른 예외는 상위로 전달
+      }
+    }
 
     // 라이센스 히스토리도 지웁니다.
     const deleteLicenseHistoryQuery =
       "DELETE FROM license_history WHERE unique_code = ?";
-    await connection.execute(deleteLicenseHistoryQuery, [uniqueCode]);
+    await connection.execute(deleteLicenseHistoryQuery, [unique_code]);
 
     // LicenseManagement에서 연결된 레코드 삭제
     const deleteLicenseQuery =
       "DELETE FROM LicenseManagement WHERE UniqueCode = ?";
-    await connection.execute(deleteLicenseQuery, [uniqueCode]);
+    await connection.execute(deleteLicenseQuery, [unique_code]);
     console.log("LicenseManagement entries deleted successfully");
 
     // id로 행 삭제
