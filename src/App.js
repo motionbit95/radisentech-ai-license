@@ -44,7 +44,7 @@ function App({ page, toggleTheme, isDarkMode }) {
         })
         .catch((error) => {
           log(error);
-          if (error?.response?.status === 404) {
+          if (error?.response?.status === 403) {
             setCurrentUser({});
             setIsLoggedIn(false);
             navigate("/login");

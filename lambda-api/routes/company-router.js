@@ -6,6 +6,7 @@ const router = express.Router();
 const cors = require("cors"); // cors 패키지 불러오기
 const { OAuth2Client } = require("google-auth-library");
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const admin = require("firebase-admin");
 const { verifyToken, generateToken } = require("../controller/auth");
 const { getConnection } = require("../controller/mysql");
 const {
@@ -16,6 +17,12 @@ const {
 const { sendVerifyEmail } = require("../controller/mailer");
 router.use(cors());
 router.use(bodyParser.json());
+
+var serviceAccount = require("../serviceAccountKey.json");
+// Firebase Admin 초기화
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 /**
  * @swagger
@@ -1590,6 +1597,24 @@ router.post("/auth/google", async (req, res) => {
     const payload = ticket.getPayload();
     console.log("payload:", payload);
     const { sub, name, email, picture } = payload;
+
+    // Firebase Authentication에 사용자 존재 여부 확인
+    let userRecord;
+    try {
+      userRecord = await admin.auth().getUserByEmail(email);
+    } catch (error) {
+      if (error.code === "auth/user-not-found") {
+        // 사용자 없으면 Firebase에 등록
+        userRecord = await admin.auth().createUser({
+          uid: sub,
+          email,
+          displayName: name,
+          photoURL: picture,
+        });
+      } else {
+        throw error; // 다른 오류는 다시 던짐
+      }
+    }
 
     // 필요한 경우 사용자 정보를 데이터베이스에 저장
     res.status(200).json({
