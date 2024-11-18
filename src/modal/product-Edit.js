@@ -59,7 +59,7 @@ const ProductEdit = (props) => {
         Edit
       </Button>
       <Drawer
-        title="Edit Product"
+        title="Edit AI Type"
         width={720}
         onClose={onClose}
         open={open}
@@ -105,27 +105,18 @@ const ProductEdit = (props) => {
                 rules={[
                   {
                     required: true,
-                    message: "Please enter product name",
+                    message: "Please enter AI Type name",
                   },
                 ]}
               >
-                <Input placeholder="Please enter product name" />
+                <Input placeholder="Please enter AI Type name" />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item
-                name="description"
-                label="Description"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter product description",
-                  },
-                ]}
-              >
-                <Input placeholder="Please enter product description" />
+              <Form.Item name="description" label="Description">
+                <Input placeholder="Please enter AI Type description" />
               </Form.Item>
             </Col>
           </Row>

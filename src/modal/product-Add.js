@@ -59,7 +59,10 @@ const ProductAdd = (props) => {
         title="ADD AI Type"
         centered
         open={addModalOpen}
-        onCancel={() => setAddModalOpen(false)}
+        onCancel={() => {
+          form.resetFields();
+          setAddModalOpen(false);
+        }}
         footer={[
           <Button key="back" onClick={() => setAddModalOpen(false)}>
             Cancel
@@ -78,18 +81,12 @@ const ProductAdd = (props) => {
           <Form.Item
             name="name"
             label="AI Type Name"
-            rules={[{ required: true, message: "Please enter product name" }]}
+            rules={[{ required: true, message: "Please enter AI Type name" }]}
           >
-            <Input placeholder="Please enter product name" />
+            <Input placeholder="Please enter AI Type name" />
           </Form.Item>
-          <Form.Item
-            name="description"
-            label="AI Type Description"
-            rules={[
-              { required: true, message: "Please enter product description" },
-            ]}
-          >
-            <Input.TextArea placeholder="Please enter product description" />
+          <Form.Item name="description" label="AI Type Description">
+            <Input.TextArea placeholder="Please enter AI Type description" />
           </Form.Item>
         </Form>
       </Modal>

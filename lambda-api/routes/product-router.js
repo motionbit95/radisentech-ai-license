@@ -75,7 +75,7 @@ router.get("/list", verifyToken, async (req, res) => {
 router.post("/add", verifyToken, async (req, res) => {
   let connection;
   try {
-    const { name, description } = req.body;
+    const { name, description = "" } = req.body;
 
     // 데이터베이스 연결
     connection = await getConnection();
@@ -144,7 +144,7 @@ router.post("/add", verifyToken, async (req, res) => {
  * */
 router.put("/update/:id", verifyToken, async (req, res) => {
   const id = req.params.id; // URL에서 row id를 가져옵니다.
-  const { name, description } = req.body;
+  const { name, description = "" } = req.body;
 
   let connection;
   try {
