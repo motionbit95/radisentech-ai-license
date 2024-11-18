@@ -37,16 +37,7 @@ const License = (props) => {
   const [product, setProduct] = useState([]);
 
   useEffect(() => {
-    try {
-      const parsedProduct = JSON.parse(props.currentUser.product);
-      if (Array.isArray(parsedProduct)) {
-        setProduct(parsedProduct);
-      } else {
-        log("Parsing 결과가 배열이 아닙니다.");
-      }
-    } catch (error) {
-      log("JSON 파싱 오류:", error);
-    }
+    setProduct(props.currentUser.product);
   }, [props.currentUser.product]);
 
   useEffect(() => {
@@ -353,11 +344,11 @@ const License = (props) => {
     const { company, country, hospital, expire_date, AIType } = searchFilters;
 
     return (
-      (!company || item.Company.toLowerCase().includes(company)) &&
+      (!company || item.Company.toLowerCase().includes(company.trim())) &&
       // (!AIType || item.AIType.toLowerCase().includes(AIType)) &&
       (!AIType || AIType?.includes(item?.AIType)) &&
-      (!country || item.Country.toLowerCase().includes(country)) &&
-      (!hospital || item.Hospital.toLowerCase().includes(hospital)) &&
+      (!country || item.Country.toLowerCase().includes(country.trim())) &&
+      (!hospital || item.Hospital.toLowerCase().includes(hospital.trim())) &&
       (!expire_date ||
         (new Date(expire_date[0]) <= new Date(item.UTCTerminateDate) &&
           new Date(expire_date[1]) >= new Date(item.UTCTerminateDate)))
@@ -421,6 +412,7 @@ const CompanyInfo = (props) => {
   return (
     <Descriptions
       style={formStyle}
+      AIType
       column={3}
       labelStyle={{ fontWeight: "bold" }}
     >
@@ -430,10 +422,11 @@ const CompanyInfo = (props) => {
       <Descriptions.Item label="Unique Code">
         <Space>
           {props.currentUser.unique_code}
-          {/* <IniFileDownload code={props.currentUser.unique_code} /> */}
+          <IniFileDownload code={props.currentUser.unique_code} />
         </Space>
       </Descriptions.Item>
-      <Descriptions.Item label="License Count [Rem/Total]">
+      <Descriptions.Item label="License Count [Use/Rem/Tot]">
+        {props.license_cnt} /{" "}
         {props.currentUser.license_cnt - props.license_cnt} /{" "}
         {props.currentUser.license_cnt}
       </Descriptions.Item>
@@ -464,7 +457,7 @@ const AdvancedSearchForm = (props) => {
     const children = [];
     children.push(
       <Col span={8} key={"AIType"}>
-        <Form.Item name={"AIType"} label={`AIType`}>
+        <Form.Item name={"AIType"} label={`AI Type`}>
           <Select
             mode="multiple"
             style={{ width: "100%" }}
@@ -472,7 +465,7 @@ const AdvancedSearchForm = (props) => {
             onChange={handleSelectChange} // 선택 변경 시 실행
             allowClear
           >
-            {props.product.map((item) => (
+            {props.product?.map((item) => (
               <Select.Option key={item} value={item}>
                 {item}
               </Select.Option>
@@ -484,13 +477,13 @@ const AdvancedSearchForm = (props) => {
     children.push(
       <Col span={8} key={"country"}>
         <Form.Item name={`country`} label={`Country`}>
-          <Input placeholder="search..." />
+          <Input placeholder="search..." allowClear />
         </Form.Item>
       </Col>
     );
     children.push(
       <Col span={8} key={"hospital"}>
-        <Form.Item name={`hospital`} label={`Hospital`}>
+        <Form.Item name={`hospital`} label={`Hospital`} allowClear>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>
@@ -502,6 +495,7 @@ const AdvancedSearchForm = (props) => {
             format={"MM-DD-YYYY"}
             className="w-full"
             placeholder={["Start Date", "End Date"]}
+            allowClear
           />
         </Form.Item>
       </Col>
