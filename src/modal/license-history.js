@@ -82,7 +82,7 @@ const LicenseHistoryModal = (props) => {
     } else {
       AxiosPut(`/company/update-license/${history?.company_pk}`, {
         license_cnt: history?.prev_cnt - history?.new_cnt,
-        description: "Canceled",
+        description: "Generated Canceled",
         canceled: 1,
       })
         .then((response) => {
@@ -161,7 +161,7 @@ const LicenseHistoryModal = (props) => {
       render: (text, record, index) => (
         <Tag
           color={
-            text === "Canceled"
+            text.includes("Canceled")
               ? "red"
               : text === "Generated"
               ? "green"
