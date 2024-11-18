@@ -1,8 +1,10 @@
 require("dotenv").config();
 const nodemailer = require("nodemailer");
 
+console.log(process.env.EMAIL_USER, process.env.EMAIL_PASS);
+
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com", // 사용자 정의 도메인의 SMTP 서버
+  host: "smtp.hiworks.com", // 사용자 정의 도메인의 SMTP 서버
   port: 465, // 일반적으로 SSL은 465, TLS는 587
   secure: true, // true for 465, false for 587
   auth: {
@@ -14,11 +16,11 @@ const transporter = nodemailer.createTransport({
   socketTimeout: 10000, // 소켓 타임아웃을 10초로 설정
 });
 
-// 메일 발신
+// 메일 발신ㅌ
 const sendVerifyEmail = async (to, subject, code) => {
   await transporter
     .sendMail({
-      from: `"Radisen" <${process.env.EMAIL}>`,
+      from: `"Radisen" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       text: `Your verification code is ${code}`,
