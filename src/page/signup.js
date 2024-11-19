@@ -85,7 +85,7 @@ const SignUp = () => {
 
           // 구글 로그인시에는 생략
           if (!user && !isCheckedEmail) {
-            message.error("Please verify your email.");
+            messageApi.error("Please verify your email.");
             setLoading(false);
             return;
           }
@@ -99,7 +99,7 @@ const SignUp = () => {
               }
             })
             .catch((error) => {
-              message.error(error.response.data.message);
+              messageApi.error(error.response.data.message);
               setLoading(false);
             });
         }
@@ -107,7 +107,7 @@ const SignUp = () => {
       .catch((error) => {
         console.error("Error checking account:", error);
         if (error.response.status === 401) {
-          message.error(error.response.data.message);
+          messageApi.error(error.response.data.message);
           setLoading(false);
           return;
         }
@@ -135,13 +135,13 @@ const SignUp = () => {
         .then((response) => {
           if (response.status === 200) {
             setIsSendEmail(true);
-            message.success("Code sent to your email.");
+            messageApi.success("Code sent to your email.");
             setLoading(false);
           }
         })
         .catch((error) => {
           console.error("Error sending email: ", error);
-          message.error(error.response.data.error);
+          messageApi.error(error.response.data.error);
           setLoading(false);
         });
     } else {
@@ -157,18 +157,24 @@ const SignUp = () => {
     })
       .then((response) => {
         if (response.status === 200) {
-          message.success("Code verified successfully.");
+          messageApi.success("Code verified successfully.");
           setIsCheckedEmail(true);
           setIsSendEmail(false);
           setLoading(false);
         }
       })
       .catch((error) => {
-        console.error("Error verifying code: ", error);
-        message.error("Failed to verify code. Please try again.");
-        setLoading(false);
-        setIsCheckedEmail(false);
-        setIsSendEmail(false);
+        // 코드 인증 시간이 만료가 되었거나 코드가 틀렸을 시 발생
+        if (error.response.data.error === "Invalid authentication code") {
+          console.log(error.response.data.error);
+          messageApi.error(error.response.data.error);
+          setLoading(false);
+        } else {
+          setLoading(false);
+          messageApi.error(error.response.data.error);
+          setIsCheckedEmail(false);
+          setIsSendEmail(false);
+        }
       });
   };
 
