@@ -239,7 +239,7 @@ const Company = (props) => {
       .map((value) => ({
         text:
           value.toString() === "D"
-            ? "Developer"
+            ? "Supervisor"
             : value === "Y"
             ? "Admin"
             : "Dealer",

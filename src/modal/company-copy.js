@@ -315,6 +315,7 @@ const CompanyTransfer = (props) => {
           dataSource={
             data?.id ? list.filter((item) => item.id !== data.id) : list
           }
+          size="small"
           loading={loading}
           rowSelection={rowSelection}
           columns={companyColumns}

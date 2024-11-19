@@ -163,7 +163,7 @@ const CompanyEdit = (props) => {
                   },
                 ]}
               >
-                <Input placeholder="Please enter id" />
+                <Input disabled placeholder="Please enter id" />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -193,7 +193,13 @@ const CompanyEdit = (props) => {
                   },
                 ]}
               >
-                <Input placeholder="Please enter user email" />
+                <Input
+                  placeholder="Please enter user email"
+                  onChange={(e) => {
+                    const value = e.target.value.trim(); // 입력값에서 공백 제거
+                    form.setFieldsValue({ email: value }); // 트리밍된 값으로 폼 업데이트
+                  }}
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -240,6 +246,10 @@ const CompanyEdit = (props) => {
                 <Input
                   className="w-full"
                   placeholder="Please enter phone number"
+                  onChange={(e) => {
+                    const value = e.target.value.trim(); // 입력값에서 공백 제거
+                    form.setFieldsValue({ phone: value }); // 트리밍된 값으로 폼 업데이트
+                  }}
                 />
               </Form.Item>
             </Col>

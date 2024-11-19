@@ -184,29 +184,6 @@ const Product = (props) => {
       ),
   });
 
-  const getColumnFilterProps = (dataIndex) => ({
-    filteredValue: filteredInfo[dataIndex] || [],
-    onFilter: (value, record) => record[dataIndex] === value,
-    filterSearch: true,
-    ellipsis: true,
-    // filters: list // filter options 설정
-    //   .map((item) => item[dataIndex])
-    //   .filter((value, index, self) => self.indexOf(value) === index)
-    //   .map((value) => ({ text: value, value })),
-    filters: list
-      .map((item) => item[dataIndex])
-      .filter((value, index, self) => self.indexOf(value) === index)
-      .map((value) => ({
-        text:
-          value.toString() === "D"
-            ? "Developer"
-            : value === "Y"
-            ? "Admin"
-            : "Dealer",
-        value,
-      })),
-  });
-
   // table column
   const companyColumns = [
     {
