@@ -10,7 +10,8 @@ import {
 } from "antd";
 import { AxiosPut, log } from "../api";
 const GenerateModal = (props) => {
-  const { title, type, disabled, data, onComplete, setLoading } = props;
+  const { title, type, disabled, data, onComplete, setLoading, onCancel } =
+    props;
   const [modalOpen, setModalOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -59,10 +60,19 @@ const GenerateModal = (props) => {
         title={title}
         centered
         open={modalOpen}
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => {
+          form.resetFields();
+          setModalOpen(false);
+        }}
         footer={[
           <Space>
-            <Button key="back" onClick={() => setModalOpen(false)}>
+            <Button
+              key="back"
+              onClick={() => {
+                form.resetFields();
+                setModalOpen(false);
+              }}
+            >
               Cancel
             </Button>
             <Popconfirm

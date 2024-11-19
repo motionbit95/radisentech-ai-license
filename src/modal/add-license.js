@@ -71,9 +71,18 @@ const ADDLicense = (props) => {
         title="ADD License"
         centered
         open={addModalOpen}
-        onCancel={() => setAddModalOpen(false)}
+        onCancel={() => {
+          form.resetFields();
+          setAddModalOpen(false);
+        }}
         footer={[
-          <Button key="back" onClick={() => setAddModalOpen(false)}>
+          <Button
+            key="back"
+            onClick={() => {
+              form.resetFields();
+              setAddModalOpen(false);
+            }}
+          >
             Cancel
           </Button>,
           <Button key="submit" type="primary" onClick={() => form.submit()}>

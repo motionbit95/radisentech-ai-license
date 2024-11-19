@@ -3,7 +3,7 @@ import { Button, DatePicker, Form, Input, Modal, message } from "antd";
 import dayjs from "dayjs";
 import { AxiosPut, log } from "../api";
 const UpdateLicense = (props) => {
-  const { title, type, disabled, data, onComplete } = props;
+  const { title, type, disabled, data, onComplete, onCancel } = props;
   const [modalOpen, setModalOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -72,9 +72,16 @@ const UpdateLicense = (props) => {
         title={title}
         centered
         open={modalOpen}
-        onCancel={() => setModalOpen(false)}
+        onCancel={() => {
+          setModalOpen(false);
+        }}
         footer={[
-          <Button key="back" onClick={() => setModalOpen(false)}>
+          <Button
+            key="back"
+            onClick={() => {
+              setModalOpen(false);
+            }}
+          >
             Cancel
           </Button>,
           <Button key="submit" type="primary" onClick={() => form.submit()}>

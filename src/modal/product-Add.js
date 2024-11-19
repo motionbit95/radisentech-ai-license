@@ -64,7 +64,13 @@ const ProductAdd = (props) => {
           setAddModalOpen(false);
         }}
         footer={[
-          <Button key="back" onClick={() => setAddModalOpen(false)}>
+          <Button
+            key="back"
+            onClick={() => {
+              form.resetFields();
+              setAddModalOpen(false);
+            }}
+          >
             Cancel
           </Button>,
           <Button key="submit" type="primary" onClick={() => form.submit()}>
