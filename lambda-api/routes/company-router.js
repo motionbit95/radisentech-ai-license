@@ -731,23 +731,23 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
     const { unique_code, user_id } = existingUser[0];
     console.log(unique_code, user_id);
 
-    if (parseFloat(user_id)) {
-      try {
-        // Firebase Auth 사용자 삭제
-        await admin.auth().deleteUser(user_id);
-        console.log(`Firebase user with UID ${user_id} deleted successfully`);
-      } catch (error) {
-        if (error.code === "auth/user-not-found") {
-          console.warn(`Firebase user with UID ${user_id} not found.`);
-        } else {
-          console.error(
-            `Error deleting Firebase user with UID ${user_id}:`,
-            error
-          );
-          throw error; // 다른 예외는 상위로 전달
-        }
-      }
-    }
+    // if (parseFloat(user_id)) {
+    //   try {
+    //     // Firebase Auth 사용자 삭제
+    //     await admin.auth().deleteUser(user_id);
+    //     console.log(`Firebase user with UID ${user_id} deleted successfully`);
+    //   } catch (error) {
+    //     if (error.code === "auth/user-not-found") {
+    //       console.warn(`Firebase user with UID ${user_id} not found.`);
+    //     } else {
+    //       console.error(
+    //         `Error deleting Firebase user with UID ${user_id}:`,
+    //         error
+    //       );
+    //       throw error; // 다른 예외는 상위로 전달
+    //     }
+    //   }
+    // }
 
     // 라이센스 히스토리도 지웁니다.
     const deleteLicenseHistoryQuery =

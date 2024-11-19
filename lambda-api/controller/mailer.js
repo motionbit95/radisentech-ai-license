@@ -1,6 +1,10 @@
 require("dotenv").config();
 // const nodemailer = require("nodemailer");
-const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+const {
+  SESClient,
+  SendEmailCommand,
+  GetIdentityVerificationAttributesCommand,
+} = require("@aws-sdk/client-ses");
 
 // const transporter = nodemailer.createTransport({
 //   host: "smtp.hiworks.com", // 사용자 정의 도메인의 SMTP 서버
@@ -53,23 +57,24 @@ const sendSESVerifyEmail = async (to, subject, code) => {
         },
         Subject: { Data: subject },
       },
-      Source: process.env.EMAIL_USER, // 발신자 이메일 주소 (검증된 이메일 주소)
+      Source: `"Radisen" <${process.env.EMAIL_USER}>`, // 발신자 이메일 주소 (검증된 이메일 주소)
     };
 
     try {
       // SES에 이메일 전송
       const command = new SendEmailCommand(params);
-      const data = await sesClient.send(command);
+      console.log("Sending email...");
+      const data = await sesClient.send(command); // await로 결과를 받아옵니다
       console.log("Email sent successfully:", data);
-      return data;
+      return data; // 이메일 전송 후 데이터 반환
     } catch (err) {
       console.error("Error occurred:", err);
-      throw err;
+      throw err; // 오류 발생 시 에러 던짐
     }
   };
 
-  // 이메일 전송
-  await sendEmail();
+  // 이메일 전송 후 결과 반환
+  return await sendEmail(); // 호출 결과를 반환
 };
 
 module.exports = {
