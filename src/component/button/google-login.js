@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import { Col } from "antd";
+import React, { useEffect } from "react";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google"; // import GoogleLogin from @react-oauth/google
+import { auth } from "../../firebase"; // Firebase 설정 파일
+import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
+import { AxiosGet, AxiosPost } from "../../api";
 import { useNavigate } from "react-router-dom";
-import { AxiosGet, AxiosPost, log } from "../../api";
 
-function GoogleLoginButton() {
+const GoogleLoginButton = () => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    console.log(localStorage.getItem("token"));
-  }, []);
-
+  // Google 로그인 성공 시 호출되는 함수
   const handleLoginSuccess = async (credentialResponse) => {
     const { credential } = credentialResponse;
 
@@ -52,27 +49,30 @@ function GoogleLoginButton() {
     }
   };
 
-  return (
-    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
-      <Col
-        span={24}
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-          display: "flex",
-        }}
-      >
-        <GoogleLogin
-          auto_select={true}
-          // useOneTap
+  // Google 로그인 실패 시 호출되는 함수
+  const handleLoginFailure = (error) => {
+    console.error("Google 로그인 실패:", error);
+  };
 
-          locale="en"
-          onSuccess={handleLoginSuccess}
-          onError={() => console.log("로그인 오류")}
+  // 리디렉션 후 결과 처리 (페이지 로드 후 호출)
+  useEffect(() => {
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        console.log("Authenticated user:", user);
+      }
+    });
+  }, []);
+
+  return (
+    <div style={{ display: "flex", justifyContent: "center" }}>
+      <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+        <GoogleLogin
+          onSuccess={handleLoginSuccess} // 로그인 성공 시 처리
+          onError={handleLoginFailure} // 로그인 실패 시 처리
         />
-      </Col>
-    </GoogleOAuthProvider>
+      </GoogleOAuthProvider>
+    </div>
   );
-}
+};
 
 export default GoogleLoginButton;

@@ -1,4 +1,4 @@
-// Import the functions you need from the Firebase SDKs
+// src/firebaseConfig.js
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -7,7 +7,7 @@ import {
   signOut,
 } from "firebase/auth";
 
-// Your Firebase configuration (from Firebase Console)
+// Firebase 설정 정보
 const firebaseConfig = {
   apiKey: "AIzaSyDJRvpxyAmWFpCnSYLb2hpKpQDigAkH4Og",
   authDomain: "crack-atlas-441608-m9.firebaseapp.com",
@@ -17,9 +17,9 @@ const firebaseConfig = {
   appId: "1:674500122407:web:d00d37b18e120c59f13b02",
 };
 
-// Initialize Firebase
+// Firebase 초기화
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
 
-export { auth, provider, signInWithPopup, signOut };
+// 필요한 항목 내보내기
+export { auth };

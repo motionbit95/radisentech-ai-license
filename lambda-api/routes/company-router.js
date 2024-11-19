@@ -14,7 +14,7 @@ const {
   generateUniqueCopyValue,
   formatDateTime,
 } = require("../controller/common");
-const { sendVerifyEmail } = require("../controller/mailer");
+const { sendSESVerifyEmail } = require("../controller/mailer");
 router.use(cors());
 router.use(bodyParser.json());
 
@@ -23,8 +23,6 @@ var serviceAccount = require("../serviceAccountKey.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
-
-console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
 
 /**
  * @swagger
@@ -917,10 +915,15 @@ router.post("/request-reset-code", async (req, res) => {
     );
 
     // 이메일로 인증 코드 전송
-    await sendVerifyEmail(email, "Your Authentication Code", authCode);
-
-    // 성공 응답
-    res.status(200).json({ message: "Authentication code sent to email" });
+    await sendSESVerifyEmail(email, "Your Authentication Code", authCode)
+      .then((result) => {
+        console.log("Email sent:", result);
+        res.status(200).json({ message: "Authentication code sent to email" });
+      })
+      .catch((err) => {
+        console.error("Error sending email:", err);
+        res.status(402).json({ error: "Failed to send email" });
+      });
   } catch (error) {
     console.error("Error requesting reset code:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -998,10 +1001,17 @@ router.post("/send-code", async (req, res) => {
     );
 
     // 이메일로 인증 코드 전송
-    await sendVerifyEmail(email, "Your Authentication Code", authCode);
-
-    // 성공 응답
-    res.status(200).json({ message: "Authentication code sent to email" });
+    await sendSESVerifyEmail(email, "Your Authentication Code", authCode)
+      .then((result) => {
+        console.log("Email sent:", result);
+        // 성공 응답
+        res.status(200).json({ message: "Authentication code sent to email" });
+      })
+      .catch((err) => {
+        console.error("Error sending email:", err);
+        res.status(402).json({ error: "Failed to send email" });
+        return;
+      });
   } catch (error) {
     console.error("Error requesting reset code:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -1628,6 +1638,8 @@ router.get("/reset-unique-code/:id", async (req, res) => {
 
 router.post("/auth/google", async (req, res) => {
   const { token } = req.body;
+
+  console.log("token:", token);
 
   try {
     // Google 토큰 검증
