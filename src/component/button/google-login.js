@@ -14,34 +14,39 @@ function GoogleLoginButton() {
   const handleLoginSuccess = async (credentialResponse) => {
     const { credential } = credentialResponse;
 
+    console.log(credential);
+
     try {
-      const response = await AxiosPost("/company/auth/google", {
+      AxiosPost("/company/auth/google", {
         token: credential,
+      }).then(async (response) => {
+        if (response.status === 200) {
+          AxiosGet(`/company/check-user-id/${response.data.user.id}`)
+            .then(async (res) => {
+              console.log(res);
+              if (res.status === 200) {
+                const user = response.data.user;
+                navigate("/signup", { state: { user } });
+              }
+            })
+            .catch((error) => {
+              if (error.response.status === 401) {
+                const user = response.data.user;
+                AxiosPost("/company/login", {
+                  user_id: user.id,
+                  password: "default",
+                }).then((res) => {
+                  if (res.status === 200) {
+                    localStorage.setItem("token", res.data.token);
+                    navigate("/license", { state: { isLoggedIn: true } });
+                  }
+                });
+              }
+            });
+        }
       });
 
-      if (response.status === 200) {
-        AxiosGet(`/company/check-user-id/${response.data.user.id}`)
-          .then((res) => {
-            if (res.status === 200) {
-              const user = response.data.user;
-              navigate("/signup", { state: { user } });
-            }
-          })
-          .catch((error) => {
-            if (error.response.status === 401) {
-              const user = response.data.user;
-              AxiosPost("/company/login", {
-                user_id: user.id,
-                password: "default",
-              }).then((res) => {
-                if (res.status === 200) {
-                  localStorage.setItem("token", res.data.token);
-                  navigate("/license", { state: { isLoggedIn: true } });
-                }
-              });
-            }
-          });
-      }
+      // console.log(response);
     } catch (error) {
       console.error("로그인 실패:", error);
     }

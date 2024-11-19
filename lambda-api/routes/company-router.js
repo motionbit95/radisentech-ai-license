@@ -24,6 +24,8 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
+console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
+
 /**
  * @swagger
  * tags:
@@ -502,6 +504,8 @@ router.get("/check-user-id/:user_id", async (req, res) => {
   try {
     // 데이터베이스 연결
     connection = await getConnection();
+
+    console.log(userId);
 
     // user_id 존재 여부 확인
     const [results] = await connection.execute(
@@ -1638,6 +1642,7 @@ router.post("/auth/google", async (req, res) => {
 
     // Firebase Authentication에 사용자 존재 여부 확인
     let userRecord;
+
     try {
       userRecord = await admin.auth().getUserByEmail(email);
     } catch (error) {
