@@ -248,6 +248,7 @@ router.post("/add", async (req, res) => {
     user_name,
     address,
     phone,
+    provider,
   } = req.body;
 
   console.log(
@@ -257,7 +258,8 @@ router.post("/add", async (req, res) => {
     company_name,
     user_name,
     address,
-    phone
+    phone,
+    provider
   );
 
   // 비밀번호 해싱
@@ -277,8 +279,8 @@ router.post("/add", async (req, res) => {
 
     // 데이터 삽입 쿼리 실행
     const query = `
-        INSERT INTO company (user_id, password, email, company_name, user_name, address, phone, unique_code)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO company (user_id, password, email, company_name, user_name, address, phone, unique_code, provider)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
     const [result] = await connection.execute(query, [
       user_id,
@@ -289,6 +291,7 @@ router.post("/add", async (req, res) => {
       address,
       phone,
       unique_code,
+      provider,
     ]);
 
     // 성공 응답
@@ -526,6 +529,49 @@ router.get("/check-user-id/:user_id", async (req, res) => {
   }
 });
 
+router.post("/check-user-email", async (req, res) => {
+  const { email, user_id } = req.body; // URL에서 user_id를 가져옵니다.
+
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await getConnection();
+
+    console.log(email, user_id);
+
+    // user_id 존재 여부 확인
+    const [existEmail] = await connection.execute(
+      "SELECT * FROM company WHERE email = ? OR user_id = ?",
+      [email, user_id]
+    );
+
+    // 회원가입이 되어있는 경우
+    const [successUser] = await connection.execute(
+      "SELECT * FROM company WHERE email = ? AND user_id = ?",
+      [email, user_id]
+    );
+
+    console.log(existEmail, successUser);
+
+    // user_id가 존재하는 경우
+    if (successUser.length === 0 && existEmail.length > 0) {
+      // 회원가입 된 유저가 없고 이미 가입된 이메일이라 회원가입도 안되는 경우 - 에러
+      return res.status(401).json({ message: "User Email already exists" });
+    } else if (successUser.length > 0) {
+      // 회원가입 된 유저가 있는 경우 - 로그인 성공
+      return res.status(200).json({ message: "Login Success" });
+    } else if (existEmail.length === 0 && successUser.length === 0) {
+      // user_id가 존재하지 않는 경우 - 회원가입 가능
+      return res.status(201).json({ message: "User Email is available" });
+    }
+  } catch (error) {
+    console.error("Error checking user ID:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (connection) await connection.release(); // 연결 종료
+  }
+});
+
 router.post("/account-validate", async (req, res) => {
   const { user_id, email, phone } = req.body;
 
@@ -730,24 +776,6 @@ router.delete("/delete/:id", verifyToken, async (req, res) => {
 
     const { unique_code, user_id } = existingUser[0];
     console.log(unique_code, user_id);
-
-    // if (parseFloat(user_id)) {
-    //   try {
-    //     // Firebase Auth 사용자 삭제
-    //     await admin.auth().deleteUser(user_id);
-    //     console.log(`Firebase user with UID ${user_id} deleted successfully`);
-    //   } catch (error) {
-    //     if (error.code === "auth/user-not-found") {
-    //       console.warn(`Firebase user with UID ${user_id} not found.`);
-    //     } else {
-    //       console.error(
-    //         `Error deleting Firebase user with UID ${user_id}:`,
-    //         error
-    //       );
-    //       throw error; // 다른 예외는 상위로 전달
-    //     }
-    //   }
-    // }
 
     // 라이센스 히스토리도 지웁니다.
     const deleteLicenseHistoryQuery =

@@ -70,6 +70,7 @@ const SignUp = () => {
           user_id: user.id,
           email: user.email,
           user_name: user.name,
+          provider: 1, // 구글 로그인
         }
       : values;
 

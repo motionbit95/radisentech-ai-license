@@ -1,10 +1,6 @@
 require("dotenv").config();
 // const nodemailer = require("nodemailer");
-const {
-  SESClient,
-  SendEmailCommand,
-  GetIdentityVerificationAttributesCommand,
-} = require("@aws-sdk/client-ses");
+const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
 
 // const transporter = nodemailer.createTransport({
 //   host: "smtp.hiworks.com", // 사용자 정의 도메인의 SMTP 서버

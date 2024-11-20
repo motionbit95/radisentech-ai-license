@@ -267,9 +267,9 @@ const Company = (props) => {
         return a.user_id.localeCompare(b.user_id);
       },
 
-      render: (text) => (
+      render: (text, record) => (
         <Space>
-          {parseFloat(text) ? (
+          {record.provider === 1 ? (
             <Image
               preview={false}
               width={20}
@@ -278,7 +278,7 @@ const Company = (props) => {
           ) : (
             text
           )}
-          {parseFloat(text) ? (
+          {record.provider === 1 ? (
             <Tooltip placement="top" title={text}>
               <InfoCircleOutlined />
             </Tooltip>
