@@ -230,8 +230,10 @@ const License = (props) => {
     },
     {
       title: "Activate Date Time",
-      dataIndex: "LocalActivateStartDate",
-      key: "LocalActivateStartDate",
+      dataIndex: "UTCActivateStartDate",
+      key: "UTCActivateStartDate",
+      // dataIndex: "LocalActivateStartDate",
+      // key: "LocalActivateStartDate",
       render: (text) => (text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : ""),
       sorter: (a, b) => {
         return (
