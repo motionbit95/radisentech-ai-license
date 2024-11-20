@@ -19,6 +19,8 @@ import { AxiosGet, log } from "./api";
 import Product from "./page/product";
 import Logo from "./asset/logo-black.svg";
 import { googleLogout } from "@react-oauth/google";
+import { signOut } from "firebase/auth";
+import { auth } from "./firebaseConfig";
 
 function App({ page, toggleTheme, isDarkMode }) {
   const navigate = useNavigate();
@@ -129,6 +131,7 @@ function App({ page, toggleTheme, isDarkMode }) {
                       localStorage.removeItem("token");
                       setIsLoggedIn(false);
                       navigate("/login");
+                      signOut(auth);
                     }}
                   >
                     Logout
