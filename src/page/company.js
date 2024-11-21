@@ -373,7 +373,7 @@ const Company = (props) => {
         ]
       : []),
     {
-      title: "License\n[used / total]",
+      title: "License\n[Use/Rem/Tot]",
       dataIndex: "license_cnt",
       key: "license_cnt",
       fixed: "right",
@@ -382,7 +382,9 @@ const Company = (props) => {
           <LicenseHistoryModal
             currentUser={props.currentUser}
             data={record}
-            title={`${record.use_cnt} / ${text}`}
+            title={`${record.use_cnt} / ${
+              parseInt(text) - record.rem_cnt
+            } / ${text}`}
             onCancel={() => {
               fetchCompanyList();
             }}

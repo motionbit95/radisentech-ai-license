@@ -123,6 +123,35 @@ router.get("/list", verifyToken, async (req, res) => {
   }
 });
 
+router.get("/active-list", verifyToken, async (req, res) => {
+  let connection;
+  try {
+    // 데이터베이스 연결
+    connection = await getConnection();
+
+    // LicenseManagement 테이블의 모든 데이터를 가져오는 쿼리
+    const [rows] = await connection.execute(
+      "SELECT * FROM LicenseManagement WHERE Deleted = 0"
+    );
+
+    // 결과를 클라이언트에 JSON 형식으로 반환
+    res.status(200).json({
+      message: "Data fetched successfully",
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Database error",
+      error: error.message,
+    });
+  } finally {
+    // 데이터베이스 연결 해제
+    if (connection) await connection.release();
+  }
+});
+
 /**
  * @swagger
  * /license/list/{pk}:

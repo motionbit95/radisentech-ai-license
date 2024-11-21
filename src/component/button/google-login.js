@@ -1,85 +1,94 @@
-import React, { useState } from "react";
-import { Button, message } from "antd";
-import { auth, provider, signInWithPopup } from "../../firebaseConfig";
-import { AxiosGet, AxiosPost } from "../../api";
+import React, { useState, useEffect } from "react";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { Col, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
+import { AxiosGet, AxiosPost, log } from "../../api";
 
-const GoogleLoginButton = () => {
+function GoogleLoginButton() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
+  useEffect(() => {
+    console.log(localStorage.getItem("token"));
+  }, []);
 
-      AxiosPost("/company/check-user-email/", {
-        user_id: user.uid,
-        email: user.email,
-      })
-        .then((response) => {
-          if (response.status === 200) {
-            message.success(response.data.message);
-            AxiosPost("/company/login", {
-              user_id: user.uid,
-              password: "default",
+  const handleLoginSuccess = async (credentialResponse) => {
+    const { credential } = credentialResponse;
+
+    console.log(credential);
+    setLoading(true);
+
+    try {
+      AxiosPost("/company/auth/google", {
+        token: credential,
+      }).then(async (response) => {
+        if (response.status === 200) {
+          AxiosGet(`/company/check-user-id/${response.data.user.id}`)
+            .then(async (res) => {
+              console.log(res);
+              if (res.status === 200) {
+                const user = response.data.user;
+                setLoading(false);
+                navigate("/signup", { state: { user } });
+              }
             })
-              .then((res) => {
-                if (res.status === 200) {
-                  localStorage.setItem("token", res.data.token);
-                  navigate("/license", { state: { isLoggedIn: true } });
-                }
-              })
-              .catch((err) => {
-                console.log(err);
-              });
-          }
-          if (response.status === 201) {
-            message.success(response.data.message);
-            // signup 페이지로 이동
-            navigate("/signup", {
-              state: {
-                user: {
-                  id: user.uid,
-                  email: user.email,
-                  name: user.displayName,
-                },
-              },
+            .catch((error) => {
+              if (error.response.status === 401) {
+                const user = response.data.user;
+                AxiosPost("/company/login", {
+                  user_id: user.id,
+                  password: "default",
+                }).then((res) => {
+                  if (res.status === 200) {
+                    localStorage.setItem("token", res.data.token);
+                    setLoading(false);
+                    navigate("/license", { state: { isLoggedIn: true } });
+                  }
+                });
+              }
             });
-          }
-        })
-        .catch((error) => {
-          if (error.response?.status === 401) {
-            // 에러
-            message.error(error.response.data.message);
-          }
-        });
+        }
+      });
+
+      // console.log(response);
     } catch (error) {
-      console.error("Error during Google login:", error);
-      message.error("Failed to login with Google");
-    } finally {
+      console.error("로그인 실패:", error);
       setLoading(false);
     }
   };
 
   return (
-    <Button
-      size="large"
-      icon={
-        <img
-          src={require("../../asset/pngwing.com.png")}
-          width="20px"
-          alt="Google"
+    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+      <Spin
+        size="large"
+        spinning={loading}
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 999,
+        }}
+      />
+      <Col
+        span={24}
+        style={{
+          justifyContent: "center",
+          alignItems: "center",
+          display: "flex",
+        }}
+      >
+        <GoogleLogin
+          auto_select={true}
+          // useOneTap
+
+          locale="en"
+          onSuccess={handleLoginSuccess}
+          onError={() => console.log("로그인 오류")}
         />
-      }
-      loading={loading}
-      onClick={handleGoogleLogin}
-      style={{ margin: "10px" }}
-    >
-      Sign in with Google
-    </Button>
+      </Col>
+    </GoogleOAuthProvider>
   );
-};
+}
 
 export default GoogleLoginButton;
