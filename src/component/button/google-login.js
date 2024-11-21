@@ -22,47 +22,61 @@ function GoogleLoginButton() {
       AxiosPost("/company/auth/google", {
         token: credential,
       }).then(async (response) => {
-        console.log(response.data.user.id);
+        // 구글 로그인 성공했을 때
         if (response.status === 200) {
           AxiosPost(`/company/check-user-email`, {
             email: response.data.user.email,
             user_id: response.data.user.id,
           })
-            .then(async (res) => {
+            .then((res) => {
               console.log(res);
               if (res.status === 200) {
-                const user = response.data.user;
-                setLoading(false);
-                navigate("/signup", { state: { user } });
-              }
-            })
-            .catch((error) => {
-              if (!error.response) {
-                message.error("Connection error");
-                console.log(error);
-                setLoading(false);
-              }
-
-              if (error.response?.status === 401) {
-                const user = response.data.user;
+                // 구글 로그인 성공
                 AxiosPost("/company/login", {
                   user_id: user.id,
                   password: "default",
-                }).then((res) => {
-                  if (res.status === 200) {
-                    localStorage.setItem("token", res.data.token);
-                    setLoading(false);
-                    navigate("/license", { state: { isLoggedIn: true } });
-                  }
+                })
+                  .then((res) => {
+                    // 토큰 발급 성공
+                    if (res.status === 200) {
+                      localStorage.setItem("token", res.data.token);
+                      setLoading(false);
+                      navigate("/license", { state: { isLoggedIn: true } });
+                    }
+                  })
+                  .catch((error) => {
+                    // 토큰 발급 실패
+                    if (error.response.status === 401) {
+                      message.error(error.response.data.error);
+                      setLoading(false);
+                    }
+                  });
+              }
+
+              if (res.status === 201) {
+                // 해당 회원이 없음 회원가입 화면으로 이동
+                navigate("/company/signup", {
+                  state: {
+                    email: response.data.user.email,
+                    user_id: response.data.user.id,
+                    name: response.data.user.name,
+                    phone: response.data.user.phone,
+                  },
                 });
+              }
+            })
+            .catch((error) => {
+              // 401 - 해당 이메일로는 가입할 수 없음
+              if (error.response.status === 401) {
+                message.error(error.response.data.error);
+                setLoading(false);
               }
             });
         }
       });
-
-      // console.log(response);
     } catch (error) {
-      console.error("로그인 실패:", error);
+      // 구글 로그인 실패했을 때
+      message.error("Google login failed. Please try again.");
       setLoading(false);
     }
   };
