@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import { Col, Spin } from "antd";
+import { Col, message, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
 import { AxiosGet, AxiosPost, log } from "../../api";
 
@@ -22,8 +22,12 @@ function GoogleLoginButton() {
       AxiosPost("/company/auth/google", {
         token: credential,
       }).then(async (response) => {
+        console.log(response.data.user.id);
         if (response.status === 200) {
-          AxiosGet(`/company/check-user-id/${response.data.user.id}`)
+          AxiosPost(`/company/check-user-email`, {
+            email: response.data.user.email,
+            user_id: response.data.user.id,
+          })
             .then(async (res) => {
               console.log(res);
               if (res.status === 200) {
@@ -33,7 +37,13 @@ function GoogleLoginButton() {
               }
             })
             .catch((error) => {
-              if (error.response.status === 401) {
+              if (!error.response) {
+                message.error("Connection error");
+                console.log(error);
+                setLoading(false);
+              }
+
+              if (error.response?.status === 401) {
                 const user = response.data.user;
                 AxiosPost("/company/login", {
                   user_id: user.id,

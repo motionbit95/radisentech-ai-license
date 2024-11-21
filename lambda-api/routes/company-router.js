@@ -501,6 +501,8 @@ router.put("/update/:id", verifyToken, async (req, res) => {
 router.get("/check-user-id/:user_id", async (req, res) => {
   const userId = req.params.user_id; // URL에서 user_id를 가져옵니다.
 
+  console.log(userId);
+
   let connection;
   try {
     // 데이터베이스 연결
@@ -513,6 +515,8 @@ router.get("/check-user-id/:user_id", async (req, res) => {
       "SELECT * FROM company WHERE user_id = ?",
       [userId]
     );
+
+    console.log(results);
 
     // user_id가 존재하는 경우
     if (results.length > 0) {
@@ -1667,37 +1671,40 @@ router.get("/reset-unique-code/:id", async (req, res) => {
 router.post("/auth/google", async (req, res) => {
   const { token } = req.body;
 
-  console.log("token:", token);
+  console.log("Received token:", token);
+  console.log("Expected client ID:", process.env.GOOGLE_CLIENT_ID);
 
   try {
     // Google 토큰 검증
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
+      audience: process.env.GOOGLE_CLIENT_ID, // 정확한 클라이언트 ID로 검증
     });
 
     const payload = ticket.getPayload();
-    console.log("payload:", payload);
+    console.log("Token Payload:", payload);
+
     const { sub, name, email, picture } = payload;
 
     // Firebase Authentication에 사용자 존재 여부 확인
     let userRecord;
 
-    try {
-      userRecord = await admin.auth().getUserByEmail(email);
-    } catch (error) {
-      if (error.code === "auth/user-not-found") {
-        // 사용자 없으면 Firebase에 등록
-        userRecord = await admin.auth().createUser({
-          uid: sub,
-          email,
-          displayName: name,
-          photoURL: picture,
-        });
-      } else {
-        throw error; // 다른 오류는 다시 던짐
-      }
-    }
+    // try {
+    //   userRecord = await admin.auth().getUserByEmail(email);
+    // } catch (error) {
+    //   console.error("Firebase authentication error:", error);
+    //   if (error.code === "auth/user-not-found") {
+    //     // 사용자 없으면 Firebase에 등록
+    //     userRecord = await admin.auth().createUser({
+    //       uid: sub,
+    //       email,
+    //       displayName: name,
+    //       photoURL: picture,
+    //     });
+    //   } else {
+    //     throw error; // 다른 오류는 다시 던짐
+    //   }
+    // }
 
     // 필요한 경우 사용자 정보를 데이터베이스에 저장
     res.status(200).json({
@@ -1711,7 +1718,9 @@ router.post("/auth/google", async (req, res) => {
     });
   } catch (error) {
     console.error("Google Login Failed:", error);
-    res.status(401).json({ message: "Google Login Failed" });
+    res
+      .status(401)
+      .json({ message: "Google Login Failed", error: error.message });
   }
 });
 
