@@ -33,7 +33,7 @@ function GoogleLoginButton() {
               if (res.status === 200) {
                 // 구글 로그인 성공
                 AxiosPost("/company/login", {
-                  user_id: user.id,
+                  user_id: response.data.user.id,
                   password: "default",
                 })
                   .then((res) => {
@@ -55,14 +55,9 @@ function GoogleLoginButton() {
 
               if (res.status === 201) {
                 // 해당 회원이 없음 회원가입 화면으로 이동
-                navigate("/company/signup", {
-                  state: {
-                    email: response.data.user.email,
-                    user_id: response.data.user.id,
-                    name: response.data.user.name,
-                    phone: response.data.user.phone,
-                  },
-                });
+                const user = response.data.user;
+                setLoading(false);
+                navigate("/signup", { state: { user } });
               }
             })
             .catch((error) => {
