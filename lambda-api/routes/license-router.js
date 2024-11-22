@@ -239,7 +239,7 @@ router.get("/list/:UniqueCode", verifyToken, async (req, res) => {
 
     // LicenseManagement 테이블의 모든 데이터를 가져오는 쿼리
     const [rows] = await connection.execute(
-      "SELECT * FROM LicenseManagement WHERE UniqueCode = ?",
+      "SELECT * FROM LicenseManagement WHERE UniqueCode = ? AND Deleted = 0",
       [req.params.UniqueCode]
     );
 
