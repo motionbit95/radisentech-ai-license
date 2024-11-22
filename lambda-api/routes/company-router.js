@@ -248,7 +248,7 @@ router.post("/add", async (req, res) => {
     user_name,
     address,
     phone,
-    provider,
+    provider = 0,
   } = req.body;
 
   console.log(
