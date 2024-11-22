@@ -16,6 +16,14 @@ const UpdateLicense = (props) => {
     });
   }, [data]);
 
+  const onReset = () => {
+    form.setFieldsValue({
+      company: data?.Company || "",
+      sirial_number: data?.DetectorSerialNumber || "",
+      expire_date: data?.UTCTerminateDate ? dayjs(data.UTCTerminateDate) : null, // ExpireDate를 dayjs 객체로 변환
+    });
+  };
+
   const formItemLayout = {
     labelCol: {
       xs: { span: 24 },
@@ -74,11 +82,13 @@ const UpdateLicense = (props) => {
         open={modalOpen}
         onCancel={() => {
           setModalOpen(false);
+          onReset();
         }}
         footer={[
           <Button
             key="back"
             onClick={() => {
+              onReset();
               setModalOpen(false);
             }}
           >
