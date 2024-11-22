@@ -63,7 +63,7 @@ function GoogleLoginButton() {
             .catch((error) => {
               // 401 - 해당 이메일로는 가입할 수 없음
               if (error.response.status === 401) {
-                message.error(error.response.data.error);
+                message.error(error.response.data.message);
                 setLoading(false);
               }
             });
@@ -99,8 +99,7 @@ function GoogleLoginButton() {
       >
         <GoogleLogin
           auto_select={true}
-          // useOneTap
-
+          // useOneTap={false}
           locale="en"
           onSuccess={handleLoginSuccess}
           onError={() => console.log("로그인 오류")}
