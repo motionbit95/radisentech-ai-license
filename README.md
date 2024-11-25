@@ -275,4 +275,50 @@ $ npm run build
 CloudFront 콘솔에서 해당 도메인의 무효화를 생성해줘야한다고 합니다.<br/>
 객체 경로를 전체(/\*)로 설정해주세요.
 
-<strong>🎉 이제 [Radisen AI License](https://license.radisen.com)에서 배포된 리액트 애플리케이션을 확인할 수 있습니다!</strong>
+<strong>🎉 이제 [Radisen AI License](https://license.radisentech.com)에서 배포된 리액트 애플리케이션을 확인할 수 있습니다!</strong>
+
+## Trouble Shooting
+
+> AWS 연동 시 있었던 이슈 목록입니다.
+
+### # Lambda
+
+- 이슈 설명 : Lambda 함수 내에서 메일 전송 시 오류 발생
+- 에러 발생 응답
+
+  ```
+  Error: connect ETIMEDOUT 43.201.175.143:443
+      at createConnectionError (node:net:1648:14)
+      at Timeout.internalConnectMultipleTimeout (node:net:1707:38)
+      at listOnTimeout (node:internal/timers:583:11)
+      at process.processTimers (node:internal/timers:519:7) {
+    errno: -110,
+    code: 'ETIMEDOUT',
+    syscall: 'connect',
+    address: '43.201.175.143',
+    port: 443
+  ```
+
+- 원인 : Lambda 함수의 외부 서버와의 연결 실패
+- 해결 방안 : ?
+
+### # S3 버킷에서의 CORS 오류
+
+- 이슈 설명 : 구글 로그인 이후 로그인 페이지로 리디렉션 실패하는 오류 발생
+- 에러 발생 응답
+
+  ```bash
+  /Users/krystal$curl -v -X OPTIONS \
+    -H "Origin: https://accounts.google.com" \
+    -H "Access-Control-Request-Method: POST, GET" \
+    -H "Access-Control-Request-Headers: Authorization" \
+    -H "Access-Control-Expose-Headers: x-amz-meta-custom-header" \
+    "https://license.radisentech.com"
+
+
+    ...
+    x-cache: Error from cloudfront
+  ```
+
+- 원인 : 구글 로그인 시 팝업창을 열수 있는 권한이 설정되어있지 않았음.
+- 해결 방법 : CloudFront 정책을 Cross-Origin-Opener-Policy 를 same-origin 에서 same-origion-allow-popups 로 변경

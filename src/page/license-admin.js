@@ -262,6 +262,11 @@ const License = (props) => {
     return list.find((item) => item.Company === company_name).UniqueCode;
   };
 
+  const getAIDescription = (ai_type) => {
+    if (!product) return ai_type;
+    return product.find((item) => item.name === ai_type).description;
+  };
+
   // table column
   const licenseColumns = [
     {
@@ -328,12 +333,26 @@ const License = (props) => {
 
       render: (text) => {
         try {
-          return Array.isArray(JSON.parse(text))
-            ? JSON.parse(text).join(", ")
-            : text;
+          return (
+            <Space>
+              {Array.isArray(JSON.parse(text))
+                ? JSON.parse(text).join(", ")
+                : text}
+              <Tooltip placement="top" title={getAIDescription(text)}>
+                <InfoCircleOutlined />
+              </Tooltip>
+            </Space>
+          );
         } catch (e) {
           // JSON 파싱 오류가 나면 원본 텍스트 반환
-          return text;
+          return (
+            <Space>
+              {text}
+              <Tooltip placement="top" title={getAIDescription(text)}>
+                <InfoCircleOutlined />
+              </Tooltip>
+            </Space>
+          );
         }
       },
 

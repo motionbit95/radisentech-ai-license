@@ -12,9 +12,10 @@ import {
   Space,
   Table,
   theme,
+  Tooltip,
 } from "antd";
 import Highlighter from "react-highlight-words";
-import { SearchOutlined } from "@ant-design/icons";
+import { InfoCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { AxiosGet, log } from "../api";
@@ -44,6 +45,11 @@ const License = (props) => {
     // 페이지를 로드할 때 실행
     updateDealerLicenseList();
   }, []);
+
+  const getAIDescription = (ai_type) => {
+    if (!product) return ai_type;
+    return product.find((item) => item.name === ai_type).description;
+  };
 
   const updateDealerLicenseList = async () => {
     setLoading(true);
@@ -268,15 +274,28 @@ const License = (props) => {
       sorter: (a, b) => {
         return a.AIType.localeCompare(b.AIType);
       },
-
       render: (text) => {
         try {
-          return Array.isArray(JSON.parse(text))
-            ? JSON.parse(text).join(", ")
-            : text;
+          return (
+            <Space>
+              {Array.isArray(JSON.parse(text))
+                ? JSON.parse(text).join(", ")
+                : text}
+              <Tooltip placement="top" title={getAIDescription(text)}>
+                <InfoCircleOutlined />
+              </Tooltip>
+            </Space>
+          );
         } catch (e) {
           // JSON 파싱 오류가 나면 원본 텍스트 반환
-          return text;
+          return (
+            <Space>
+              {text}
+              <Tooltip placement="top" title={getAIDescription(text)}>
+                <InfoCircleOutlined />
+              </Tooltip>
+            </Space>
+          );
         }
       },
 
