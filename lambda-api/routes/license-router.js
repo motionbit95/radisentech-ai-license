@@ -6,6 +6,7 @@ const { pool, getConnection } = require("../controller/mysql");
 const {
   formatDateToYYYYMMDD,
   formatDateTime,
+  formatFromGMT,
 } = require("../controller/common");
 const { verifyToken } = require("../controller/auth");
 
@@ -475,6 +476,9 @@ router.post("/add", verifyToken, async (req, res) => {
  *             ExpireDate:
  *               type: string
  *               description: LicenseManagement ExpireDate
+ *             UniqueCode:
+ *               type: string
+ *               description: LicenseManagement UniqueCode
  *         required: true
  *         description: LicenseManagement ExpireDate
  *     responses:
@@ -491,7 +495,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
   const { pk } = req.params;
   const { ExpireDate, UniqueCode } = req.body;
 
-  console.log("ExpireDate:", ExpireDate, "UniqueCode:", UniqueCode);
+  // console.log("ExpireDate:", ExpireDate, "UniqueCode:", UniqueCode);
 
   // 요청 유효성 검사
   if (!ExpireDate) {
@@ -511,7 +515,11 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
 
     const nowDate = formatDateTime(new Date());
 
-    console.log("now : ", nowDate);
+    // UTC 기준 DateTime 계산
+    const utcNowDate = formatFromGMT(nowDate);
+
+    console.log("LocalUpdateDate:", nowDate);
+    console.log("UTCUpdateDate:", utcNowDate);
 
     // 업데이트 쿼리 작성
     const updateQuery = `
@@ -521,7 +529,8 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
         UTCTerminateDate = ?,
         ActivateCount = ActivateCount + 1,
         UniqueCode = ?,
-        UpdatedAt = ?
+        UpdatedAt = ?,
+        UTCUpdatedAt = ?
       WHERE pk = ?
     `;
 
@@ -563,6 +572,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
       utcTerminateDate,
       UniqueCode,
       nowDate,
+      utcNowDate,
       pk,
     ]);
 

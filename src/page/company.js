@@ -41,10 +41,6 @@ const Company = (props) => {
   const [loading, setLoading] = useState(false); // 로딩 플래그
 
   useEffect(() => {
-    console.log("select!!!! > ", selectedCompany);
-  }, [selectedCompany]);
-
-  useEffect(() => {
     // 페이지를 로드할 때 실행
     fetchCompanyList();
   }, []);

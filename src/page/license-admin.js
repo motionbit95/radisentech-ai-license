@@ -23,10 +23,16 @@ import UpdateLicense from "../modal/expire";
 import UpdateHistoryModal from "../modal/update-history";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 import ADDLicense from "../modal/add-license";
 import { AxiosGet, AxiosPut, log } from "../api";
 import ButtonGroup from "antd/es/button/button-group";
 import Product from "./product";
+
+// 플러그인 초기화
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const { Content } = Layout;
 
@@ -264,7 +270,7 @@ const License = (props) => {
 
   const getAIDescription = (ai_type) => {
     if (!product) return ai_type;
-    return product.find((item) => item.name === ai_type).description;
+    return product.find((item) => item.name === ai_type)?.description;
   };
 
   // table column
@@ -295,13 +301,35 @@ const License = (props) => {
     },
     {
       title: "Activate Date Time",
-      dataIndex: "UTCActivateStartDate",
+      dataIndex: "UTCActivateStartDate", // UTC 기준 데이터
       key: "UTCActivateStartDate",
-      // dataIndex: "LocalActivateStartDate",
-      // key: "LocalActivateStartDate",
-      render: (text) => (text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : ""),
+      render: (text) => {
+        if (!text) return "";
+
+        // UTC 시간을 한국 표준시(KST, UTC+9)로 변환
+        const date = new Date(text); // UTC 시간을 Date 객체로 변환
+        date.setHours(date.getHours() + 9); // 한국 표준시 (KST)로 변환
+
+        // 포맷팅: MM-DD-YYYY HH:mm:ss 형식으로 변환
+        return `${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+          date.getDate()
+        ).padStart(2, "0")}-${date.getFullYear()} ${String(
+          date.getHours()
+        ).padStart(2, "0")}:${String(date.getMinutes()).padStart(
+          2,
+          "0"
+        )}:${String(date.getSeconds()).padStart(2, "0")}`;
+      },
       sorter: (a, b) => {
-        return new Date(a.LocalActivateDate) - new Date(b.LocalActivateDate);
+        // 로컬 시간으로 비교하려면 UTC에서 9시간을 더해 한국 시간으로 변환 후 정렬
+        const dateA = new Date(a.UTCActivateStartDate);
+        const dateB = new Date(b.UTCActivateStartDate);
+
+        // 한국 시간 (KST)으로 변환
+        dateA.setHours(dateA.getHours() + 9);
+        dateB.setHours(dateB.getHours() + 9);
+
+        return dateA - dateB; // 한국 시간 기준으로 정렬
       },
     },
     {
@@ -417,15 +445,34 @@ const License = (props) => {
     },
     {
       title: "Update",
-      dataIndex: "UpdatedAt",
-      key: "UpdatedAt",
+      dataIndex: "UTCUpdatedAt",
+      key: "UTCUpdatedAt",
       fixed: "right",
-      render: (text, record, index) => (
-        <UpdateHistoryModal
-          data={record}
-          title={text ? dayjs(text).format("MM-DD-YYYY") : ""}
-        />
-      ),
+      render: (text, record, index) => {
+        // text는 이미 UTC 시간 (2024-11-24T20:52:23.000Z)
+
+        // UTC를 한국 시간으로 변환
+        const date = new Date(text); // UTC 시간 문자열을 Date 객체로 변환
+
+        // UTC에서 KST로 변환 (9시간 더하기)
+        date.setHours(date.getHours() + 9); // KST는 UTC보다 9시간 빠름
+
+        // 포맷팅: YYYY-MM-DD HH:mm:ss 형식으로 변환
+        const localTime = `${date.getFullYear()}-${String(
+          date.getMonth() + 1
+        ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")} ${String(
+          date.getHours()
+        ).padStart(2, "0")}:${String(date.getMinutes()).padStart(
+          2,
+          "0"
+        )}:${String(date.getSeconds()).padStart(2, "0")}`;
+
+        // console.log(localTime); // 2024-11-25 05:52:23 (KST)
+
+        return (
+          <UpdateHistoryModal data={record} title={text ? localTime : ""} />
+        );
+      },
     },
   ];
 

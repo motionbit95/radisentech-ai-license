@@ -57,9 +57,22 @@ function formatDateTime(date) {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+// 주어진 GMT 형식 날짜를 원하는 포맷으로 변환
+function formatFromGMT(dateString) {
+  const date = new Date(dateString); // GMT 문자열을 Date 객체로 변환
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 module.exports = {
   generateRandomCode,
   generateUniqueCopyValue,
   formatDateToYYYYMMDD,
   formatDateTime,
+  formatFromGMT,
 };

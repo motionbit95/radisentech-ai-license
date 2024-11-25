@@ -48,7 +48,7 @@ const License = (props) => {
 
   const getAIDescription = (ai_type) => {
     if (!product) return ai_type;
-    return product.find((item) => item.name === ai_type).description;
+    return product.find((item) => item.name === ai_type)?.description;
   };
 
   const updateDealerLicenseList = async () => {
@@ -236,16 +236,35 @@ const License = (props) => {
     },
     {
       title: "Activate Date Time",
-      dataIndex: "UTCActivateStartDate",
+      dataIndex: "UTCActivateStartDate", // UTC 기준 데이터
       key: "UTCActivateStartDate",
-      // dataIndex: "LocalActivateStartDate",
-      // key: "LocalActivateStartDate",
-      render: (text) => (text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : ""),
+      render: (text) => {
+        if (!text) return "";
+
+        // UTC 시간을 한국 표준시(KST, UTC+9)로 변환
+        const date = new Date(text); // UTC 시간을 Date 객체로 변환
+        date.setHours(date.getHours() + 9); // 한국 표준시 (KST)로 변환
+
+        // 포맷팅: MM-DD-YYYY HH:mm:ss 형식으로 변환
+        return `${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+          date.getDate()
+        ).padStart(2, "0")}-${date.getFullYear()} ${String(
+          date.getHours()
+        ).padStart(2, "0")}:${String(date.getMinutes()).padStart(
+          2,
+          "0"
+        )}:${String(date.getSeconds()).padStart(2, "0")}`;
+      },
       sorter: (a, b) => {
-        return (
-          new Date(a.LocalActivateStartDate) -
-          new Date(b.LocalActivateStartDate)
-        );
+        // 로컬 시간으로 비교하려면 UTC에서 9시간을 더해 한국 시간으로 변환 후 정렬
+        const dateA = new Date(a.UTCActivateStartDate);
+        const dateB = new Date(b.UTCActivateStartDate);
+
+        // 한국 시간 (KST)으로 변환
+        dateA.setHours(dateA.getHours() + 9);
+        dateB.setHours(dateB.getHours() + 9);
+
+        return dateA - dateB; // 한국 시간 기준으로 정렬
       },
     },
     {

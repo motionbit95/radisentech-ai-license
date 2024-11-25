@@ -1441,6 +1441,61 @@ router.get(
 
 /**
  * @swagger
+ * /company/get-remain-cnt/{UniqueCode}:
+ *   get:
+ *     tags: [Company]
+ *     summary: 라이센스 수량 반환
+ *     description: 유니크 코드로 발급된 라이센스 수량 반환
+ *     parameters:
+ *       - in: path
+ *         name: UniqueCode
+ *         description: UniqueCode
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: "RADISENTECH"
+ *     responses:
+ *       200:
+ *         description: 반환 성공
+ *       500:
+ *         description: Database error
+ *       403:
+ *         description: Unauthorized
+ * */
+router.get("/get-remain-cnt/:unique_code", async (req, res) => {
+  const uniqueCode = req.params.unique_code;
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.query(
+      "SELECT license_cnt FROM company WHERE unique_code = ?",
+      [uniqueCode]
+    );
+
+    const [rows2] = await connection.query(
+      "SELECT * FROM LicenseManagement WHERE UniqueCode = ?",
+      [uniqueCode]
+    );
+
+    let usedCnt = rows2.length;
+
+    res.status(200).json({
+      remain_cnt: rows[0].license_cnt - usedCnt,
+    });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({
+      status: "error",
+      message: "Database error",
+      error: error.message,
+    });
+  } finally {
+    if (connection) await connection.release();
+  }
+});
+
+/**
+ * @swagger
  * /company/transfer:
  *   post:
  *     tags: [Company]
