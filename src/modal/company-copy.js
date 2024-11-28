@@ -20,7 +20,7 @@ const CompanyTransfer = (props) => {
   const [list, setList] = useState([]);
   const { data, disabled, onComplete, setloading } = props;
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedCopyCompany, setSelectedCopyCompany] = useState(null); // 선택된 Company data
+  const [selectedCopyCompany, setSelectedCopyCompany] = useState([]); // 선택된 Company data
 
   const searchInput = useRef(null);
   const [searchText, setSearchText] = useState("");
@@ -63,14 +63,14 @@ const CompanyTransfer = (props) => {
         if (response.status === 200) {
           message.success("Company transferred successfully.");
           setIsModalOpen(false);
-          setSelectedCopyCompany(null);
+          setSelectedCopyCompany([]);
           setLoading(false);
         }
       })
       .catch((error) => {
         console.error("Error copying company: ", error);
         message.error("Failed to copy company. Please try again.");
-        setSelectedCopyCompany(null);
+        setSelectedCopyCompany([]);
         setIsModalOpen(false);
       });
   };

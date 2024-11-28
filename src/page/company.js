@@ -471,6 +471,7 @@ const Company = (props) => {
                         !hasSelected || selectedCompany?.permission_flag === "D"
                       }
                       isLicense={selectedCompany?.use_cnt > 0}
+                      isGenerate={selectedCompany?.license_cnt > 0}
                       data={selectedCompany}
                       permission_flag={props.currentUser.permission_flag}
                       onComplete={(data) => {

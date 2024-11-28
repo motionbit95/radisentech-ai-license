@@ -18,7 +18,8 @@ import { AxiosGet, AxiosPut, log } from "../api";
 
 const CompanyEdit = (props) => {
   const navigate = useNavigate();
-  const { disabled, data, onComplete, setLoading, isLicense } = props;
+  const { disabled, data, onComplete, setLoading, isLicense, isGenerate } =
+    props;
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -56,6 +57,14 @@ const CompanyEdit = (props) => {
 
   const onValuesChange = (changedValues) => {
     log("Changed values: ", changedValues);
+    // permission_flag 값이 변경되었을 경우만 처리
+    if (changedValues.permission_flag) {
+      log(
+        "Changed permission_flag: ",
+        data?.permission_flag,
+        changedValues.permission_flag
+      );
+    }
   };
 
   const onFinish = async (values) => {
@@ -149,7 +158,7 @@ const CompanyEdit = (props) => {
                 ]}
               >
                 <Input
-                  disabled={isLicense}
+                  disabled={isLicense || isGenerate}
                   placeholder="Please enter company code"
                 />
               </Form.Item>
