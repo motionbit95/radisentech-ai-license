@@ -26,35 +26,31 @@ function App({ page, toggleTheme, isDarkMode }) {
   const [permission_flag, setPermissionFlag] = useState(""); // D: Developer, Y: Admin, N: Delear
 
   const [currentUser, setCurrentUser] = useState({});
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
 
-  // 로그인 페이지에서 라이센스 페이지로 이동할 때 로그인 플래그를 받습니다.
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-
-  // 로그인한 유저 데이터 가져오기
   useEffect(() => {
     const getUser = async () => {
-      AxiosGet("/company/user-info")
-        .then((response) => {
-          log(response);
-          if (response?.status === 200) {
-            // log("CURRENT_USER", response.data);
-            setCurrentUser(response.data);
-            setPermissionFlag(response.data.permission_flag);
-            setIsLoggedIn(true);
-          }
-        })
-        .catch((error) => {
-          log(error);
-          if (error?.response?.status === 403) {
-            setCurrentUser({});
-            setIsLoggedIn(false);
-            navigate("/login");
-          }
-        });
+      try {
+        const response = await AxiosGet("/company/user-info");
+        if (response?.status === 200) {
+          setCurrentUser(response.data);
+          setPermissionFlag(response.data.permission_flag);
+          setIsLoggedIn(true);
+        }
+      } catch (error) {
+        if (error?.response?.status === 403) {
+          setCurrentUser({});
+          setIsLoggedIn(false);
+          navigate("/login");
+        }
+      } finally {
+        setIsLoading(false); // 로딩 완료
+      }
     };
 
     getUser();
-  }, []);
+  }, [navigate]);
 
   const items = [
     {
@@ -85,23 +81,20 @@ function App({ page, toggleTheme, isDarkMode }) {
   ];
 
   useEffect(() => {
-    // 로그인 된 사용자의 경우 lisecse 페이지로 리다이렉트
     if (isLoggedIn && window.location.pathname === "/") {
       navigate("/license");
     }
+  }, [isLoggedIn, navigate]);
 
-    // 페이지를 로드할 때 로그인 토큰을 확인하여 기 로그인 사용자의 경우 로그인을 처리합니다.
-  }, [isLoggedIn]);
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
-  return (
+  return isLoggedIn ? (
     <Layout style={{ minHeight: "100vh" }}>
       <Space size={"large"} direction="vertical">
-        <Header
-          style={{
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
+        {/* 헤더 */}
+        <Header style={{ display: "flex", alignItems: "center" }}>
           <Col span={12}>
             <Space size="large">
               <div style={{ textAlign: "center" }}>
@@ -120,146 +113,76 @@ function App({ page, toggleTheme, isDarkMode }) {
             </Space>
           </Col>
 
-          <Col span={12} direction style={{ textAlign: "right" }}>
+          <Col span={12} style={{ textAlign: "right" }}>
             <Space>
-              {isLoggedIn ? (
+              {currentUser.user_id && (
                 <Space>
-                  <Space
-                    style={{
-                      display: permission_flag === "N" ? "none" : "flex",
-                    }}
-                  >
-                    <div style={{ color: "white" }}>{currentUser.user_id}</div>
-                    <Tag
-                      color={
-                        permission_flag === "D"
-                          ? "red"
-                          : permission_flag === "Y"
-                          ? "blue"
-                          : "green"
-                      }
-                    >
-                      {permission_flag === "D"
-                        ? "Supervisor"
+                  <div style={{ color: "white" }}>{currentUser.user_id}</div>
+                  <Tag
+                    color={
+                      permission_flag === "D"
+                        ? "red"
                         : permission_flag === "Y"
-                        ? "Admin"
-                        : "Dealer"}
-                    </Tag>
-                  </Space>
-                  <Button
-                    onClick={() => {
-                      // 저장된 토큰을 삭제합니다.
-                      localStorage.removeItem("token");
-                      setIsLoggedIn(false);
-                      navigate("/login");
-                    }}
+                        ? "blue"
+                        : "green"
+                    }
                   >
-                    Logout
-                  </Button>
+                    {permission_flag === "D"
+                      ? "Supervisor"
+                      : permission_flag === "Y"
+                      ? "Admin"
+                      : "Dealer"}
+                  </Tag>
                 </Space>
-              ) : (
-                <Button
-                  type="primary"
-                  onClick={() => {
-                    googleLogout();
-                    // 저장된 토큰을 삭제합니다.
-                    localStorage.removeItem("token");
-                    setIsLoggedIn(false);
-                    navigate("/login");
-                  }}
-                >
-                  Login
-                </Button>
               )}
-              {/* <Switch checked={isDarkMode} onChange={toggleTheme} /> */}
+              <Button
+                onClick={() => {
+                  localStorage.removeItem("token");
+                  setIsLoggedIn(false);
+                  navigate("/login");
+                }}
+              >
+                Logout
+              </Button>
             </Space>
           </Col>
         </Header>
 
-        {/* 로그인 되어있지 않은 사용자의 경우 접근 제한 / 로그인 유도 */}
-        {!isLoggedIn ? (
-          <div>
-            <Result
-              status="403"
-              title="403"
-              subTitle="Sorry, you are not authorized to access this page."
-              extra={
-                <Button type="primary" onClick={() => navigate("/login")}>
-                  Login Account
-                </Button>
-              }
-            />
-          </div>
-        ) : (
-          <>
-            {page === "license" && (
-              <>
-                {permission_flag === "N" && (
-                  <LicenseDealer currentUser={currentUser} />
-                )}
-                {(permission_flag === "Y" || permission_flag === "D") && (
-                  <License currentUser={currentUser} />
-                )}
-              </>
-            )}
+        {/* 페이지 내용 */}
+        {page === "license" &&
+          (permission_flag === "N" ? (
+            <LicenseDealer currentUser={currentUser} />
+          ) : (
+            <License currentUser={currentUser} />
+          ))}
 
-            {page === "company" && permission_flag && (
-              <>
-                {permission_flag === "Y" || permission_flag === "D" ? (
-                  <Company currentUser={currentUser} />
-                ) : (
-                  <div>
-                    <Result
-                      status="403"
-                      title="403"
-                      subTitle="Sorry, you are not authorized to access this page."
-                      extra={
-                        <Button
-                          type="primary"
-                          onClick={() => navigate("/login")}
-                        >
-                          Login Account
-                        </Button>
-                      }
-                    />
-                  </div>
-                )}
-              </>
-            )}
-            {page === "product" && permission_flag && (
-              <>
-                {permission_flag === "Y" || permission_flag === "D" ? (
-                  <Product currentUser={currentUser} />
-                ) : (
-                  <div>
-                    <Result
-                      status="403"
-                      title="403"
-                      subTitle="Sorry, you are not authorized to access this page."
-                      extra={
-                        <Button
-                          type="primary"
-                          onClick={() => navigate("/login")}
-                        >
-                          Login Account
-                        </Button>
-                      }
-                    />
-                  </div>
-                )}
-              </>
-            )}
-          </>
-        )}
-        <Footer
-          style={{
-            textAlign: "center",
-          }}
-        >
-          ©2024 Created by RadiSen
-        </Footer>
+        {page === "company" &&
+          (permission_flag === "Y" || permission_flag === "D" ? (
+            <Company currentUser={currentUser} />
+          ) : (
+            <Result status="403" title="403" subTitle="Unauthorized" />
+          ))}
+
+        {page === "product" &&
+          (permission_flag === "Y" || permission_flag === "D" ? (
+            <Product currentUser={currentUser} />
+          ) : (
+            <Result status="403" title="403" subTitle="Unauthorized" />
+          ))}
       </Space>
+      <Footer style={{ textAlign: "center" }}>©2024 Created by RadiSen</Footer>
     </Layout>
+  ) : (
+    <Result
+      status="403"
+      title="403"
+      subTitle="Sorry, you are not authorized to access this page."
+      extra={
+        <Button type="primary" onClick={() => navigate("/login")}>
+          Login
+        </Button>
+      }
+    />
   );
 }
 
