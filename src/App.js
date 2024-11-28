@@ -98,7 +98,13 @@ function App({ page, toggleTheme, isDarkMode }) {
           <Col span={12}>
             <Space size="large">
               <div style={{ textAlign: "center" }}>
-                <Image preview={false} src={Logo} alt="logo" width={100} />
+                <Image
+                  preview={false}
+                  src={Logo}
+                  alt="logo"
+                  width={100}
+                  onClick={() => navigate("/license")}
+                />
               </div>
               <Menu
                 theme="dark"
