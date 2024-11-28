@@ -118,9 +118,13 @@ const CompanyEdit = (props) => {
             >
               <Button>Cancel</Button>
             </Popconfirm>
-            <Button type="primary" onClick={() => form.submit()}>
-              Submit
-            </Button>
+            <Popconfirm
+              title="Are you sure to Edit?"
+              description="If you change the Unique Code or permission, confirmation is required!"
+              onConfirm={() => form.submit()}
+            >
+              <Button type="primary">Submit</Button>
+            </Popconfirm>
           </Space>
         }
       >

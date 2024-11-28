@@ -10,6 +10,7 @@ import {
   Space,
   Spin,
   Switch,
+  Tag,
 } from "antd";
 import { Footer, Header } from "antd/es/layout/layout";
 import { useNavigate } from "react-router-dom";
@@ -123,6 +124,24 @@ function App({ page, toggleTheme, isDarkMode }) {
             <Space>
               {isLoggedIn ? (
                 <Space>
+                  <Space>
+                    <div style={{ color: "white" }}>{currentUser.user_id}</div>
+                    <Tag
+                      color={
+                        permission_flag === "D"
+                          ? "red"
+                          : permission_flag === "Y"
+                          ? "blue"
+                          : "green"
+                      }
+                    >
+                      {permission_flag === "D"
+                        ? "Supervisor"
+                        : permission_flag === "Y"
+                        ? "Admin"
+                        : "Dealer"}
+                    </Tag>
+                  </Space>
                   <Button
                     onClick={() => {
                       // 저장된 토큰을 삭제합니다.
@@ -152,7 +171,7 @@ function App({ page, toggleTheme, isDarkMode }) {
             </Space>
           </Col>
         </Header>
-        <div></div>
+
         {/* 로그인 되어있지 않은 사용자의 경우 접근 제한 / 로그인 유도 */}
         {!isLoggedIn ? (
           <div>

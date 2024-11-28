@@ -512,7 +512,11 @@ const Company = (props) => {
                 showSizeChanger: true,
               }}
               columns={companyColumns}
-              dataSource={list}
+              dataSource={
+                props.currentUser.permission_flag === "D"
+                  ? list
+                  : list.filter((item) => item.permission_flag !== "D")
+              }
               scroll={{
                 x: "max-content",
               }}
