@@ -124,7 +124,11 @@ function App({ page, toggleTheme, isDarkMode }) {
             <Space>
               {isLoggedIn ? (
                 <Space>
-                  <Space>
+                  <Space
+                    style={{
+                      display: permission_flag === "N" ? "none" : "flex",
+                    }}
+                  >
                     <div style={{ color: "white" }}>{currentUser.user_id}</div>
                     <Tag
                       color={
