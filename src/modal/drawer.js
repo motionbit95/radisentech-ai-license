@@ -13,6 +13,7 @@ import {
   Space,
   Typography,
 } from "antd";
+import { CheckCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { AxiosGet, AxiosPut, log } from "../api";
 
@@ -26,10 +27,12 @@ const CompanyEdit = (props) => {
   const [product, setProduct] = useState([]);
   const [parsedProduct, setParsedProduct] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [isSelectedPermission, setIsSelectedPermission] = useState(false);
 
   useEffect(() => {
     console.log("모달에서 받은거는 ? > ", data);
     setSelectedProducts(data?.product);
+    setIsSelectedPermission(false);
   }, [data]);
 
   useEffect(() => {
@@ -53,18 +56,12 @@ const CompanyEdit = (props) => {
   };
   const onClose = () => {
     setOpen(false);
+    setIsSelectedPermission(false);
+    form.resetFields();
   };
 
   const onValuesChange = (changedValues) => {
     log("Changed values: ", changedValues);
-    // permission_flag 값이 변경되었을 경우만 처리
-    if (changedValues.permission_flag) {
-      log(
-        "Changed permission_flag: ",
-        data?.permission_flag,
-        changedValues.permission_flag
-      );
-    }
   };
 
   const onFinish = async (values) => {
@@ -285,16 +282,31 @@ const CompanyEdit = (props) => {
           {/* 슈퍼바이저 컨트롤러 */}
           {(props.permission_flag === "D" || props.permission_flag === "Y") && (
             <Row gutter={16}>
-              <Col span={24}>
-                <Form.Item name="permission_flag" label="Supervisor">
+              <Col>
+                <Form.Item name="permission_flag" label="Permission">
                   <Select
                     placeholder="Select permission type"
-                    style={{ width: "200px" }}
+                    onSelect={(e) => setIsSelectedPermission(e)}
+                    style={{
+                      width: "200px",
+                    }}
                   >
                     <Select.Option value="N">Delear</Select.Option>
                     <Select.Option value="Y">Admin</Select.Option>
                   </Select>
                 </Form.Item>
+                <Col
+                  style={{
+                    display: isSelectedPermission ? "block" : "none",
+                    alignContent: "center",
+                    marginTop: -16,
+                  }}
+                >
+                  <Space>
+                    <Typography.Text>Changed Permission</Typography.Text>
+                    <CheckCircleOutlined style={{ color: "green" }} />
+                  </Space>
+                </Col>
               </Col>
             </Row>
           )}
