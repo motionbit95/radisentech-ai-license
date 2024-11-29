@@ -179,6 +179,10 @@ const LicenseHistoryModal = (props) => {
         <Button
           disabled={text === 1 ? true : false}
           danger
+          size="small"
+          style={{
+            display: record.description === "Transfer" ? "none" : "block",
+          }}
           onClick={() => handleHistoryCancel(record)}
         >
           <CloseOutlined />
