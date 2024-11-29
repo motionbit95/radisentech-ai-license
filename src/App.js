@@ -37,6 +37,10 @@ function App({ page, toggleTheme, isDarkMode }) {
           setCurrentUser(response.data);
           setPermissionFlag(response.data.permission_flag);
           setIsLoggedIn(true);
+
+          if (isLoggedIn && response.data.permission_flag === "N") {
+            navigate("/license");
+          }
         }
       } catch (error) {
         if (error?.response?.status === 403) {

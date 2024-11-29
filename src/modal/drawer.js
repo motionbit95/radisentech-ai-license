@@ -19,8 +19,15 @@ import { AxiosGet, AxiosPut, log } from "../api";
 
 const CompanyEdit = (props) => {
   const navigate = useNavigate();
-  const { disabled, data, onComplete, setLoading, isLicense, isGenerate } =
-    props;
+  const {
+    disabled,
+    data,
+    onComplete,
+    setLoading,
+    isLicense,
+    isGenerate,
+    currentUser,
+  } = props;
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -280,36 +287,37 @@ const CompanyEdit = (props) => {
             </Select>
           </Form.Item>
           {/* 슈퍼바이저 컨트롤러 */}
-          {(props.permission_flag === "D" || props.permission_flag === "Y") && (
-            <Row gutter={16}>
-              <Col>
-                <Form.Item name="permission_flag" label="Permission">
-                  <Select
-                    placeholder="Select permission type"
-                    onSelect={(e) => setIsSelectedPermission(e)}
+          {(props.permission_flag === "D" || props.permission_flag === "Y") &&
+            currentUser.user_id !== data?.user_id && (
+              <Row gutter={16}>
+                <Col>
+                  <Form.Item name="permission_flag" label="Permission">
+                    <Select
+                      placeholder="Select permission type"
+                      onSelect={(e) => setIsSelectedPermission(e)}
+                      style={{
+                        width: "200px",
+                      }}
+                    >
+                      <Select.Option value="N">Delear</Select.Option>
+                      <Select.Option value="Y">Admin</Select.Option>
+                    </Select>
+                  </Form.Item>
+                  <Col
                     style={{
-                      width: "200px",
+                      display: isSelectedPermission ? "block" : "none",
+                      alignContent: "center",
+                      marginTop: -16,
                     }}
                   >
-                    <Select.Option value="N">Delear</Select.Option>
-                    <Select.Option value="Y">Admin</Select.Option>
-                  </Select>
-                </Form.Item>
-                <Col
-                  style={{
-                    display: isSelectedPermission ? "block" : "none",
-                    alignContent: "center",
-                    marginTop: -16,
-                  }}
-                >
-                  <Space>
-                    <Typography.Text>Changed Permission</Typography.Text>
-                    <CheckCircleOutlined style={{ color: "green" }} />
-                  </Space>
+                    <Space>
+                      <Typography.Text>Changed Permission</Typography.Text>
+                      <CheckCircleOutlined style={{ color: "green" }} />
+                    </Space>
+                  </Col>
                 </Col>
-              </Col>
-            </Row>
-          )}
+              </Row>
+            )}
         </Form>
       </Drawer>
     </>

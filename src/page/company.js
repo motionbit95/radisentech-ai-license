@@ -467,6 +467,7 @@ const Company = (props) => {
                       Cancel
                     </Button>
                     <CompanyEdit
+                      currentUser={props.currentUser}
                       disabled={
                         !hasSelected || selectedCompany?.permission_flag === "D"
                       }
