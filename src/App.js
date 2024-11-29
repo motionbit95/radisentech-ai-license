@@ -104,6 +104,7 @@ function App({ page, toggleTheme, isDarkMode }) {
                   alt="logo"
                   width={100}
                   onClick={() => navigate("/license")}
+                  style={{ cursor: "pointer" }}
                 />
               </div>
               <Menu
@@ -111,6 +112,7 @@ function App({ page, toggleTheme, isDarkMode }) {
                 mode="horizontal"
                 defaultSelectedKeys={page ? [page] : ["license"]}
                 items={items}
+                selectedKeys={[window.location.pathname.split("/").pop()]}
                 style={{ flex: 1, minWidth: 0 }}
                 onClick={({ key }) => {
                   navigate(`/${key}`);
