@@ -29,6 +29,7 @@ import ADDLicense from "../modal/add-license";
 import { AxiosGet, AxiosPut, log } from "../api";
 import ButtonGroup from "antd/es/button/button-group";
 import Product from "./product";
+import EditLicense from "../modal/edit-license";
 
 // 플러그인 초기화
 dayjs.extend(utc);
@@ -265,7 +266,7 @@ const License = (props) => {
   });
 
   const getCompanyCode = (company_name) => {
-    return list.find((item) => item.Company === company_name).UniqueCode;
+    return list.find((item) => item.Company === company_name)?.UniqueCode;
   };
 
   const getAIDescription = (ai_type) => {
@@ -282,12 +283,13 @@ const License = (props) => {
       width: 50,
     },
     {
-      title: "Company",
-      dataIndex: "Company",
-      key: "Company",
+      title: "Dealer Company",
+      dataIndex: "DealerCompany",
+      key: "DealerCompany",
       fixed: "left",
+
       sorter: (a, b) => {
-        return a.Company.localeCompare(b.Company);
+        return a.DealerCompany.localeCompare(b.DealerCompany);
       },
 
       render: (text) => (
@@ -298,6 +300,15 @@ const License = (props) => {
           </Tooltip>
         </Space>
       ),
+    },
+    {
+      title: "Company",
+      dataIndex: "Company",
+      key: "Company",
+      fixed: "left",
+      sorter: (a, b) => {
+        return a.Company.localeCompare(b.Company);
+      },
     },
     {
       title: "Activate Date Time",
@@ -540,32 +551,43 @@ const License = (props) => {
                   setSelectedRowKeys([]);
                 }}
               />
-              {props.currentUser.permission_flag === "D" && (
-                <ButtonGroup>
-                  <ADDLicense
-                    product={product}
-                    onAddFinish={() => updateLicenseList()}
-                  />
-                  {/* delete 상태 변경 */}
-                  <Popconfirm
-                    title="Are you sure to delete this license?"
-                    onConfirm={() => {
-                      deleteLicense();
-                      setSelectedRowKeys([]);
-                    }}
-                    okText="Yes"
-                    cancelText="No"
-                  >
-                    <Button
-                      danger
-                      disabled={!hasSelected || selectedLicense.Deleted === 1}
+              <Space>
+                <EditLicense
+                  data={selectedLicense}
+                  disabled={!hasSelected}
+                  onComplete={(data) => {
+                    updateLicenseList();
+                    setSelectedLicense(data);
+                    setSelectedRowKeys([]);
+                  }}
+                />
+                {props.currentUser.permission_flag === "D" && (
+                  <ButtonGroup>
+                    <ADDLicense
+                      product={product}
+                      onAddFinish={() => updateLicenseList()}
+                    />
+                    {/* delete 상태 변경 */}
+                    <Popconfirm
+                      title="Are you sure to delete this license?"
+                      onConfirm={() => {
+                        deleteLicense();
+                        setSelectedRowKeys([]);
+                      }}
+                      okText="Yes"
+                      cancelText="No"
                     >
-                      Delete
-                    </Button>
-                  </Popconfirm>
-                  {/* Lisence 추가 테스트용 */}
-                </ButtonGroup>
-              )}
+                      <Button
+                        danger
+                        disabled={!hasSelected || selectedLicense.Deleted === 1}
+                      >
+                        Delete
+                      </Button>
+                    </Popconfirm>
+                    {/* Lisence 추가 테스트용 */}
+                  </ButtonGroup>
+                )}
+              </Space>
             </Row>
           )}
           pagination={{

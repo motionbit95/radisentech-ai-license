@@ -4,9 +4,12 @@ import {
   Col,
   DatePicker,
   Descriptions,
+  Drawer,
   Form,
   Input,
   Layout,
+  message,
+  Popconfirm,
   Row,
   Select,
   Space,
@@ -18,7 +21,7 @@ import Highlighter from "react-highlight-words";
 import { InfoCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { AxiosGet, log } from "../api";
+import { AxiosGet, AxiosPut, log } from "../api";
 import IniFileDownload from "../component/button/download";
 
 const { Content } = Layout;
@@ -234,6 +237,7 @@ const License = (props) => {
       fixed: "left",
       width: 50,
     },
+
     {
       title: "Activate Date Time",
       dataIndex: "UTCActivateStartDate", // UTC 기준 데이터
@@ -350,6 +354,15 @@ const License = (props) => {
       },
     },
     {
+      title: "Company",
+      dataIndex: "Company",
+      key: "Company",
+
+      sorter: (a, b) => {
+        return a.Company.localeCompare(b.Company);
+      },
+    },
+    {
       title: "User Name",
       dataIndex: "UserName",
       key: "UserName",
@@ -379,6 +392,8 @@ const License = (props) => {
     selectedRowKeys,
     onChange: onSelectChange,
   };
+
+  const hasSelected = selectedRowKeys.length > 0;
 
   const applyFilters = (item) => {
     const { company, country, hospital, expire_date, AIType } = searchFilters;
@@ -411,8 +426,21 @@ const License = (props) => {
           onSearch={(filter) => setSearchFilters(filter)}
         />
         <Table
-          // rowSelection={rowSelection}
+          rowSelection={rowSelection}
           loading={loading}
+          title={() => (
+            <Row justify="end">
+              <EditDrawer
+                data={selectedLicense}
+                disabled={!hasSelected}
+                onComplete={(data) => {
+                  updateDealerLicenseList();
+                  setSelectedLicense(data);
+                  setSelectedRowKeys([]);
+                }}
+              />
+            </Row>
+          )}
           pagination={{
             defaultCurrent: 1,
             defaultPageSize: 10,
@@ -594,6 +622,155 @@ const AdvancedSearchForm = (props) => {
         </Space>
       </div>
     </Form>
+  );
+};
+
+const EditDrawer = (props) => {
+  const { data, disabled, onComplete } = props;
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const [form] = Form.useForm();
+
+  const showDrawer = () => {
+    setOpen(true);
+
+    // drawer가 열리면 필드값을 업데이트합니다.
+    form.setFieldsValue({ ...data });
+  };
+
+  const onFinish = async (values) => {
+    log("Received values of form: ", values);
+
+    try {
+      await AxiosPut(`/license/update-license/${data?.pk}`, {
+        Company: values.Company,
+        Hospital: values.Hospital,
+        Country: values.Country,
+        UserEmail: values.UserEmail,
+        UserName: values.UserName,
+      })
+        .then((result) => {
+          if (result.status === 200) {
+            setOpen(false);
+            onComplete(values);
+          }
+        })
+        .catch((error) => {
+          if (error.status === 403) {
+            navigate("/login");
+          }
+        });
+    } catch (error) {
+      message.error("Update failed. Please try again."); // 오류 메시지 표시
+    }
+  };
+
+  const onClose = () => {
+    setOpen(false);
+    form.resetFields();
+  };
+
+  return (
+    <>
+      <Button disabled={disabled} onClick={showDrawer}>
+        Edit
+      </Button>
+
+      {/* 수정 */}
+      <Drawer
+        title="Edit License"
+        onClose={onClose}
+        width={720}
+        open={open}
+        extra={
+          <Space>
+            <Popconfirm
+              title="Cancel this task?"
+              description="Are you sure to cancel this task?"
+              onConfirm={() => {
+                form.resetFields();
+                onClose();
+              }}
+              onCancel={() => {}}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button>Cancel</Button>
+            </Popconfirm>
+            <Popconfirm
+              title="Are you sure to Edit?"
+              onConfirm={() => form.submit()}
+            >
+              <Button type="primary">Submit</Button>
+            </Popconfirm>
+          </Space>
+        }
+      >
+        <Form
+          layout="vertical"
+          form={form}
+          initialValues={data}
+          onFinish={onFinish}
+        >
+          <Form.Item
+            name="Company"
+            label="Company"
+            rules={[{ required: true }]}
+          >
+            <Input />
+          </Form.Item>
+          <Row gutter={8}>
+            <Col span={12}>
+              <Form.Item
+                name="Hospital"
+                label="Hospital Name"
+                rules={[{ required: true }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="Country"
+                label="Country"
+                rules={[{ required: true }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={8}>
+            <Col span={12}>
+              <Form.Item
+                name="UserName"
+                label="User Name"
+                rules={[{ required: true }]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="UserEmail"
+                label="Email"
+                rules={[
+                  {
+                    type: "email",
+                    message: "The input is not valid E-mail!",
+                  },
+                  {
+                    required: true,
+                    message: "Please input your E-mail!",
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Drawer>
+    </>
   );
 };
 

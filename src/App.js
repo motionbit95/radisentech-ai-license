@@ -24,9 +24,9 @@ import { googleLogout } from "@react-oauth/google";
 function App({ page, toggleTheme, isDarkMode }) {
   const navigate = useNavigate();
   const [permission_flag, setPermissionFlag] = useState(""); // D: Developer, Y: Admin, N: Delear
-
-  const [currentUser, setCurrentUser] = useState({});
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState({});
+
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
 
   useEffect(() => {
