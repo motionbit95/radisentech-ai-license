@@ -592,6 +592,122 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
 });
 
 /**
+ * @openapi
+ * /license/update-license/{pk}:
+ *   put:
+ *     summary: Update user data
+ *     tags:
+ *       - License
+ *     parameters:
+ *       - in: path
+ *         name: pk
+ *         schema:
+ *           type: integer
+ *           description: License pk
+ *         required: true
+ *         description: License pk
+ *       - in: body
+ *         name: body
+ *         schema:
+ *           type: object
+ *           properties:
+ *             Country:
+ *               type: string
+ *             Hospital:
+ *               type: string
+ *             UserName:
+ *               type: string
+ *             UserEmail:
+ *               type: string
+ *         description: Update license data
+ *     responses:
+ *       200:
+ *         description: SUCCESS
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Database error
+ *       404:
+ *         description: LicenseManagement NOT FOUND
+ */
+router.put("/update-license/:pk", verifyToken, async (req, res) => {
+  const { pk } = req.params;
+  const { Company, Country, Hospital, UserName, UserEmail } = req.body;
+
+  // 요청 유효성 검사
+  if (!pk || !Company || !Country || !Hospital || !UserName || !UserEmail) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  let connection;
+
+  try {
+    // 데이터베이스 연결
+    connection = await getConnection();
+
+    // 업데이트 쿼리 작성
+    const updateQuery = `
+      UPDATE LicenseManagement
+      SET 
+        Country = ?, 
+        Hospital = ?, 
+        UserName = ?, 
+        UserEmail = ?, 
+        Company = ?
+      WHERE pk = ?
+    `;
+
+    // 현재 데이터 가져오기
+    const [currentRows] = await connection.execute(
+      "SELECT Country, Hospital, UserName, UserEmail, Company FROM LicenseManagement WHERE pk = ?",
+      [pk]
+    );
+
+    if (currentRows.length === 0) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    const currentData = currentRows[0];
+
+    // 변경 여부 확인
+    if (
+      currentData.Country === Country &&
+      currentData.Hospital === Hospital &&
+      currentData.UserName === UserName &&
+      currentData.UserEmail === UserEmail &&
+      currentData.Company === Company
+    ) {
+      return res
+        .status(402)
+        .json({ error: "No changes made. Data is the same." });
+    }
+
+    // 업데이트 실행
+    await connection.execute(updateQuery, [
+      Country,
+      Hospital,
+      UserName,
+      UserEmail,
+      Company,
+      pk,
+    ]);
+
+    res.status(200).json({
+      message: "User data updated successfully",
+    });
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    // 데이터베이스 연결 종료
+    if (connection) {
+      await connection.release();
+      console.log("Connection closed");
+    }
+  }
+});
+
+/**
  * @swagger
  * /license/withdrawal-subscription/{pk}:
  *   put:
