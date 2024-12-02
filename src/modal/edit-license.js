@@ -167,15 +167,6 @@ const EditLicense = (props) => {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item
-            name="DetectorSerialNumber"
-            label="S/N"
-            rules={[{ required: true }]}
-          >
-            <Col span={10}>
-              <Input disabled />
-            </Col>
-          </Form.Item>
         </Form>
       </Drawer>
     </>
