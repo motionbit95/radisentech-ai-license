@@ -21,7 +21,7 @@ import Highlighter from "react-highlight-words";
 import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import UpdateLicense from "../modal/expire";
 import UpdateHistoryModal from "../modal/update-history";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
@@ -64,11 +64,14 @@ const { Content } = Layout;
 
 const License = (props) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
   const [searchFilters, setSearchFilters] = useState({
+    AIType: undefined,
     company: undefined,
+    dealer_company: undefined,
     country: undefined,
     hospital: undefined,
     expire_date: undefined,
@@ -81,6 +84,23 @@ const License = (props) => {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [product, setProduct] = useState([]);
+
+  useEffect(() => {
+    // URLSearchParams로 쿼리 파라미터 파싱
+    const searchParams = new URLSearchParams(location.search);
+    const dealerCompany = searchParams.get("dealerCompany");
+
+    if (dealerCompany) {
+      console.log("Dealer Company:", decodeURIComponent(dealerCompany));
+      setSearchFilters((prevFilters) => ({
+        ...prevFilters,
+        dealer_company: decodeURIComponent(dealerCompany),
+      }));
+      // 필요한 추가 처리
+    } else {
+      console.log("Dealer Company 파라미터가 없습니다.");
+    }
+  }, [location.search]);
 
   useEffect(() => {
     // 페이지를 로드할 때 실행
@@ -291,7 +311,7 @@ const License = (props) => {
   });
 
   const getCompanyCode = (company_name) => {
-    return list.find((item) => item.Company === company_name)?.UniqueCode;
+    return list.find((item) => item.DealerCompany === company_name)?.UniqueCode;
   };
 
   const getAIDescription = (ai_type) => {
@@ -520,8 +540,15 @@ const License = (props) => {
   const hasSelected = selectedRowKeys.length > 0;
 
   const applyFilters = (item) => {
-    const { company, country, hospital, expire_date, deleted, AIType } =
-      searchFilters;
+    const {
+      company,
+      dealer_company,
+      country,
+      hospital,
+      expire_date,
+      deleted,
+      AIType,
+    } = searchFilters;
 
     log("item", item, searchFilters);
 
@@ -530,6 +557,8 @@ const License = (props) => {
       ((!deleted && item.Deleted === 0) || deleted) &&
       (!AIType || AIType?.includes(item?.AIType)) &&
       (!company || item.Company.toLowerCase().includes(company)) &&
+      (!dealer_company ||
+        item.DealerCompany.toLowerCase().includes(dealer_company)) &&
       (!country || item.Country.toLowerCase().includes(country)) &&
       (!hospital || item.Hospital.toLowerCase().includes(hospital)) &&
       (!expire_date ||
@@ -549,6 +578,7 @@ const License = (props) => {
           data={list}
           product={product}
           onSearch={(filter) => setSearchFilters(filter)}
+          searchFilters={searchFilters}
         />
         <Table
           rowClassName={(record) => (record.Deleted === 0 ? "" : "deleted-row")}
@@ -642,7 +672,17 @@ const AdvancedSearchForm = (props) => {
     padding: 24,
   };
 
+  useEffect(() => {
+    console.log(props.searchFilters);
+    form.setFieldsValue(props.searchFilters);
+  }, [props.searchFilters]);
+
   const handleSelectChange = (value) => {
+    // 'All'이 선택되었을 때, 다른 옵션이 선택되면 'All'을 제거
+    if (value.includes("all") && value.length > 1) {
+      value = value.filter((item) => item !== "all");
+    }
+
     const newValue = value.length === 0 ? undefined : value;
     form.setFieldsValue({ AIType: newValue });
   };
@@ -656,9 +696,11 @@ const AdvancedSearchForm = (props) => {
             mode="multiple"
             style={{ width: "100%" }}
             placeholder="Please select"
+            defaultValue={props.searchFilters?.AIType || ["all"]}
             onChange={handleSelectChange} // 선택 변경 시 실행
             allowClear
           >
+            <Select.Option value={"all"}>All</Select.Option>
             {props.product
               .map((item) => item.name)
               .map((item) => (
@@ -673,6 +715,13 @@ const AdvancedSearchForm = (props) => {
     children.push(
       <Col span={8} key={"company"}>
         <Form.Item name={`company`} label={`Company`}>
+          <Input placeholder="search..." />
+        </Form.Item>
+      </Col>
+    );
+    children.push(
+      <Col span={8} key={"dealer_company"}>
+        <Form.Item name={`dealer_company`} label={`Dealer Company`}>
           <Input placeholder="search..." />
         </Form.Item>
       </Col>

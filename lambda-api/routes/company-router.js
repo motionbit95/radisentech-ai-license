@@ -577,9 +577,10 @@ router.post("/check-user-email", async (req, res) => {
 });
 
 router.post("/account-validate", async (req, res) => {
-  const { user_id, email, phone } = req.body;
+  //# sjpark - 전화번호 유니크 하지 않도록 수정 요청(2024-12-03)
+  const { user_id, email } = req.body;
 
-  console.log(user_id, email, phone);
+  console.log(user_id, email);
 
   let connection;
   try {
@@ -589,11 +590,6 @@ router.post("/account-validate", async (req, res) => {
     const [isEmail] = await connection.execute(
       "SELECT * FROM company WHERE email = ?",
       [email]
-    );
-
-    const [isPhone] = await connection.execute(
-      "SELECT * FROM company WHERE phone = ?",
-      [phone]
     );
 
     const [isId] = await connection.execute(
@@ -607,10 +603,6 @@ router.post("/account-validate", async (req, res) => {
 
     if (isEmail.length > 0) {
       return res.status(401).json({ message: "Email already exists" });
-    }
-
-    if (isPhone.length > 0) {
-      return res.status(401).json({ message: "Phone already exists" });
     }
 
     return res.status(200).json({ message: "Account is available" });

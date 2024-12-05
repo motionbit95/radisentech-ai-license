@@ -33,9 +33,33 @@ const Product = (props) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false); // 로딩 플래그
 
+  const [hasActive, setHasActive] = useState(false);
+
   useEffect(() => {
     fetchProductList();
   }, []);
+
+  useEffect(() => {
+    const getIsActive = async () => {
+      try {
+        const response = await AxiosGet(
+          `/license/is-activated-aitype/${selectedProduct?.name} `
+        ); // 제품 목록을 불러오는 API 요청
+        console.log(response.status);
+        if (response.status === 200) {
+          // 등록된 AI Type이 있다는 뜻
+          setHasActive(true);
+        }
+      } catch (error) {
+        setHasActive(false);
+        console.error("Error fetching product list:", error);
+      }
+    };
+
+    if (selectedProduct) {
+      getIsActive();
+    }
+  }, [selectedProduct]);
 
   const fetchProductList = async () => {
     try {
@@ -311,7 +335,9 @@ const Product = (props) => {
                       okText="Yes"
                       cancelText="No"
                     >
-                      <Button disabled={!hasSelected}>Delete</Button>
+                      <Button disabled={!hasSelected || hasActive}>
+                        Delete
+                      </Button>
                     </Popconfirm>
                   </Space>
                 </Row>

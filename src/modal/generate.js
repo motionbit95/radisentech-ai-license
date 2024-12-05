@@ -4,6 +4,7 @@ import {
   Form,
   Input,
   InputNumber,
+  message,
   Modal,
   Popconfirm,
   Space,
@@ -27,6 +28,18 @@ const GenerateModal = (props) => {
   };
 
   const onFinish = (values) => {
+    if (
+      values.license_cnt < 0 &&
+      data?.license_cnt - data?.use_cnt < Math.abs(values.license_cnt)
+    ) {
+      message.error(
+        `You can't generate license more than ${
+          data?.license_cnt - data?.use_cnt
+        }`
+      );
+      return;
+    }
+
     setLoading(true);
     AxiosPut(`/company/update-license/${data?.id}`, {
       ...values,
@@ -57,7 +70,22 @@ const GenerateModal = (props) => {
         {title}
       </Button>
       <Modal
-        title={title}
+        title={
+          title
+          // <div
+          //   style={{
+          //     display: "flex",
+          //     justifyContent: "space-between",
+          //     marginTop: "20px",
+          //   }}
+          // >
+          //   <div>{title}</div>
+          //   <div>
+          //     {data?.use_cnt} / {data?.license_cnt - data?.use_cnt} /{" "}
+          //     {data.license_cnt}
+          //   </div>
+          // </div>
+        }
         centered
         open={modalOpen}
         onCancel={() => {

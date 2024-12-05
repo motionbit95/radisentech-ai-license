@@ -95,7 +95,7 @@ function App({ page, toggleTheme, isDarkMode }) {
   }
 
   return isLoggedIn ? (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout style={{ minHeight: "100vh", minWidth: "1100px" }}>
       <Space size={"large"} direction="vertical">
         {/* 헤더 */}
         <Header style={{ display: "flex", alignItems: "center" }}>

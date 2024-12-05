@@ -592,7 +592,7 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
 });
 
 /**
- * @openapi
+ * @swagger
  * /license/update-license/{pk}:
  *   put:
  *     summary: Update user data
@@ -828,6 +828,64 @@ router.get("/license-history/:pk", verifyToken, async (req, res) => {
   }
 });
 
-// 라이센스 남은 수량 체크
+/**
+ * @swagger
+ * /license/is-activated-aitype/{AIType}:
+ *   get:
+ *     summary: license_history
+ *     description: 특정 AIType의 변경 이력 조회
+ *     tags: [License]
+ *     parameters:
+ *       - in: path
+ *         name: AIType
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: AIType
+ *     responses:
+ *       200:
+ *         description: SUCCESS
+ *       400:
+ *         description: Bad Request
+ *       500:
+ *         description: Database error
+ *       404:
+ *         description: license_history NOT FOUND
+ * */
+router.get("/is-activated-aitype/:AIType", verifyToken, async (req, res) => {
+  const { AIType } = req.params;
+
+  let connection;
+
+  try {
+    // 데이터베이스 연결
+    connection = await getConnection();
+
+    // LicenseManagement에서 발급된 AIType이 있는지 조회(현재 활성화 되어있는 리스트 중)
+    const [rows] = await connection.execute(
+      "SELECT * FROM LicenseManagement WHERE AIType = ? AND Deleted = 0",
+      [AIType]
+    );
+
+    // 발급되지 않았다면 404
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No history found for this license." });
+    }
+
+    // 발급된것이 있다면 리스트로 전달
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    // 데이터베이스 연결 종료
+    if (connection) {
+      await connection.release();
+      console.log("Connection closed");
+    }
+  }
+});
 
 module.exports = router;

@@ -24,6 +24,7 @@ import LicenseHistoryModal from "../modal/license-history";
 import { AxiosDelete, AxiosGet, AxiosPost, log } from "../api";
 import IniFileDownload from "../component/button/download";
 import CompanyTransfer from "../modal/company-copy";
+import { render } from "@testing-library/react";
 
 const { Content } = Layout;
 
@@ -294,7 +295,7 @@ const Company = (props) => {
       ...getColumnSearchProps("email"),
     },
     {
-      title: "Company",
+      title: "Dealer Company",
       dataIndex: "company_name",
       key: "company_name",
 
@@ -386,6 +387,20 @@ const Company = (props) => {
             }}
           />
         </Space>
+      ),
+    },
+    {
+      title: "Search",
+      fixed: "right",
+      render: (text, record, index) => (
+        <Button
+          onClick={() => {
+            console.log(record.company_name);
+            const encodedCompanyName = encodeURIComponent(record.company_name);
+            navigate(`/license?dealerCompany=${encodedCompanyName}`);
+          }}
+          icon={<SearchOutlined />}
+        />
       ),
     },
   ];
