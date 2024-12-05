@@ -74,11 +74,10 @@ const SignUp = () => {
         }
       : values;
 
-    // 아이디, 이메일, 전화번호 중복 체크
+    // 아이디, 이메일 중복 체크
     AxiosPost("/company/account-validate", {
       user_id: data.user_id,
       email: data.email,
-      phone: data.phone,
     })
       .then((response) => {
         if (response.status === 200) {

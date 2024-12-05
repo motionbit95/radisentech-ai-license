@@ -678,9 +678,15 @@ const AdvancedSearchForm = (props) => {
   }, [props.searchFilters]);
 
   const handleSelectChange = (value) => {
-    // 'All'이 선택되었을 때, 다른 옵션이 선택되면 'All'을 제거
-    if (value.includes("all") && value.length > 1) {
-      value = value.filter((item) => item !== "all");
+    // 'All'이 선택되었을 때, 다른 항목이 선택되면 'All'을 제거
+    if (value.includes("all")) {
+      if (value.length === 1) {
+        // 'All'만 선택된 경우: 모든 항목을 선택
+        value = props.product.map((item) => item.name);
+      } else {
+        // 'All'과 다른 항목이 선택된 경우: 'All'을 제거
+        value = value.filter((item) => item !== "all");
+      }
     }
 
     const newValue = value.length === 0 ? undefined : value;
