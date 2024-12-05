@@ -182,7 +182,12 @@ function App({ page, toggleTheme, isDarkMode }) {
             <Result status="403" title="403" subTitle="Unauthorized" />
           ))}
       </Space>
-      <Footer style={{ textAlign: "center" }}>©2024 Created by RadiSen</Footer>
+      <Footer style={{ textAlign: "center" }}>
+        ©2024 Created by{" "}
+        <a style={{ fontStyle: "italic" }} href="https://www.radisentech.com/">
+          RadiSen
+        </a>
+      </Footer>
     </Layout>
   ) : (
     <Result

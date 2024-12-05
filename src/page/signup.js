@@ -445,19 +445,19 @@ const SignUp = () => {
                 required: true,
                 message: "Please input your phone number!",
               },
-              {
-                validator: (_, value) => {
-                  const phoneRegex = /^\d+$/; // 숫자만 허용
-                  if (!value || phoneRegex.test(value)) {
-                    return Promise.resolve();
-                  }
-                  return Promise.reject(
-                    new Error(
-                      "Please enter a valid phone number (numbers only)!"
-                    )
-                  );
-                },
-              },
+              // {
+              //   validator: (_, value) => {
+              //     const phoneRegex = /^\d+$/; // 숫자만 허용
+              //     if (!value || phoneRegex.test(value)) {
+              //       return Promise.resolve();
+              //     }
+              //     return Promise.reject(
+              //       new Error(
+              //         "Please enter a valid phone number (numbers only)!"
+              //       )
+              //     );
+              //   },
+              // },
             ]}
           >
             <Input className="w-full" />
