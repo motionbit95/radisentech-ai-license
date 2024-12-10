@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   Checkbox,
@@ -7,13 +7,12 @@ import {
   Input,
   Result,
   Row,
-  Select,
   Spin,
   message,
 } from "antd";
 import { SmileOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AxiosGet, AxiosPost, log } from "../api";
+import { AxiosPost } from "../api";
 import Agreement from "../modal/agreement";
 
 const formItemLayout = {
@@ -61,7 +60,6 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
 
   const onFinish = (values) => {
-    log("Received values of form: ", user ? { ...values, ...user } : values);
     setLoading(true);
 
     const data = user
@@ -81,8 +79,6 @@ const SignUp = () => {
     })
       .then((response) => {
         if (response.status === 200) {
-          console.log(response.data);
-
           // 구글 로그인시에는 생략
           if (!user && !isCheckedEmail) {
             messageApi.error("Please verify your email.");
@@ -166,7 +162,7 @@ const SignUp = () => {
       .catch((error) => {
         // 코드 인증 시간이 만료가 되었거나 코드가 틀렸을 시 발생
         if (error.response.data.error === "Invalid authentication code") {
-          console.log(error.response.data.error);
+          console.error(error.response.data.error);
           messageApi.error(error.response.data.error);
           setLoading(false);
         } else {

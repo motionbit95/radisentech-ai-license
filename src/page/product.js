@@ -14,7 +14,7 @@ import Highlighter from "react-highlight-words";
 import { SearchOutlined } from "@ant-design/icons";
 import CompanyEdit from "../modal/drawer";
 import { useNavigate } from "react-router-dom";
-import { AxiosDelete, AxiosGet, log } from "../api";
+import { AxiosDelete, AxiosGet } from "../api";
 import ProductEdit from "../modal/product-Edit";
 import ProductAdd from "../modal/product-Add";
 import dayjs from "dayjs";
@@ -45,7 +45,6 @@ const Product = (props) => {
         const response = await AxiosGet(
           `/license/is-activated-aitype/${selectedProduct?.name} `
         ); // 제품 목록을 불러오는 API 요청
-        console.log(response.status);
         if (response.status === 200) {
           // 등록된 AI Type이 있다는 뜻
           setHasActive(true);
@@ -110,7 +109,6 @@ const Product = (props) => {
   };
 
   const handleChange = (pagination, filters, sorter) => {
-    log("Various parameters", pagination, filters, sorter);
     setFilteredInfo(filters);
     setSortedInfo(sorter);
   };
@@ -184,9 +182,7 @@ const Product = (props) => {
       />
     ),
     onFilter: (value, record) =>
-      (record[dataIndex] ? record[dataIndex].toString() : "")
-        .toLowerCase()
-        .includes(value.toLowerCase()),
+      (record[dataIndex] ? record[dataIndex].toString() : "").includes(value),
     onFilterDropdownOpenChange: (visible) => {
       if (visible) {
         setTimeout(() => searchInput.current?.select(), 100);
@@ -262,9 +258,7 @@ const Product = (props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const onSelectChange = (newSelectedRowKeys) => {
-    log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
-    log(list.find((c) => c.key === newSelectedRowKeys[0]));
     setSelectedProduct(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 

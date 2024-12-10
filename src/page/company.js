@@ -21,10 +21,9 @@ import GenerateModal from "../modal/generate";
 import CompanyEdit from "../modal/drawer";
 import { useNavigate } from "react-router-dom";
 import LicenseHistoryModal from "../modal/license-history";
-import { AxiosDelete, AxiosGet, AxiosPost, log } from "../api";
+import { AxiosDelete, AxiosGet } from "../api";
 import IniFileDownload from "../component/button/download";
 import CompanyTransfer from "../modal/company-copy";
-import { render } from "@testing-library/react";
 
 const { Content } = Layout;
 
@@ -50,42 +49,23 @@ const Company = (props) => {
     setLoading(true);
     try {
       const result = await AxiosGet("/company/list");
-
       if (result.status === 200) {
-        let newArr = await Promise.all(
+        const newArr = await Promise.all(
           result.data.map(async (item, index) => {
             const res = await AxiosGet(`/license/list/${item.unique_code}`);
-            if (res.status === 200) {
-              return {
-                ...item,
-                use_cnt: res.data.data.length || 0,
-                key: item.user_id,
-                originalIndex: index, // 원래 인덱스 저장
-              };
-            } else {
-              return {
-                ...item,
-                use_cnt: 0,
-                key: item.user_id,
-                originalIndex: index,
-              };
-            }
+            return {
+              ...item,
+              use_cnt: res?.data?.data?.length || 0,
+              key: item.user_id,
+              originalIndex: index, // 정렬 유지
+            };
           })
         );
-
-        // 원래 인덱스 순서대로 정렬
-        newArr.sort((a, b) => a.originalIndex - b.originalIndex);
-        setList(newArr); // 정렬된 배열로 설정
-      } else {
-        throw new Error("Unauthorized");
+        setList(newArr.sort((a, b) => a.originalIndex - b.originalIndex));
       }
     } catch (error) {
-      if (error.response?.status === 403) {
-        navigate("/login");
-      } else {
-        console.error("Error:", error.message);
-        setError(error);
-      }
+      if (error.response?.status === 403) navigate("/login");
+      setError(error);
     } finally {
       setLoading(false);
     }
@@ -123,7 +103,6 @@ const Company = (props) => {
   };
 
   const handleChange = (pagination, filters, sorter) => {
-    log("Various parameters", pagination, filters, sorter);
     setFilteredInfo(filters);
     setSortedInfo(sorter);
   };
@@ -197,9 +176,7 @@ const Company = (props) => {
       />
     ),
     onFilter: (value, record) =>
-      (record[dataIndex] ? record[dataIndex].toString() : "")
-        .toLowerCase()
-        .includes(value.toLowerCase()),
+      (record[dataIndex] ? record[dataIndex].toString() : "").includes(value),
     onFilterDropdownOpenChange: (visible) => {
       if (visible) {
         setTimeout(() => searchInput.current?.select(), 100);
@@ -222,26 +199,14 @@ const Company = (props) => {
   });
 
   const getColumnFilterProps = (dataIndex) => ({
-    filteredValue: filteredInfo[dataIndex] || [],
-    onFilter: (value, record) => record[dataIndex] === value,
-    filterSearch: true,
-    ellipsis: true,
-    // filters: list // filter options 설정
-    //   .map((item) => item[dataIndex])
-    //   .filter((value, index, self) => self.indexOf(value) === index)
-    //   .map((value) => ({ text: value, value })),
     filters: list
       .map((item) => item[dataIndex])
       .filter((value, index, self) => self.indexOf(value) === index)
       .map((value) => ({
-        text:
-          value.toString() === "D"
-            ? "Supervisor"
-            : value === "Y"
-            ? "Admin"
-            : "Dealer",
+        text: value === "D" ? "Supervisor" : value === "Y" ? "Admin" : "Dealer",
         value,
       })),
+    onFilter: (value, record) => record[dataIndex] === value,
   });
 
   // table column
@@ -339,33 +304,18 @@ const Company = (props) => {
       key: "phone",
       ...getColumnSearchProps("phone"),
     },
-    ...(props.currentUser.permission_flag === "D" ||
-    props.currentUser.permission_flag === "Y"
-      ? [
-          {
-            title: "Permission",
-            dataIndex: "permission_flag",
-            key: "permission_flag",
-            render: (text) => (
-              <Tag
-                color={text === "D" ? "red" : text === "Y" ? "blue" : "green"}
-              >
-                {text === "D"
-                  ? "Supervisor"
-                  : text === "Y"
-                  ? "Admin"
-                  : "Dealer"}
-              </Tag>
-            ),
+    {
+      title: "Permission",
+      dataIndex: "permission_flag",
+      key: "permission_flag",
+      render: (text) => (
+        <Tag color={text === "D" ? "red" : text === "Y" ? "blue" : "green"}>
+          {text === "D" ? "Supervisor" : text === "Y" ? "Admin" : "Dealer"}
+        </Tag>
+      ),
 
-            sorter: (a, b) => {
-              return a.permission_flag.localeCompare(b.permission_flag);
-            },
-
-            ...getColumnFilterProps("permission_flag"),
-          },
-        ]
-      : []),
+      ...getColumnFilterProps("permission_flag"),
+    },
     {
       title: "License\n[Use/Rem/Tot]",
       dataIndex: "license_cnt",
@@ -392,9 +342,7 @@ const Company = (props) => {
       render: (text, record, index) => (
         <Button
           onClick={() => {
-            console.log(record.company_name);
             const encodedCompanyName = encodeURIComponent(record.company_name);
-            // navigate(`/license?dealerCompany=${encodedCompanyName}`);
             window.location.href = `/license?dealerCompany=${encodedCompanyName}`;
           }}
           icon={<SearchOutlined />}
@@ -406,9 +354,7 @@ const Company = (props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const onSelectChange = (newSelectedRowKeys) => {
-    log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
-    log(list.find((c) => c.key === newSelectedRowKeys[0]));
     setSelectedCompany(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 

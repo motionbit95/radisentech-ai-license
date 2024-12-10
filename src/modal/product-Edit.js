@@ -1,17 +1,7 @@
 import React, { useState } from "react";
-import {
-  Button,
-  Col,
-  Drawer,
-  Form,
-  Input,
-  Popconfirm,
-  Row,
-  Select,
-  Space,
-} from "antd";
+import { Button, Col, Drawer, Form, Input, Popconfirm, Row, Space } from "antd";
 import { useNavigate } from "react-router-dom";
-import { AxiosPut, log } from "../api";
+import { AxiosPut } from "../api";
 
 const ProductEdit = (props) => {
   const navigate = useNavigate();
@@ -29,12 +19,7 @@ const ProductEdit = (props) => {
     setOpen(false);
   };
 
-  const onValuesChange = (changedValues) => {
-    log("Changed values: ", changedValues);
-  };
-
   const onFinish = async (values) => {
-    log("Received values of form: ", values, data);
     setLoading(true);
 
     await AxiosPut(`/product/update/${data?.id}`, {
@@ -95,7 +80,6 @@ const ProductEdit = (props) => {
           initialValues={data}
           form={form}
           onFinish={onFinish}
-          onValuesChange={onValuesChange}
         >
           <Row gutter={16}>
             <Col span={12}>

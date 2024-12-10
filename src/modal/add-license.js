@@ -10,7 +10,7 @@ import {
   message,
 } from "antd";
 import React, { useState } from "react";
-import { AxiosPost, log } from "../api";
+import { AxiosPost } from "../api";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 
@@ -21,7 +21,6 @@ const ADDLicense = (props) => {
 
   // 라이선스 추가 요청 함수
   const addLicense = async (values) => {
-    log("Received values of form: ", values.date_range);
     // 시간 데이터 변환
     const dates = {
       LocalActivateStartDate: values.date_range[0].format(
@@ -31,8 +30,6 @@ const ADDLicense = (props) => {
       UTCActivateStartDate: values.date_range[0].toDate(),
       UTCTerminateDate: values.date_range[1].toDate(),
     };
-
-    log(dates);
 
     try {
       // 추가 요청

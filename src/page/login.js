@@ -9,16 +9,14 @@ import {
   Col,
   message,
   Divider,
-  Image,
   Space,
   Card,
   theme,
 } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "antd/es/form/Form";
-import { AxiosPost, log } from "../api";
+import { AxiosPost } from "../api";
 import GoogleLoginButton from "../component/button/google-login";
-import Logo from "../asset/logo.svg";
 const LoginForm = () => {
   const [form] = useForm();
   const navigate = useNavigate();
@@ -28,19 +26,9 @@ const LoginForm = () => {
   } = theme.useToken();
 
   const onFinish = (values) => {
-    log(
-      "Received values of form: ",
-      values
-      // JSON.stringify({
-      //   username: values.user_id,
-      //   password: values.password,
-      // })
-    );
-
     AxiosPost("/company/login", values)
       .then((result) => {
         // 로그인 성공
-        log(result);
         localStorage.setItem("token", result.data.token);
         navigate("/license", { state: { isLoggedIn: true } });
       })

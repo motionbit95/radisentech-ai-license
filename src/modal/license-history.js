@@ -4,17 +4,17 @@ import {
   Col,
   Descriptions,
   Modal,
-  Row,
   Space,
   Table,
   Tag,
   Typography,
   message,
 } from "antd";
-import { AxiosGet, AxiosPost, AxiosPut, log } from "../api";
+import { AxiosGet, AxiosPost, AxiosPut } from "../api";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import { CloseOutlined } from "@ant-design/icons";
+
 const LicenseHistoryModal = (props) => {
   const navigate = useNavigate();
   const { title, data, onCancel } = props;
@@ -46,7 +46,6 @@ const LicenseHistoryModal = (props) => {
     try {
       const result = await AxiosGet(`/company/license-cnt/${data?.id}`);
       if (result.status === 200) {
-        console.log("cnt : ", result.data);
         setLicenseCnt(result.data);
         // setHistoryList(result.data);
       }
@@ -71,7 +70,6 @@ const LicenseHistoryModal = (props) => {
       }).then((response) => {
         if (response?.status === 201) {
           // 발급된 것이 없음
-          console.log("response", response.data);
           setFilteredUsedLicenseCnt(0);
         } else {
           setFilteredUsedLicenseCnt(response.data.length);
@@ -87,10 +85,7 @@ const LicenseHistoryModal = (props) => {
   useEffect(() => {
     // 여기서 리스트 가지고 오기
     if (selectedAIType) {
-      console.log("selectedAIType", selectedAIType);
-      console.log("licenseCnt", licenseCnt);
       let data = licenseCnt.filter((item) => item.ai_type === selectedAIType);
-      console.log("data", data[0]?.license_cnt);
       if (data[0]?.license_cnt > 0) {
         setFilteredTotalLicenseCnt(data[0]?.license_cnt);
       } else {
@@ -101,7 +96,6 @@ const LicenseHistoryModal = (props) => {
   }, [selectedAIType, licenseCnt]);
 
   const fetchHistoryList = async (data) => {
-    log("data", data);
     setLoading(true);
     if (data) {
       try {
@@ -154,8 +148,6 @@ const LicenseHistoryModal = (props) => {
 
   const handleHistoryCancel = (history) => {
     // 여기도 라이센스 수에 따라 처리해야함
-    console.log(history.ai_type);
-    // 라이센스 가지고 오기
     let ai_license = licenseCnt.find(
       (item) => item.ai_type === history.ai_type
     );
@@ -172,8 +164,7 @@ const LicenseHistoryModal = (props) => {
         used_license_cnt = response.data.length;
       }
     });
-    console.log("total_license_cnt", total_license_cnt);
-    console.log("used_license_cnt", used_license_cnt);
+
     if (
       total_license_cnt - used_license_cnt <
       history.new_cnt - history.prev_cnt
@@ -197,30 +188,13 @@ const LicenseHistoryModal = (props) => {
           setLoading(false);
         })
         .catch((error) => {
-          log(error);
+          console.error(error);
           setLoading(false);
         });
     } else {
       AxiosGet("/company/user-info")
         .then((response) => {
           if (response.status === 200) {
-            console.log("history", history);
-            // AxiosPost("/company/update-license-cnt", {
-            //   license_cnt: -history?.new_cnt,
-            //   company_pk: data.id,
-            //   ai_type: history?.ai_type,
-            // })
-            //   .then((response) => {
-            //     if (response.status === 200) {
-            //       console.log(response.data);
-            //     }
-            //   })
-            //   .catch((error) => {
-            //     console.log(error);
-            //   });
-
-            console.log(">>", response.data?.unique_code);
-
             AxiosPut(`/company/update-license/${data.id}`, {
               license_cnt: history?.prev_cnt - history?.new_cnt,
               description: "Generated Canceled",
@@ -230,12 +204,10 @@ const LicenseHistoryModal = (props) => {
               company_pk: data.id,
             })
               .then((response) => {
-                log(response);
                 setLoading(true);
                 AxiosPut(`/company/history-cancel/${history?.id}`, {
                   canceled: 1,
                 }).then((response) => {
-                  log(response);
                   // 히스토리 데이터는 부모 테이블에서 받아온 데이터 기준으로 다시 받아와야하므로 props로 받아온 데이터를 넘긴다
                   // 여기 함수에서 받은 data는 X 버튼을 클릭한 행의 데이터임.
                   fetchHistoryList(props.data);
@@ -244,7 +216,7 @@ const LicenseHistoryModal = (props) => {
                 });
               })
               .catch((error) => {
-                log(error);
+                console.error(error);
                 setLoading(false);
               });
 
@@ -252,7 +224,7 @@ const LicenseHistoryModal = (props) => {
           }
         })
         .catch((error) => {
-          log(error);
+          console.error(error);
           setLoading(false);
         });
     }

@@ -9,9 +9,9 @@ import {
   Row,
   Space,
 } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AxiosPut, log } from "../api";
+import { AxiosPut } from "../api";
 
 const EditLicense = (props) => {
   const { data, disabled, onComplete } = props;
@@ -20,8 +20,6 @@ const EditLicense = (props) => {
   const [form] = Form.useForm();
 
   const onFinish = async (values) => {
-    log("Received values of form: ", values);
-
     try {
       await AxiosPut(`/license/update-license/${data?.pk}`, {
         Company: values.Company,

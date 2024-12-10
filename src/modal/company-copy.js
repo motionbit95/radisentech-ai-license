@@ -13,7 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
-import { AxiosGet, AxiosPost, log } from "../api";
+import { AxiosGet, AxiosPost } from "../api";
 
 const CompanyTransfer = (props) => {
   const navigate = useNavigate();
@@ -147,9 +147,7 @@ const CompanyTransfer = (props) => {
       />
     ),
     onFilter: (value, record) =>
-      (record[dataIndex] ? record[dataIndex].toString() : "")
-        .toLowerCase()
-        .includes(value.toLowerCase()),
+      (record[dataIndex] ? record[dataIndex].toString() : "").includes(value),
     onFilterDropdownOpenChange: (visible) => {
       if (visible) {
         setTimeout(() => searchInput.current?.select(), 100);
@@ -271,9 +269,7 @@ const CompanyTransfer = (props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const onSelectChange = (newSelectedRowKeys) => {
-    log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
-    log(list.find((c) => c.key === newSelectedRowKeys[0]));
     setSelectedCopyCompany(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 

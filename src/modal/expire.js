@@ -9,7 +9,8 @@ import {
   message,
 } from "antd";
 import dayjs from "dayjs";
-import { AxiosPut, log } from "../api";
+import { AxiosPut } from "../api";
+
 const UpdateLicense = (props) => {
   const { title, type, disabled, data, onComplete, onCancel } = props;
   const [modalOpen, setModalOpen] = useState(false);
@@ -44,8 +45,6 @@ const UpdateLicense = (props) => {
   };
 
   const onFinish = async (values) => {
-    log("Received values of form: ", values);
-
     try {
       const { expire_date } = values; // 폼에서 가져온 expire_date
       const pk = data.pk; // data에서 pk 가져오기
@@ -68,7 +67,7 @@ const UpdateLicense = (props) => {
           form.resetFields();
         })
         .catch((error) => {
-          log(error);
+          console.error(error);
         });
     } catch (error) {
       message.error("Update failed. Please try again."); // 오류 메시지 표시

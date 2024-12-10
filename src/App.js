@@ -9,17 +9,15 @@ import {
   Result,
   Space,
   Spin,
-  Switch,
   Tag,
 } from "antd";
 import { Footer, Header } from "antd/es/layout/layout";
 import { useNavigate } from "react-router-dom";
 import Company from "./page/company";
 import LicenseDealer from "./page/license-dealer";
-import { AxiosGet, log } from "./api";
+import { AxiosGet } from "./api";
 import Product from "./page/product";
 import Logo from "./asset/logo-black.svg";
-import { googleLogout } from "@react-oauth/google";
 
 function App({ page, toggleTheme, isDarkMode }) {
   const navigate = useNavigate();

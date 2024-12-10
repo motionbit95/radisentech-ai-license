@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Button,
-  Checkbox,
   Col,
   Drawer,
   Form,
@@ -15,7 +14,7 @@ import {
 } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { AxiosGet, AxiosPut, log } from "../api";
+import { AxiosGet, AxiosPut } from "../api";
 
 const CompanyEdit = (props) => {
   const navigate = useNavigate();
@@ -37,7 +36,6 @@ const CompanyEdit = (props) => {
   const [isSelectedPermission, setIsSelectedPermission] = useState(false);
 
   useEffect(() => {
-    console.log("모달에서 받은거는 ? > ", data);
     setSelectedProducts(data?.product);
     setIsSelectedPermission(false);
   }, [data]);
@@ -67,15 +65,8 @@ const CompanyEdit = (props) => {
     form.resetFields();
   };
 
-  const onValuesChange = (changedValues) => {
-    log("Changed values: ", changedValues);
-  };
-
   const onFinish = async (values) => {
-    log("Received values of form: ", values);
     setLoading(true);
-
-    log("여기서 받습니다", selectedProducts);
 
     await AxiosPut(`/company/update/${data?.id}`, {
       permission_flag: data?.permission_flag,
@@ -147,7 +138,6 @@ const CompanyEdit = (props) => {
           // initialValues={data}
           form={form}
           onFinish={onFinish}
-          onValuesChange={onValuesChange}
         >
           <Row gutter={16}>
             <Col span={24}>

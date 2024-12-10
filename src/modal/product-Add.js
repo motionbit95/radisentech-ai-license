@@ -1,16 +1,6 @@
-import {
-  Button,
-  Col,
-  DatePicker,
-  Form,
-  Input,
-  Modal,
-  Row,
-  message,
-} from "antd";
+import { Button, Form, Input, Modal, message } from "antd";
 import React, { useState } from "react";
-import { AxiosPost, log } from "../api";
-import dayjs from "dayjs";
+import { AxiosPost } from "../api";
 import { useNavigate } from "react-router-dom";
 
 const ProductAdd = (props) => {

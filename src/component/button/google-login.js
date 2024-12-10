@@ -1,21 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { Col, message, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
-import { AxiosGet, AxiosPost, log } from "../../api";
+import { AxiosPost } from "../../api";
 
 function GoogleLoginButton() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    console.log(localStorage.getItem("token"));
-  }, []);
-
   const handleLoginSuccess = async (credentialResponse) => {
     const { credential } = credentialResponse;
 
-    console.log(credential);
     setLoading(true);
 
     try {
@@ -29,7 +24,6 @@ function GoogleLoginButton() {
             user_id: response.data.user.id,
           })
             .then((res) => {
-              console.log(res);
               if (res.status === 200) {
                 // 구글 로그인 성공
                 AxiosPost("/company/login", {
@@ -102,7 +96,7 @@ function GoogleLoginButton() {
           // useOneTap={false}
           locale="en"
           onSuccess={handleLoginSuccess}
-          onError={() => console.log("로그인 오류")}
+          onError={() => console.error("로그인 오류")}
         />
       </Col>
     </GoogleOAuthProvider>

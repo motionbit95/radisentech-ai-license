@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Modal, Table, message } from "antd";
-import { AxiosGet, log } from "../api";
+import { AxiosGet } from "../api";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 
@@ -35,7 +35,6 @@ const UpdateHistoryModal = (props) => {
   };
 
   const showModal = () => {
-    log("data", data);
     setIsModalOpen(true);
     fetchUpdateHistory(data);
   };

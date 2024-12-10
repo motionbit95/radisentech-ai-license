@@ -26,7 +26,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import ADDLicense from "../modal/add-license";
-import { AxiosGet, AxiosPut, log } from "../api";
+import { AxiosGet, AxiosPut } from "../api";
 import ButtonGroup from "antd/es/button/button-group";
 import Product from "./product";
 import EditLicense from "../modal/edit-license";
@@ -94,14 +94,11 @@ const License = (props) => {
     const dealerCompany = searchParams.get("dealerCompany");
 
     if (dealerCompany) {
-      console.log("Dealer Company:", decodeURIComponent(dealerCompany));
       setSearchFilters((prevFilters) => ({
         ...prevFilters,
         dealer_company: decodeURIComponent(dealerCompany),
       }));
       // 필요한 추가 처리
-    } else {
-      console.log("Dealer Company 파라미터가 없습니다.");
     }
   }, [location.search]);
 
@@ -151,7 +148,6 @@ const License = (props) => {
       setLoading(true);
       AxiosPut(`/license/withdrawal-subscription/${selectedLicense.pk}`)
         .then((result) => {
-          log(result);
           if (result.status === 200) {
             updateLicenseList();
             setSelectedLicense(null);
@@ -159,7 +155,7 @@ const License = (props) => {
           }
         })
         .catch((error) => {
-          log(error);
+          console.error(error);
           if (error.status === 403) {
             navigate("/login");
           }
@@ -178,7 +174,6 @@ const License = (props) => {
   };
 
   const handleChange = (pagination, filters, sorter) => {
-    log("Various parameters", pagination, filters, sorter);
     setFilteredInfo(filters);
     setSortedInfo(sorter);
   };
@@ -252,9 +247,7 @@ const License = (props) => {
       />
     ),
     onFilter: (value, record) =>
-      (record[dataIndex] ? record[dataIndex].toString() : "")
-        .toLowerCase()
-        .includes(value.toLowerCase()),
+      (record[dataIndex] ? record[dataIndex].toString() : "").includes(value),
 
     onFilterDropdownOpenChange: (visible) => {
       if (visible) {
@@ -511,9 +504,7 @@ const License = (props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const onSelectChange = (newSelectedRowKeys) => {
-    log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
-    log(list.find((c) => c.key === newSelectedRowKeys[0]));
     setSelectedLicense(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 
@@ -755,12 +746,10 @@ const AdvancedSearchForm = (props) => {
     return children;
   };
   const onFinish = (values) => {
-    log("Received values of form: ", values);
-
     // 모든 검색 값들을 소문자로 변환
     const normalizedFilters = Object.fromEntries(
       Object.entries(values).map(([key, value]) =>
-        typeof value === "string" ? [key, value.toLowerCase()] : [key, value]
+        typeof value === "string" ? [key, value] : [key, value]
       )
     );
     props.onSearch(normalizedFilters);

@@ -21,7 +21,7 @@ import Highlighter from "react-highlight-words";
 import { InfoCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { AxiosGet, AxiosPut, log } from "../api";
+import { AxiosGet, AxiosPut } from "../api";
 import IniFileDownload from "../component/button/download";
 
 const { Content } = Layout;
@@ -82,12 +82,10 @@ const License = (props) => {
   const updateDealerLicenseList = async () => {
     setLoading(true);
     try {
-      log(props.currentUser.unique_code);
       const result = await AxiosGet(
         `/license/list/${props.currentUser.unique_code}`
       );
       if (result.status === 200) {
-        log(result.data.data);
         setList(
           result.data.data
             .filter((item) => item.Deleted === 0)
@@ -120,7 +118,6 @@ const License = (props) => {
   };
 
   const handleChange = (pagination, filters, sorter) => {
-    log("Various parameters", pagination, filters, sorter);
     setFilteredInfo(filters);
     setSortedInfo(sorter);
   };
@@ -194,9 +191,7 @@ const License = (props) => {
       />
     ),
     onFilter: (value, record) =>
-      (record[dataIndex] ? record[dataIndex].toString() : "")
-        .toLowerCase()
-        .includes(value.toLowerCase()),
+      (record[dataIndex] ? record[dataIndex].toString() : "").includes(value),
 
     onFilterDropdownOpenChange: (visible) => {
       if (visible) {
@@ -393,9 +388,7 @@ const License = (props) => {
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
 
   const onSelectChange = (newSelectedRowKeys) => {
-    log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
-    log(list.find((c) => c.key === newSelectedRowKeys[0]));
     setSelectedLicense(list.find((c) => c.key === newSelectedRowKeys[0]));
   };
 
@@ -411,11 +404,10 @@ const License = (props) => {
     const { company, country, hospital, expire_date, AIType } = searchFilters;
 
     return (
-      (!company || item.Company.toLowerCase().includes(company.trim())) &&
-      // (!AIType || item.AIType.toLowerCase().includes(AIType)) &&
+      (!company || item.Company.includes(company.trim())) &&
       (!AIType || AIType?.includes(item?.AIType)) &&
-      (!country || item.Country.toLowerCase().includes(country.trim())) &&
-      (!hospital || item.Hospital.toLowerCase().includes(hospital.trim())) &&
+      (!country || item.Country.includes(country.trim())) &&
+      (!hospital || item.Hospital.includes(hospital.trim())) &&
       (!expire_date ||
         (new Date(expire_date[0]) <= new Date(item.UTCTerminateDate) &&
           new Date(expire_date[1]) >= new Date(item.UTCTerminateDate)))
@@ -599,12 +591,10 @@ const AdvancedSearchForm = (props) => {
     return children;
   };
   const onFinish = (values) => {
-    log("Received values of form: ", values);
-
     // 모든 검색 값들을 소문자로 변환
     const normalizedFilters = Object.fromEntries(
       Object.entries(values).map(([key, value]) =>
-        typeof value === "string" ? [key, value.toLowerCase()] : [key, value]
+        typeof value === "string" ? [key, value] : [key, value]
       )
     );
     props.onSearch(normalizedFilters);
@@ -666,8 +656,6 @@ const EditDrawer = (props) => {
   };
 
   const onFinish = async (values) => {
-    log("Received values of form: ", values);
-
     try {
       await AxiosPut(`/license/update-license/${data?.pk}`, {
         Company: values.Company,
