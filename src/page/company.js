@@ -449,6 +449,7 @@ const Company = (props) => {
                   <GenerateModal
                     title="Generate License"
                     type="primary"
+                    aiType={selectedCompany?.product}
                     data={selectedCompany}
                     disabled={!hasSelected}
                     onComplete={(data) => {

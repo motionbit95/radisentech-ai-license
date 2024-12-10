@@ -280,10 +280,6 @@ const License = (props) => {
         const dateA = new Date(a.UTCActivateStartDate);
         const dateB = new Date(b.UTCActivateStartDate);
 
-        // 한국 시간 (KST)으로 변환 - 굳이 변환 안해도 됨
-        // dateA.setHours(dateA.getHours() + 9);
-        // dateB.setHours(dateB.getHours() + 9);
-
         return dateA - dateB; // 한국 시간 기준으로 정렬
       },
     },

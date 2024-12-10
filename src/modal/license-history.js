@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { Button, Col, Modal, Table, Tag, Typography, message } from "antd";
+import {
+  Button,
+  Col,
+  Descriptions,
+  Modal,
+  Row,
+  Space,
+  Table,
+  Tag,
+  Typography,
+  message,
+} from "antd";
 import { AxiosGet, AxiosPost, AxiosPut, log } from "../api";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
@@ -10,6 +21,11 @@ const LicenseHistoryModal = (props) => {
   const [history, setHistoryList] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [selectedAIType, setSelectedAIType] = useState(null);
+  const [licenseCnt, setLicenseCnt] = useState([]);
+  const [filteredLicenseCnt, setFilteredLicenseCnt] = useState([]);
+  const [filteredUsedLicenseCnt, setFilteredUsedLicenseCnt] = useState(0);
 
   // admin pk 의 ID 찾기
   const AdminID = ({ admin_pk }) => {
@@ -25,6 +41,59 @@ const LicenseHistoryModal = (props) => {
     }, []);
     return <div>{admin_id}</div>;
   };
+
+  const fetchLicenseCnt = async () => {
+    try {
+      const result = await AxiosGet(`/company/license-cnt/${data?.id}`);
+      if (result.status === 200) {
+        console.log("cnt : ", result.data);
+        setLicenseCnt(result.data);
+        // setHistoryList(result.data);
+      }
+    } catch (error) {
+      if (error.response?.status === 403) {
+        navigate("/login");
+      }
+    }
+  };
+  useEffect(() => {
+    // 라이센스 Count를 가지고오는 함수 호출
+    if (data) {
+      fetchLicenseCnt();
+    }
+  }, []);
+
+  const fetchFilteredAITypeList = async () => {
+    try {
+      AxiosPost(`/license/is-activated-aitype-list`, {
+        AIType: selectedAIType,
+        UniqueCode: data?.unique_code,
+      }).then((response) => {
+        setFilteredUsedLicenseCnt(response.data.length);
+
+        if (response?.status === 201) {
+          // 발급된 것이 없음
+          setFilteredUsedLicenseCnt(0);
+        }
+      });
+    } catch (error) {
+      if (error.response?.status === 403) {
+        navigate("/login");
+      }
+    }
+  };
+
+  useEffect(() => {
+    setFilteredLicenseCnt(
+      licenseCnt.filter((item) => item.ai_type === selectedAIType)[0]
+    );
+    // console.log("filteredLicenseCnt", filteredLicenseCnt);
+
+    // 여기서 리스트 가지고 오기
+    if (selectedAIType) {
+      fetchFilteredAITypeList();
+    }
+  }, [selectedAIType]);
 
   const fetchHistoryList = async (data) => {
     log("data", data);
@@ -69,6 +138,15 @@ const LicenseHistoryModal = (props) => {
     setIsModalOpen(false);
   };
 
+  const handleTableChange = (pagination, filters, sorter) => {
+    // AI Type 필터가 변경될 때
+    if (!filters.ai_type) {
+      setSelectedAIType(null); // AI Type 필터 해제 시
+    } else if (filters.ai_type.length > 0) {
+      setSelectedAIType(filters.ai_type[0]); // 필터가 있을 때
+    }
+  };
+
   const handleHistoryCancel = (history) => {
     if (data.license_cnt - data.use_cnt < history.new_cnt - history.prev_cnt) {
       message.error(
@@ -97,6 +175,21 @@ const LicenseHistoryModal = (props) => {
       AxiosGet("/company/user-info")
         .then((response) => {
           if (response.status === 200) {
+            console.log("history", history);
+            AxiosPost("/company/update-license-cnt", {
+              license_cnt: -history?.new_cnt,
+              company_pk: data.id,
+              ai_type: history?.ai_type,
+            })
+              .then((response) => {
+                if (response.status === 200) {
+                  console.log(response.data);
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+
             AxiosPut(`/company/update-license/${history?.company_pk}`, {
               license_cnt: history?.prev_cnt - history?.new_cnt,
               description: "Generated Canceled",
@@ -121,6 +214,8 @@ const LicenseHistoryModal = (props) => {
                 log(error);
                 setLoading(false);
               });
+
+            fetchFilteredAITypeList();
           }
         })
         .catch((error) => {
@@ -144,6 +239,17 @@ const LicenseHistoryModal = (props) => {
       key: "create_time",
 
       render: (text) => (text ? dayjs(text).format("MM-DD-YYYY HH:mm:ss") : ""),
+    },
+    {
+      title: "AI Type",
+      dataIndex: "ai_type",
+      key: "ai_type",
+
+      filters: data?.product?.map((type) => ({ text: type, value: type })),
+      // filters: [{ text: "AI", value: "AI" }],
+      onFilter: (value, record) => {
+        return record.ai_type === value; // 필터링 로직
+      },
     },
     {
       title: "Previous",
@@ -244,17 +350,43 @@ const LicenseHistoryModal = (props) => {
         width={1000}
         footer={null}
       >
-        <Table
-          dataSource={history}
-          size="small"
-          columns={historyColumns}
-          loading={loading}
-          pagination={{
-            defaultCurrent: 1,
-            defaultPageSize: 10,
-            showSizeChanger: true,
-          }}
-        />
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <Descriptions
+            bordered
+            column={4}
+            size="small"
+            labelStyle={{ fontWeight: "bold" }}
+          >
+            <Descriptions.Item label="AI Type">
+              {selectedAIType ? selectedAIType : "All"}
+            </Descriptions.Item>
+            <Descriptions.Item label="Used">
+              {selectedAIType ? filteredUsedLicenseCnt : data?.use_cnt || 0}
+            </Descriptions.Item>
+            <Descriptions.Item label="Remaining">
+              {selectedAIType
+                ? filteredLicenseCnt?.license_cnt - filteredUsedLicenseCnt
+                : data?.license_cnt - (data?.use_cnt || 0)}
+            </Descriptions.Item>
+            <Descriptions.Item label="Total">
+              {selectedAIType
+                ? filteredLicenseCnt?.license_cnt
+                : data?.license_cnt}
+            </Descriptions.Item>
+          </Descriptions>
+          <Table
+            dataSource={history}
+            size="small"
+            columns={historyColumns}
+            loading={loading}
+            pagination={{
+              defaultCurrent: 1,
+              defaultPageSize: 10,
+              showSizeChanger: true,
+            }}
+            onChange={handleTableChange} // 필터 및 정렬 상태 변경 처리
+          />
+        </Space>
       </Modal>
     </>
   );

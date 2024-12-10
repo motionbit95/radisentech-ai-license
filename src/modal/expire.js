@@ -125,13 +125,13 @@ const UpdateLicense = (props) => {
           >
             <Input placeholder="Company" disabled />
           </Form.Item>
-          <Form.Item
+          {/* <Form.Item
             name="sirial_number"
             label="S/N"
             rules={[{ required: true, message: "Please input key" }]}
           >
             <Input placeholder="License Key" disabled />
-          </Form.Item>
+          </Form.Item> */}
           <Form.Item
             label="Expire Date"
             name="expire_date"

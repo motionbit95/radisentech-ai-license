@@ -886,4 +886,40 @@ router.get("/is-activated-aitype/:AIType", verifyToken, async (req, res) => {
   }
 });
 
+// 특정 AI Type의 리스트만 가지고 오는 함수
+router.post("/is-activated-aitype-list", verifyToken, async (req, res) => {
+  const { AIType, UniqueCode } = req.body;
+
+  let connection;
+
+  try {
+    // 데이터베이스 연결
+    connection = await getConnection();
+
+    // LicenseManagement에서 발급된 AIType이 있는지 조회(현재 활성화 되어있는 리스트 중)
+    const [rows] = await connection.execute(
+      "SELECT * FROM LicenseManagement WHERE AIType = ? AND UniqueCode = ? AND Deleted = 0",
+      [AIType, UniqueCode]
+    );
+
+    // 발급되지 않았다면 201
+    if (rows.length === 0) {
+      return res
+        .status(201)
+        .json({ message: "No history found for this license." });
+    }
+
+    // 발급된것이다면 리스트로 전달
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error("Database error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    // 데이터베이스 연결 종료
+    if (connection) {
+      await connection.release();
+      console.log("Connection closed");
+    }
+  }
+});
 module.exports = router;

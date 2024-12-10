@@ -650,7 +650,13 @@ router.post("/account-validate", async (req, res) => {
  * */
 router.put("/update-license/:id", verifyToken, async (req, res) => {
   const id = req.params.id; // URL에서 user_id를 가져옵니다.
-  const { license_cnt, description, canceled, admin_id = null } = req.body; // body에서 license_cnt 값을 가져옵니다.
+  const {
+    license_cnt,
+    description,
+    canceled,
+    admin_id = null,
+    ai_type = null,
+  } = req.body; // body에서 license_cnt 값을 가져옵니다.
 
   console.log("admin_id", admin_id);
 
@@ -689,8 +695,8 @@ router.put("/update-license/:id", verifyToken, async (req, res) => {
     // 라이센스 변경 내역을 DB에 저장
     // Insert data into generate_history
     const insertQuery = `
-    INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled, admin_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`;
+    INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled, admin_id, ai_type)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
       new Date(), // create_time
@@ -700,6 +706,7 @@ router.put("/update-license/:id", verifyToken, async (req, res) => {
       updatedLicenseCnt, // new_cnt
       canceled,
       admin_id,
+      ai_type,
     ];
 
     connection.query(insertQuery, values, (err, results) => {
@@ -1783,6 +1790,81 @@ router.post("/auth/google", async (req, res) => {
     res
       .status(401)
       .json({ message: "Google Login Failed", error: error.message });
+  }
+});
+
+// license_cnt 테이블 수정
+router.post("/update-license-cnt", async (req, res) => {
+  const { license_cnt, company_pk, ai_type } = req.body;
+
+  let connection;
+  try {
+    connection = await getConnection();
+
+    // company_pk, ai_type을 기준으로 데이터가 존재하는지 확인
+    const [existingRow] = await connection.query(
+      `SELECT * FROM license_cnt WHERE company_pk = ? AND ai_type = ?`,
+      [company_pk, ai_type]
+    );
+
+    const currentTime = new Date();
+
+    if (existingRow.length > 0) {
+      // 데이터가 있으면 기존 license_cnt에 새 license_cnt를 더하기
+      const currentLicenseCnt = existingRow[0].license_cnt; // 기존 license_cnt 값을 가져옴
+      const updatedLicenseCnt = currentLicenseCnt + license_cnt; // 기존 수량에 새 수량을 더함
+
+      const [updateResult] = await connection.query(
+        `UPDATE license_cnt 
+         SET license_cnt = ?, company_pk = ?, ai_type = ?, update_time = ? 
+         WHERE company_pk = ? AND ai_type = ?`,
+        [
+          updatedLicenseCnt,
+          company_pk,
+          ai_type,
+          currentTime,
+          company_pk,
+          ai_type,
+        ]
+      );
+      res
+        .status(200)
+        .json({ message: "license_cnt has been updated", data: updateResult });
+    } else {
+      // 데이터가 없으면 새로 생성
+      const [insertResult] = await connection.query(
+        `INSERT INTO license_cnt (license_cnt, company_pk, ai_type, create_time, update_time) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [license_cnt, company_pk, ai_type, currentTime, currentTime]
+      );
+      res
+        .status(200)
+        .json({ message: "license_cnt has been created", data: insertResult });
+    }
+  } catch (error) {
+    console.error("Error updating license_cnt:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (connection) await connection.release();
+  }
+});
+
+router.get("/license-cnt/:company_pk", verifyToken, async (req, res) => {
+  const { company_pk } = req.params;
+  console.log("company_pk", company_pk);
+  let connection;
+  try {
+    connection = await getConnection();
+    const [result] = await connection.query(
+      `SELECT * FROM license_cnt WHERE company_pk = ?`,
+      [company_pk]
+    );
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error getting license_cnt:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (connection) await connection.release();
   }
 });
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Form,
@@ -7,12 +7,21 @@ import {
   message,
   Modal,
   Popconfirm,
+  Select,
   Space,
 } from "antd";
-import { AxiosGet, AxiosPut, log } from "../api";
+import { AxiosGet, AxiosPost, AxiosPut, log } from "../api";
 const GenerateModal = (props) => {
-  const { title, type, disabled, data, onComplete, setLoading, onCancel } =
-    props;
+  const {
+    title,
+    type,
+    disabled,
+    data,
+    onComplete,
+    setLoading,
+    onCancel,
+    aiType,
+  } = props;
   const [modalOpen, setModalOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -27,6 +36,10 @@ const GenerateModal = (props) => {
     },
   };
 
+  useEffect(() => {
+    console.log(aiType);
+  }, [modalOpen]);
+
   const onFinish = (values) => {
     if (
       values.license_cnt < 0 &&
@@ -40,6 +53,22 @@ const GenerateModal = (props) => {
       return;
     }
 
+    console.log(values, data.id);
+
+    AxiosPost("/company/update-license-cnt", {
+      license_cnt: values.license_cnt,
+      company_pk: data.id,
+      ai_type: values.AIType,
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          console.log(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
     // 현재 로그인한 사용자의 pk 가져오기
     AxiosGet("/company/user-info")
       .then((response) => {
@@ -51,6 +80,7 @@ const GenerateModal = (props) => {
             description: "Generated",
             canceled: 0,
             admin_id,
+            ai_type: values.AIType, // 타입도 구분
           })
             .then((response) => {
               // 업데이트에 성공하면 아래 구문 실행
@@ -75,7 +105,7 @@ const GenerateModal = (props) => {
   return (
     <>
       <Button
-        disabled={disabled}
+        disabled={disabled || !aiType || aiType?.length === 0}
         type={type}
         onClick={() => setModalOpen(true)}
       >
@@ -141,6 +171,15 @@ const GenerateModal = (props) => {
             rules={[{ required: true, message: "Please input company" }]}
           >
             <Input disabled placeholder="Company" />
+          </Form.Item>
+          <Form.Item name="AIType" label="AI Type">
+            <Select>
+              {aiType?.map((item) => (
+                <Select.Option key={item} value={item}>
+                  {item}
+                </Select.Option>
+              ))}
+            </Select>
           </Form.Item>
           <Form.Item
             label="License No."
