@@ -501,14 +501,10 @@ router.put("/update/:id", verifyToken, async (req, res) => {
 router.get("/check-user-id/:user_id", async (req, res) => {
   const userId = req.params.user_id; // URL에서 user_id를 가져옵니다.
 
-  console.log(userId);
-
   let connection;
   try {
     // 데이터베이스 연결
     connection = await getConnection();
-
-    console.log(userId);
 
     // user_id 존재 여부 확인
     const [results] = await connection.execute(
@@ -654,7 +650,9 @@ router.post("/account-validate", async (req, res) => {
  * */
 router.put("/update-license/:id", verifyToken, async (req, res) => {
   const id = req.params.id; // URL에서 user_id를 가져옵니다.
-  const { license_cnt, description, canceled } = req.body; // body에서 license_cnt 값을 가져옵니다.
+  const { license_cnt, description, canceled, admin_id = null } = req.body; // body에서 license_cnt 값을 가져옵니다.
+
+  console.log("admin_id", admin_id);
 
   // 필수 필드가 누락된 경우 에러 응답
   if (license_cnt === undefined) {
@@ -691,8 +689,8 @@ router.put("/update-license/:id", verifyToken, async (req, res) => {
     // 라이센스 변경 내역을 DB에 저장
     // Insert data into generate_history
     const insertQuery = `
-    INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled)
-    VALUES (?, ?, ?, ?, ?, ?)`;
+    INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled, admin_id)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
       new Date(), // create_time
@@ -701,6 +699,7 @@ router.put("/update-license/:id", verifyToken, async (req, res) => {
       currentLicenseCnt, // prev_cnt
       updatedLicenseCnt, // new_cnt
       canceled,
+      admin_id,
     ];
 
     connection.query(insertQuery, values, (err, results) => {
@@ -1230,6 +1229,24 @@ router.get("/user-info", verifyToken, async (req, res) => {
   }
 });
 
+router.get("/:id", verifyToken, async (req, res) => {
+  const id = req.params.id;
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.query(
+      "SELECT * FROM company WHERE id = ?",
+      [id]
+    );
+    res.status(200).json(rows[0]);
+  } catch (error) {
+    console.error("MySQL query error: ", error);
+    res.status(500).json({ error: "Database query error" });
+  } finally {
+    if (connection) await connection.release(); // 연결 종료
+  }
+});
+
 /**
  * @swagger
  * /company/generate-history/{pk}:
@@ -1310,8 +1327,6 @@ router.get("/generate-history/:pk", verifyToken, async (req, res) => {
         newArr.push(rows[i]);
       }
     }
-
-    console.log(newArr);
 
     if (rows.length > 0) {
       res.status(200).json(newArr);

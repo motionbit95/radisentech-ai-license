@@ -9,7 +9,7 @@ import {
   Popconfirm,
   Space,
 } from "antd";
-import { AxiosPut, log } from "../api";
+import { AxiosGet, AxiosPut, log } from "../api";
 const GenerateModal = (props) => {
   const { title, type, disabled, data, onComplete, setLoading, onCancel } =
     props;
@@ -40,23 +40,35 @@ const GenerateModal = (props) => {
       return;
     }
 
-    setLoading(true);
-    AxiosPut(`/company/update-license/${data?.id}`, {
-      ...values,
-      description: "Generated",
-      canceled: 0,
-    })
+    // 현재 로그인한 사용자의 pk 가져오기
+    AxiosGet("/company/user-info")
       .then((response) => {
-        // 업데이트에 성공하면 아래 구문 실행
-        log(response);
-        setLoading(false);
-        form.resetFields();
-        setModalOpen(false);
-        onComplete(values);
+        if (response.status === 200) {
+          const admin_id = response.data.id;
+          setLoading(true);
+          AxiosPut(`/company/update-license/${data?.id}`, {
+            ...values,
+            description: "Generated",
+            canceled: 0,
+            admin_id,
+          })
+            .then((response) => {
+              // 업데이트에 성공하면 아래 구문 실행
+              log(response);
+              setLoading(false);
+              form.resetFields();
+              setModalOpen(false);
+              onComplete(values);
+            })
+            .catch((error) => {
+              log(error);
+              setLoading(false);
+            });
+        }
       })
       .catch((error) => {
-        log(error);
-        setLoading(false);
+        console.log(error);
+        message.error("Failed to generate license. Please try again.");
       });
   };
 

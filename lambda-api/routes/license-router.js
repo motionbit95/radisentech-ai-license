@@ -795,8 +795,6 @@ router.put("/withdrawal-subscription/:pk", verifyToken, async (req, res) => {
 router.get("/license-history/:pk", verifyToken, async (req, res) => {
   const { pk } = req.params;
 
-  console.log("license_pk:", pk);
-
   let connection;
 
   try {

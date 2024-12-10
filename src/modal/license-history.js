@@ -11,6 +11,21 @@ const LicenseHistoryModal = (props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // admin pk 의 ID 찾기
+  const AdminID = ({ admin_pk }) => {
+    const [admin_id, setAdminID] = useState(null);
+    useEffect(() => {
+      if (admin_pk) {
+        AxiosGet(`/company/${admin_pk}`).then((response) => {
+          if (response.status === 200) {
+            setAdminID(response.data.user_id);
+          }
+        });
+      }
+    }, []);
+    return <div>{admin_id}</div>;
+  };
+
   const fetchHistoryList = async (data) => {
     log("data", data);
     setLoading(true);
@@ -79,24 +94,34 @@ const LicenseHistoryModal = (props) => {
           setLoading(false);
         });
     } else {
-      AxiosPut(`/company/update-license/${history?.company_pk}`, {
-        license_cnt: history?.prev_cnt - history?.new_cnt,
-        description: "Generated Canceled",
-        canceled: 1,
-      })
+      AxiosGet("/company/user-info")
         .then((response) => {
-          log(response);
-          setLoading(true);
-          AxiosPut(`/company/history-cancel/${history?.id}`, {
-            canceled: 1,
-          }).then((response) => {
-            log(response);
-            // 히스토리 데이터는 부모 테이블에서 받아온 데이터 기준으로 다시 받아와야하므로 props로 받아온 데이터를 넘긴다
-            // 여기 함수에서 받은 data는 X 버튼을 클릭한 행의 데이터임.
-            fetchHistoryList(props.data);
-            onCancel();
-            setLoading(false);
-          });
+          if (response.status === 200) {
+            AxiosPut(`/company/update-license/${history?.company_pk}`, {
+              license_cnt: history?.prev_cnt - history?.new_cnt,
+              description: "Generated Canceled",
+              canceled: 1,
+              admin_id: response.data.id,
+            })
+              .then((response) => {
+                log(response);
+                setLoading(true);
+                AxiosPut(`/company/history-cancel/${history?.id}`, {
+                  canceled: 1,
+                }).then((response) => {
+                  log(response);
+                  // 히스토리 데이터는 부모 테이블에서 받아온 데이터 기준으로 다시 받아와야하므로 props로 받아온 데이터를 넘긴다
+                  // 여기 함수에서 받은 data는 X 버튼을 클릭한 행의 데이터임.
+                  fetchHistoryList(props.data);
+                  onCancel();
+                  setLoading(false);
+                });
+              })
+              .catch((error) => {
+                log(error);
+                setLoading(false);
+              });
+          }
         })
         .catch((error) => {
           log(error);
@@ -151,6 +176,12 @@ const LicenseHistoryModal = (props) => {
       title: "Target",
       dataIndex: "target",
       key: "target",
+    },
+    {
+      title: "Admin",
+      dataIndex: "admin_id",
+      key: "admin_id",
+      render: (text) => <AdminID admin_pk={text} />,
     },
     {
       title: "Description",
