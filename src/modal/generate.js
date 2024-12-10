@@ -40,7 +40,53 @@ const GenerateModal = (props) => {
     console.log(aiType);
   }, [modalOpen]);
 
+  const [licenseCnt, setLicenseCnt] = useState([]);
+
+  const fetchLicenseCnt = async () => {
+    const result = await AxiosGet(`/company/license-cnt/${data?.id}`);
+    if (result.status === 200) {
+      console.log("cnt : ", result.data);
+      setLicenseCnt(result.data);
+      // setHistoryList(result.data);
+    }
+  };
+  useEffect(() => {
+    // 라이센스 Count를 가지고오는 함수 호출
+    if (data) {
+      fetchLicenseCnt();
+    }
+  }, [data]);
+
   const onFinish = (values) => {
+    // 여기도 라이센스 수에 따라 처리해야함
+    console.log(values.AIType);
+
+    // 라이센스 가지고 오기
+    let ai_license = licenseCnt.find((item) => item.ai_type === values.AIType);
+    console.log(ai_license);
+    let total_license_cnt = ai_license.license_cnt;
+
+    // 현재 해당 유니크 코드로 등록된 라이선스 수량
+    let used_license_cnt = 0;
+    AxiosPost(`/license/is-activated-aitype-list`, {
+      AIType: values.AIType,
+      UniqueCode: data?.unique_code,
+    }).then((response) => {
+      if (response?.status === 201) {
+        used_license_cnt = 0;
+      } else {
+        used_license_cnt = response.data.length;
+      }
+    });
+    console.log("total_license_cnt", total_license_cnt);
+    console.log("used_license_cnt", used_license_cnt);
+    if (total_license_cnt - used_license_cnt < 0) {
+      message.error(
+        "The number of licenses to be canceled is greater than the number of licenses currently in use."
+      );
+      return;
+    }
+
     if (
       values.license_cnt < 0 &&
       data?.license_cnt - data?.use_cnt < Math.abs(values.license_cnt)
@@ -55,19 +101,19 @@ const GenerateModal = (props) => {
 
     console.log(values, data.id);
 
-    AxiosPost("/company/update-license-cnt", {
-      license_cnt: values.license_cnt,
-      company_pk: data.id,
-      ai_type: values.AIType,
-    })
-      .then((response) => {
-        if (response.status === 200) {
-          console.log(response.data);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    // AxiosPost("/company/update-license-cnt", {
+    //   license_cnt: values.license_cnt,
+    //   company_pk: data.id,
+    //   ai_type: values.AIType,
+    // })
+    //   .then((response) => {
+    //     if (response.status === 200) {
+    //       console.log(response.data);
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
 
     // 현재 로그인한 사용자의 pk 가져오기
     AxiosGet("/company/user-info")
@@ -81,6 +127,7 @@ const GenerateModal = (props) => {
             canceled: 0,
             admin_id,
             ai_type: values.AIType, // 타입도 구분
+            company_pk: data.id,
           })
             .then((response) => {
               // 업데이트에 성공하면 아래 구문 실행

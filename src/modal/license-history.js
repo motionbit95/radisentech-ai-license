@@ -24,7 +24,7 @@ const LicenseHistoryModal = (props) => {
 
   const [selectedAIType, setSelectedAIType] = useState(null);
   const [licenseCnt, setLicenseCnt] = useState([]);
-  const [filteredLicenseCnt, setFilteredLicenseCnt] = useState([]);
+  const [filteredTotalLicenseCnt, setFilteredTotalLicenseCnt] = useState(0);
   const [filteredUsedLicenseCnt, setFilteredUsedLicenseCnt] = useState(0);
 
   // admin pk 의 ID 찾기
@@ -61,7 +61,7 @@ const LicenseHistoryModal = (props) => {
     if (data) {
       fetchLicenseCnt();
     }
-  }, []);
+  }, [data]);
 
   const fetchFilteredAITypeList = async () => {
     try {
@@ -69,11 +69,12 @@ const LicenseHistoryModal = (props) => {
         AIType: selectedAIType,
         UniqueCode: data?.unique_code,
       }).then((response) => {
-        setFilteredUsedLicenseCnt(response.data.length);
-
         if (response?.status === 201) {
           // 발급된 것이 없음
+          console.log("response", response.data);
           setFilteredUsedLicenseCnt(0);
+        } else {
+          setFilteredUsedLicenseCnt(response.data.length);
         }
       });
     } catch (error) {
@@ -84,16 +85,20 @@ const LicenseHistoryModal = (props) => {
   };
 
   useEffect(() => {
-    setFilteredLicenseCnt(
-      licenseCnt.filter((item) => item.ai_type === selectedAIType)[0]
-    );
-    // console.log("filteredLicenseCnt", filteredLicenseCnt);
-
     // 여기서 리스트 가지고 오기
     if (selectedAIType) {
+      console.log("selectedAIType", selectedAIType);
+      console.log("licenseCnt", licenseCnt);
+      let data = licenseCnt.filter((item) => item.ai_type === selectedAIType);
+      console.log("data", data[0]?.license_cnt);
+      if (data[0]?.license_cnt > 0) {
+        setFilteredTotalLicenseCnt(data[0]?.license_cnt);
+      } else {
+        setFilteredTotalLicenseCnt(0);
+      }
       fetchFilteredAITypeList();
     }
-  }, [selectedAIType]);
+  }, [selectedAIType, licenseCnt]);
 
   const fetchHistoryList = async (data) => {
     log("data", data);
@@ -148,7 +153,31 @@ const LicenseHistoryModal = (props) => {
   };
 
   const handleHistoryCancel = (history) => {
-    if (data.license_cnt - data.use_cnt < history.new_cnt - history.prev_cnt) {
+    // 여기도 라이센스 수에 따라 처리해야함
+    console.log(history.ai_type);
+    // 라이센스 가지고 오기
+    let ai_license = licenseCnt.find(
+      (item) => item.ai_type === history.ai_type
+    );
+    let total_license_cnt = ai_license.license_cnt;
+    // 현재 해당 유니크 코드로 등록된 라이선스 수량
+    let used_license_cnt = 0;
+    AxiosPost(`/license/is-activated-aitype-list`, {
+      AIType: history.ai_type,
+      UniqueCode: data?.unique_code,
+    }).then((response) => {
+      if (response?.status === 201) {
+        used_license_cnt = 0;
+      } else {
+        used_license_cnt = response.data.length;
+      }
+    });
+    console.log("total_license_cnt", total_license_cnt);
+    console.log("used_license_cnt", used_license_cnt);
+    if (
+      total_license_cnt - used_license_cnt <
+      history.new_cnt - history.prev_cnt
+    ) {
       message.error(
         "The number of licenses to be canceled is greater than the number of licenses currently in use."
       );
@@ -176,25 +205,29 @@ const LicenseHistoryModal = (props) => {
         .then((response) => {
           if (response.status === 200) {
             console.log("history", history);
-            AxiosPost("/company/update-license-cnt", {
-              license_cnt: -history?.new_cnt,
-              company_pk: data.id,
-              ai_type: history?.ai_type,
-            })
-              .then((response) => {
-                if (response.status === 200) {
-                  console.log(response.data);
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-              });
+            // AxiosPost("/company/update-license-cnt", {
+            //   license_cnt: -history?.new_cnt,
+            //   company_pk: data.id,
+            //   ai_type: history?.ai_type,
+            // })
+            //   .then((response) => {
+            //     if (response.status === 200) {
+            //       console.log(response.data);
+            //     }
+            //   })
+            //   .catch((error) => {
+            //     console.log(error);
+            //   });
 
-            AxiosPut(`/company/update-license/${history?.company_pk}`, {
+            console.log(">>", response.data?.unique_code);
+
+            AxiosPut(`/company/update-license/${data.id}`, {
               license_cnt: history?.prev_cnt - history?.new_cnt,
               description: "Generated Canceled",
               canceled: 1,
               admin_id: response.data.id,
+              ai_type: history?.ai_type,
+              company_pk: data.id,
             })
               .then((response) => {
                 log(response);
@@ -223,6 +256,8 @@ const LicenseHistoryModal = (props) => {
           setLoading(false);
         });
     }
+
+    fetchLicenseCnt();
   };
 
   // table column
@@ -250,6 +285,7 @@ const LicenseHistoryModal = (props) => {
       onFilter: (value, record) => {
         return record.ai_type === value; // 필터링 로직
       },
+      filterMultiple: false, // 다중 선택 비활성화
     },
     {
       title: "Previous",
@@ -365,13 +401,11 @@ const LicenseHistoryModal = (props) => {
             </Descriptions.Item>
             <Descriptions.Item label="Remaining">
               {selectedAIType
-                ? filteredLicenseCnt?.license_cnt - filteredUsedLicenseCnt
+                ? filteredTotalLicenseCnt - filteredUsedLicenseCnt
                 : data?.license_cnt - (data?.use_cnt || 0)}
             </Descriptions.Item>
             <Descriptions.Item label="Total">
-              {selectedAIType
-                ? filteredLicenseCnt?.license_cnt
-                : data?.license_cnt}
+              {selectedAIType ? filteredTotalLicenseCnt : data?.license_cnt}
             </Descriptions.Item>
           </Descriptions>
           <Table
@@ -391,4 +425,5 @@ const LicenseHistoryModal = (props) => {
     </>
   );
 };
+
 export default LicenseHistoryModal;

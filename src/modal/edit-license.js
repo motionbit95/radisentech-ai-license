@@ -19,10 +19,6 @@ const EditLicense = (props) => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    console.log("모달에서 받은거는 ? > ", data);
-  }, [data]);
-
   const onFinish = async (values) => {
     log("Received values of form: ", values);
 

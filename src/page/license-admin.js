@@ -535,17 +535,14 @@ const License = (props) => {
       AIType,
     } = searchFilters;
 
-    log("item", item, searchFilters);
-
     return (
       // deleted 플래그가 false일 경우 삭제된 라이센스는 보이지 않습니다.
       ((!deleted && item.Deleted === 0) || deleted) &&
       (!AIType || AIType?.includes(item?.AIType)) &&
-      (!company || item.Company.toLowerCase().includes(company)) &&
-      (!dealer_company ||
-        item.DealerCompany.toLowerCase().includes(dealer_company)) &&
-      (!country || item.Country.toLowerCase().includes(country)) &&
-      (!hospital || item.Hospital.toLowerCase().includes(hospital)) &&
+      (!company || item.Company.includes(company)) &&
+      (!dealer_company || item.DealerCompany.includes(dealer_company)) &&
+      (!country || item.Country.includes(country)) &&
+      (!hospital || item.Hospital.includes(hospital)) &&
       (!expire_date ||
         (new Date(expire_date[0]) <= new Date(item.UTCTerminateDate) &&
           new Date(expire_date[1]) >= new Date(item.UTCTerminateDate)))
@@ -658,9 +655,10 @@ const AdvancedSearchForm = (props) => {
   };
 
   useEffect(() => {
-    console.log(props.searchFilters);
     form.setFieldsValue(props.searchFilters);
   }, [props.searchFilters]);
+
+  // 여기에서 search 키워드 확인해서 검색
 
   const handleSelectChange = (value) => {
     // 'All'이 선택되었을 때, 다른 항목이 선택되면 'All'을 제거

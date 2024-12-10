@@ -265,32 +265,29 @@ const Company = (props) => {
       },
 
       render: (text, record) => (
-        <Space>
-          {record.provider === 1 ? (
-            <Image
-              preview={false}
-              width={20}
-              src={require(`../asset/pngwing.com.png`)}
-            />
-          ) : (
+        <>
+          {record.provider === 0 ? (
             text
+          ) : (
+            <Space>
+              <Image
+                preview={false}
+                width={20}
+                src={require(`../asset/pngwing.com.png`)}
+              />
+
+              <Tooltip placement="top" title={text}>
+                <InfoCircleOutlined />
+              </Tooltip>
+            </Space>
           )}
-          {record.provider === 1 ? (
-            <Tooltip placement="top" title={text}>
-              <InfoCircleOutlined />
-            </Tooltip>
-          ) : null}
-        </Space>
+        </>
       ),
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
-
-      sorter: (a, b) => {
-        return new Date(a.email) - new Date(b.email);
-      },
 
       ...getColumnSearchProps("email"),
     },
@@ -397,7 +394,8 @@ const Company = (props) => {
           onClick={() => {
             console.log(record.company_name);
             const encodedCompanyName = encodeURIComponent(record.company_name);
-            navigate(`/license?dealerCompany=${encodedCompanyName}`);
+            // navigate(`/license?dealerCompany=${encodedCompanyName}`);
+            window.location.href = `/license?dealerCompany=${encodedCompanyName}`;
           }}
           icon={<SearchOutlined />}
         />

@@ -649,18 +649,17 @@ router.post("/account-validate", async (req, res) => {
  *         description: Database error
  * */
 router.put("/update-license/:id", verifyToken, async (req, res) => {
-  const id = req.params.id; // URL에서 user_id를 가져옵니다.
+  const id = req.params.id; // 회사 ID
   const {
     license_cnt,
     description,
     canceled,
     admin_id = null,
     ai_type = null,
-  } = req.body; // body에서 license_cnt 값을 가져옵니다.
+    unique_code = null,
+    company_pk = null,
+  } = req.body;
 
-  console.log("admin_id", admin_id);
-
-  // 필수 필드가 누락된 경우 에러 응답
   if (license_cnt === undefined) {
     return res
       .status(400)
@@ -669,55 +668,75 @@ router.put("/update-license/:id", verifyToken, async (req, res) => {
 
   let connection;
   try {
-    // 데이터베이스 연결
     connection = await getConnection();
 
-    // user_id 존재 여부 확인
-    const [existingUser] = await connection.execute(
-      "SELECT license_cnt FROM company WHERE id = ?",
-      [id]
+    // license_cnt 조회
+    const [existingRow] = await connection.query(
+      `SELECT * FROM license_cnt WHERE company_pk = ? AND ai_type = ?`,
+      [id, ai_type]
     );
-    if (existingUser.length === 0) {
-      return res.status(401).json({ error: "User not found" });
+
+    let currentLicenseCnt = 0;
+    let updatedLicenseCnt = 0;
+
+    if (existingRow.length > 0) {
+      // 기존 값이 있으면 수량 더하기
+      currentLicenseCnt = parseInt(existingRow[0].license_cnt) || 0;
+      updatedLicenseCnt = currentLicenseCnt + parseInt(license_cnt);
+      await connection.query(
+        `UPDATE license_cnt 
+         SET license_cnt = ?, update_time = ? 
+         WHERE company_pk = ? AND ai_type = ?`,
+        [updatedLicenseCnt, new Date(), company_pk, ai_type]
+      );
+    } else {
+      // 기존 값이 없으면 새로 생성
+      updatedLicenseCnt = parseInt(license_cnt);
+      await connection.query(
+        `INSERT INTO license_cnt (license_cnt, company_pk, ai_type, create_time, update_time) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [updatedLicenseCnt, company_pk, ai_type, new Date(), new Date()]
+      );
     }
 
-    // 기존 license_cnt 값 가져오기
-    const currentLicenseCnt = existingUser[0].license_cnt;
+    console.log(
+      "currentLicenseCnt, updatedLicenseCnt >> ",
+      currentLicenseCnt,
+      updatedLicenseCnt
+    );
 
-    // 새로운 license_cnt 계산
-    const updatedLicenseCnt =
-      parseInt(currentLicenseCnt) + parseInt(license_cnt);
-
-    // license_cnt 수정 쿼리 실행
-    const query = "UPDATE company SET license_cnt = ? WHERE id = ?";
-    await connection.execute(query, [updatedLicenseCnt, id]);
-
-    // 라이센스 변경 내역을 DB에 저장
-    // Insert data into generate_history
+    // ... generate_history 삽입 코드 ...
     const insertQuery = `
-    INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled, admin_id, ai_type)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-
+      INSERT INTO generate_history (create_time, description, company_pk, prev_cnt, new_cnt, canceled, admin_id, ai_type)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
     const values = [
-      new Date(), // create_time
-      description, // description
-      id, // company_pk (make sure this exists in the company table)
-      currentLicenseCnt, // prev_cnt
-      updatedLicenseCnt, // new_cnt
+      new Date(),
+      description,
+      id,
+      currentLicenseCnt,
+      updatedLicenseCnt,
       canceled,
       admin_id,
       ai_type,
     ];
+    await connection.query(insertQuery, values);
 
-    connection.query(insertQuery, values, (err, results) => {
-      if (err) {
-        console.error("Error inserting data:", err);
-        return;
-      }
-      console.log("Data inserted successfully:", results.insertId);
-    });
+    // ... LicenseManagement 업데이트 코드 ...
+    const [rows] = await connection.query(
+      `SELECT * FROM company WHERE id = ?`,
+      [id]
+    );
 
-    // 성공 응답
+    if (rows.length > 0) {
+      // 기존 데이터가 있으면 업데이트
+      await connection.query(
+        `UPDATE company 
+         SET license_cnt = ? 
+         WHERE id = ?`,
+        [rows[0].license_cnt + license_cnt, id]
+      );
+    }
+
     res.status(200).json({
       message: "License count updated successfully",
       updatedLicenseCnt,
@@ -726,7 +745,7 @@ router.put("/update-license/:id", verifyToken, async (req, res) => {
     console.error("Error updating license count:", error);
     res.status(500).json({ error: "Internal Server Error" });
   } finally {
-    if (connection) await connection.release(); // 연결 종료
+    if (connection) await connection.release();
   }
 });
 
@@ -1801,7 +1820,7 @@ router.post("/update-license-cnt", async (req, res) => {
   try {
     connection = await getConnection();
 
-    // company_pk, ai_type을 기준으로 데이터가 존재하는지 확인
+    // company_pk와 ai_type으로 기존 데이터 조회
     const [existingRow] = await connection.query(
       `SELECT * FROM license_cnt WHERE company_pk = ? AND ai_type = ?`,
       [company_pk, ai_type]
@@ -1809,38 +1828,31 @@ router.post("/update-license-cnt", async (req, res) => {
 
     const currentTime = new Date();
 
-    if (existingRow.length > 0) {
-      // 데이터가 있으면 기존 license_cnt에 새 license_cnt를 더하기
-      const currentLicenseCnt = existingRow[0].license_cnt; // 기존 license_cnt 값을 가져옴
-      const updatedLicenseCnt = currentLicenseCnt + license_cnt; // 기존 수량에 새 수량을 더함
+    let updatedLicenseCnt = 0; // 초기값
 
-      const [updateResult] = await connection.query(
+    if (existingRow.length > 0) {
+      // 기존 값이 있으면 수량 더하기
+      const currentLicenseCnt = parseInt(existingRow[0].license_cnt) || 0;
+      updatedLicenseCnt = currentLicenseCnt + parseInt(license_cnt);
+      await connection.query(
         `UPDATE license_cnt 
-         SET license_cnt = ?, company_pk = ?, ai_type = ?, update_time = ? 
+         SET license_cnt = ?, update_time = ? 
          WHERE company_pk = ? AND ai_type = ?`,
-        [
-          updatedLicenseCnt,
-          company_pk,
-          ai_type,
-          currentTime,
-          company_pk,
-          ai_type,
-        ]
+        [updatedLicenseCnt, currentTime, company_pk, ai_type]
       );
-      res
-        .status(200)
-        .json({ message: "license_cnt has been updated", data: updateResult });
     } else {
-      // 데이터가 없으면 새로 생성
-      const [insertResult] = await connection.query(
+      // 기존 값이 없으면 새로 생성
+      updatedLicenseCnt = parseInt(license_cnt);
+      await connection.query(
         `INSERT INTO license_cnt (license_cnt, company_pk, ai_type, create_time, update_time) 
          VALUES (?, ?, ?, ?, ?)`,
-        [license_cnt, company_pk, ai_type, currentTime, currentTime]
+        [updatedLicenseCnt, company_pk, ai_type, currentTime, currentTime]
       );
-      res
-        .status(200)
-        .json({ message: "license_cnt has been created", data: insertResult });
     }
+
+    res
+      .status(200)
+      .json({ message: "license_cnt has been updated", updatedLicenseCnt });
   } catch (error) {
     console.error("Error updating license_cnt:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -1849,6 +1861,23 @@ router.post("/update-license-cnt", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /company/license-cnt/{company_pk}:
+ *   get:
+ *     summary: company_pk로 license_cnt을 가져오기
+ *     description: company_pk로 license_cnt을 가져오기
+ *     parameters:
+ *       - in: path
+ *         name: company_pk
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: company_pk
+ *     responses:
+ *       200:
+ *         description: Success
+ */
 router.get("/license-cnt/:company_pk", verifyToken, async (req, res) => {
   const { company_pk } = req.params;
   console.log("company_pk", company_pk);
@@ -1860,6 +1889,97 @@ router.get("/license-cnt/:company_pk", verifyToken, async (req, res) => {
       [company_pk]
     );
     res.status(200).json(result);
+  } catch (error) {
+    console.error("Error getting license_cnt:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  } finally {
+    if (connection) await connection.release();
+  }
+});
+
+// 특정 company의 내역 삭제
+/**
+ * @swagger
+ * /company/reset-company/{pk}:
+ *   get:
+ *     summary: company의 내역를 삭제
+ *     description: company의 내역를 삭제
+ *     parameters:
+ *       - in: path
+ *         name: pk
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: company_pk
+ *     responses:
+ *       200:
+ *         description: Success
+ */
+router.get("/reset-company/:pk", verifyToken, async (req, res) => {
+  console.log("pk", req.params.pk);
+
+  let connection;
+  try {
+    connection = await getConnection();
+
+    // generate_history 삭제
+    await connection.query(
+      `DELETE FROM generate_history WHERE company_pk = ?`,
+      [req.params.pk]
+    );
+
+    // 라이선스 수량 삭제
+    await connection.query(`DELETE FROM license_cnt WHERE company_pk = ?`, [
+      req.params.pk,
+    ]);
+
+    // unique_code 가지고오기
+    let [company] = await connection.query(
+      `SELECT unique_code FROM company WHERE id = ?`,
+      [req.params.pk]
+    );
+
+    // 라이선스 발급되어있으면 삭제
+    if (company[0].unique_code) {
+      try {
+        // 해당 UniqueCode로 LicenseManagement의 pk를 조회
+        const [licenseRow] = await connection.query(
+          `SELECT pk FROM LicenseManagement WHERE UniqueCode = ?`,
+          [company[0].unique_code]
+        );
+
+        if (licenseRow.length > 0) {
+          const licensePk = licenseRow[0].pk;
+
+          // license_history에서 해당 license_pk를 참조하는 행 삭제
+          await connection.query(
+            `DELETE FROM license_history WHERE license_pk = ?`,
+            [licensePk]
+          );
+
+          // LicenseManagement에서 행 삭제
+          await connection.query(`DELETE FROM LicenseManagement WHERE pk = ?`, [
+            licensePk,
+          ]);
+
+          console.log("License and related history deleted successfully.");
+        } else {
+          console.log(
+            "No matching LicenseManagement entry found for deletion."
+          );
+        }
+      } catch (err) {
+        console.error("Error during deletion process:", err);
+        throw new Error("Failed to delete license and related history.");
+      }
+    }
+
+    // 라이선스 Cnt를 0으로
+    await connection.query(`UPDATE company SET license_cnt = 0 WHERE id = ?`, [
+      req.params.pk,
+    ]);
+
+    res.status(200).json({ message: "Success" });
   } catch (error) {
     console.error("Error getting license_cnt:", error);
     res.status(500).json({ error: "Internal Server Error" });
