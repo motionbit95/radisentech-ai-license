@@ -1,4 +1,4 @@
-import { Button, Form, Input, Modal, message } from "antd";
+import { Button, Form, Input, Modal, Select, message } from "antd";
 import React, { useState } from "react";
 import { AxiosPost } from "../api";
 import { useNavigate } from "react-router-dom";
@@ -10,6 +10,7 @@ const ProductAdd = (props) => {
 
   // 폼 제출 시 실행되는 함수
   const onAddFinish = async (values) => {
+    console.log("Received values:", values);
     try {
       // 서버에 데이터 전송
       const result = await AxiosPost("/product/add", {
@@ -83,6 +84,17 @@ const ProductAdd = (props) => {
           </Form.Item>
           <Form.Item name="description" label="AI Type Description">
             <Input.TextArea placeholder="Please enter AI Type description" />
+          </Form.Item>
+          <Form.Item name="limit_month" label="Month">
+            <Select placeholder="Please select limit months">
+              <Select.Option value={1}>1 month</Select.Option>
+              <Select.Option value={2}>2 months</Select.Option>
+              <Select.Option value={3}>3 months</Select.Option>
+              <Select.Option value={6}>6 months</Select.Option>
+              <Select.Option value={12}>1 year</Select.Option>
+              <Select.Option value={24}>2 years</Select.Option>
+              <Select.Option value={36}>3 years</Select.Option>
+            </Select>
           </Form.Item>
         </Form>
       </Modal>

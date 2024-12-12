@@ -432,7 +432,7 @@ router.post("/add", verifyToken, async (req, res) => {
       UTCTerminateDate,
       UniqueCode,
       ProductType || null,
-    ].map((param) => (param === undefined ? null : param)); // undefined를 null로 변경
+    ]?.map((param) => (param === undefined ? null : param)); // undefined를 null로 변경
 
     const [result] = await connection.execute(insertQuery, parameters);
 

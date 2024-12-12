@@ -114,7 +114,7 @@ const License = (props) => {
       const result = await AxiosGet("/license/list");
       if (result.status === 200) {
         setList(
-          result.data.data.map((item) => ({
+          result.data.data?.map((item) => ({
             ...item,
             key: item.pk, // data의 key 값은 pk
           }))
@@ -285,12 +285,12 @@ const License = (props) => {
     filterSearch: true,
     ellipsis: true,
     filters: list
-      .map((item) => {
+      ?.map((item) => {
         try {
           const parsedValue = JSON.parse(item[dataIndex]);
           // 배열로 변환된 값이 있을 경우, 해당 값들을 개별 필터로 추가
           return Array.isArray(parsedValue)
-            ? parsedValue.map((val) => ({ text: val, value: val }))
+            ? parsedValue?.map((val) => ({ text: val, value: val }))
             : [{ text: item[dataIndex], value: item[dataIndex] }];
         } catch (e) {
           return [{ text: item[dataIndex], value: item[dataIndex] }];
@@ -656,7 +656,7 @@ const AdvancedSearchForm = (props) => {
     if (value.includes("all")) {
       if (value.length === 1) {
         // 'All'만 선택된 경우: 모든 항목을 선택
-        value = props.product.map((item) => item.name);
+        value = props.product?.map((item) => item.name);
       } else {
         // 'All'과 다른 항목이 선택된 경우: 'All'을 제거
         value = value.filter((item) => item !== "all");
@@ -682,8 +682,8 @@ const AdvancedSearchForm = (props) => {
           >
             <Select.Option value={"all"}>All</Select.Option>
             {props.product
-              .map((item) => item.name)
-              .map((item) => (
+              ?.map((item) => item.name)
+              ?.map((item) => (
                 <Select.Option key={item} value={item}>
                   {item}
                 </Select.Option>
@@ -748,7 +748,7 @@ const AdvancedSearchForm = (props) => {
   const onFinish = (values) => {
     // 모든 검색 값들을 소문자로 변환
     const normalizedFilters = Object.fromEntries(
-      Object.entries(values).map(([key, value]) =>
+      Object.entries(values)?.map(([key, value]) =>
         typeof value === "string" ? [key, value] : [key, value]
       )
     );

@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { Button, Col, Drawer, Form, Input, Popconfirm, Row, Space } from "antd";
+import {
+  Button,
+  Col,
+  Drawer,
+  Form,
+  Input,
+  Popconfirm,
+  Row,
+  Select,
+  Space,
+} from "antd";
 import { useNavigate } from "react-router-dom";
 import { AxiosPut } from "../api";
 
@@ -101,6 +111,21 @@ const ProductEdit = (props) => {
             <Col span={12}>
               <Form.Item name="description" label="Description">
                 <Input placeholder="Please enter AI Type description" />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item name="limit_month" label="Month">
+                <Select placeholder="Please select limit months">
+                  <Select.Option value={1}>1 month</Select.Option>
+                  <Select.Option value={2}>2 months</Select.Option>
+                  <Select.Option value={3}>3 months</Select.Option>
+                  <Select.Option value={6}>6 months</Select.Option>
+                  <Select.Option value={12}>1 year</Select.Option>
+                  <Select.Option value={24}>2 years</Select.Option>
+                  <Select.Option value={36}>3 years</Select.Option>
+                </Select>
               </Form.Item>
             </Col>
           </Row>

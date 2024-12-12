@@ -20,6 +20,14 @@ import ProductAdd from "../modal/product-Add";
 import dayjs from "dayjs";
 const { Content } = Layout;
 
+const parseMonthsToYears = (months) => {
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+  return years === 0
+    ? `${remainingMonths === 1 ? "1 month" : `${remainingMonths} months`} `
+    : `${years === 1 ? "1 year" : `${years} years`}`;
+};
+
 const Product = (props) => {
   const navigate = useNavigate();
   const [searchText, setSearchText] = useState("");
@@ -63,7 +71,7 @@ const Product = (props) => {
   const fetchProductList = async () => {
     try {
       const response = await AxiosGet("/product/list"); // 제품 목록을 불러오는 API 요청
-      setList(response.data.map((item) => ({ ...item, key: item.id }))); // 받아온 데이터를 상태에 저장
+      setList(response.data?.map((item) => ({ ...item, key: item.id }))); // 받아온 데이터를 상태에 저장
     } catch (error) {
       console.error("Error fetching product list:", error);
     } finally {
@@ -228,6 +236,12 @@ const Product = (props) => {
       key: "description",
 
       ...getColumnSearchProps("description"),
+    },
+    {
+      title: "Limit",
+      dataIndex: "limit_month",
+      key: "limit_month",
+      render: (text) => (text ? parseMonthsToYears(text) : "-"),
     },
     {
       title: "Created At",

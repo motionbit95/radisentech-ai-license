@@ -33,7 +33,7 @@ const CompanyTransfer = (props) => {
         (response) => {
           if (response.status === 200) {
             setList(
-              response.data.map((item) => ({
+              response.data?.map((item) => ({
                 ...item,
                 key: item.id,
               }))

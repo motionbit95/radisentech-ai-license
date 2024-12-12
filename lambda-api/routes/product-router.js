@@ -75,15 +75,15 @@ router.get("/list", verifyToken, async (req, res) => {
 router.post("/add", verifyToken, async (req, res) => {
   let connection;
   try {
-    const { name, description = "" } = req.body;
+    const { name, description = "", limit_month = 0 } = req.body;
 
     // 데이터베이스 연결
     connection = await getConnection();
 
     // product 등록 쿼리
     const insertQuery = `
-      INSERT INTO product (name, description, created_at)
-      VALUES (?, ?, ?)
+      INSERT INTO product (name, description, created_at, limit_month)
+      VALUES (?, ?, ?, ?)
     `;
 
     const nowDate = formatDateTime(new Date());
@@ -94,6 +94,7 @@ router.post("/add", verifyToken, async (req, res) => {
       name,
       description,
       nowDate,
+      limit_month,
     ]);
 
     if (result.affectedRows === 0) {
@@ -144,7 +145,7 @@ router.post("/add", verifyToken, async (req, res) => {
  * */
 router.put("/update/:id", verifyToken, async (req, res) => {
   const id = req.params.id; // URL에서 row id를 가져옵니다.
-  const { name, description = "" } = req.body;
+  const { name, description = "", limit_month = 0 } = req.body;
 
   let connection;
   try {
@@ -154,14 +155,20 @@ router.put("/update/:id", verifyToken, async (req, res) => {
     // 이력 변경 쿼리
     const updateQuery = `
       UPDATE product
-      SET name = ?, description = ?, updated_at = ?
+      SET name = ?, description = ?, updated_at = ?, limit_month = ?
       WHERE id = ?
     `;
 
     const nowDate = formatDateTime(new Date());
 
     // 업데이트 쿼리 실행
-    await connection.execute(updateQuery, [name, description, nowDate, id]);
+    await connection.execute(updateQuery, [
+      name,
+      description,
+      nowDate,
+      limit_month,
+      id,
+    ]);
 
     res.status(200).json({ message: "Product updated successfully" });
   } catch (error) {

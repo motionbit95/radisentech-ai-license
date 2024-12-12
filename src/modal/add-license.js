@@ -148,8 +148,8 @@ const ADDLicense = (props) => {
                   placeholder="Please select AI Type"
                 >
                   {props.product
-                    .map((item) => item.name)
-                    .map((item) => (
+                    ?.map((item) => item.name)
+                    ?.map((item) => (
                       <Select.Option key={item} value={item}>
                         {item}
                       </Select.Option>

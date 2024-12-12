@@ -47,7 +47,7 @@ const CompanyEdit = (props) => {
   const fetchProductList = async () => {
     try {
       const response = await AxiosGet("/product/list"); // 제품 목록을 불러오는 API 요청
-      setProduct(response.data.map((item) => item.name));
+      setProduct(response.data?.map((item) => item.name));
     } catch (error) {
       console.error("Error fetching product list:", error);
     }
@@ -271,7 +271,7 @@ const CompanyEdit = (props) => {
               value={selectedProducts}
               onChange={(e) => setSelectedProducts(e)}
             >
-              {product.map((item) => (
+              {product?.map((item) => (
                 <Select.Option key={item}>{item}</Select.Option>
               ))}
             </Select>

@@ -7,15 +7,16 @@ export function IniFileDownload(props) {
     const data = {
       Config: {
         UniqueCode: code,
+        ProductType: "",
       },
     };
 
     // 2. INI 형식으로 변환
     const iniContent = Object.entries(data)
-      .map(([section, pairs]) => {
+      ?.map(([section, pairs]) => {
         const sectionHeader = `[${section}]`;
         const keyValues = Object.entries(pairs)
-          .map(([key, value]) => `${key}=${value}`)
+          ?.map(([key, value]) => `${key}=${value}`)
           .join("\n");
         return `${sectionHeader}\n${keyValues}`;
       })

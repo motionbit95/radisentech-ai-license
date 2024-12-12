@@ -51,7 +51,7 @@ const Company = (props) => {
       const result = await AxiosGet("/company/list");
       if (result.status === 200) {
         const newArr = await Promise.all(
-          result.data.map(async (item, index) => {
+          result.data?.map(async (item, index) => {
             const res = await AxiosGet(`/license/list/${item.unique_code}`);
             return {
               ...item,
@@ -200,9 +200,9 @@ const Company = (props) => {
 
   const getColumnFilterProps = (dataIndex) => ({
     filters: list
-      .map((item) => item[dataIndex])
+      ?.map((item) => item[dataIndex])
       .filter((value, index, self) => self.indexOf(value) === index)
-      .map((value) => ({
+      ?.map((value) => ({
         text: value === "D" ? "Supervisor" : value === "Y" ? "Admin" : "Dealer",
         value,
       })),

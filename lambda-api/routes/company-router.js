@@ -878,7 +878,7 @@ router.post("/copy-user/:id", verifyToken, async (req, res) => {
     // 새로운 행 삽입 쿼리 작성
     const columns = Object.keys(userData).join(", ");
     const placeholders = Object.keys(userData)
-      .map(() => "?")
+      ?.map(() => "?")
       .join(", ");
     const values = Object.values(userData);
 

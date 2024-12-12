@@ -26,7 +26,7 @@ async function generateUniqueCopyValue(connection, columnName, baseValue) {
   );
 
   // 동일한 복사본의 개수를 카운팅하여 새로운 suffix를 생성
-  const existingValues = existingCopies.map((row) => row[columnName]);
+  const existingValues = existingCopies?.map((row) => row[columnName]);
   while (existingValues.includes(newValue)) {
     suffix++;
     newValue = `${baseValue}_copy${suffix}`;

@@ -56,7 +56,7 @@ const GenerateModal = (props) => {
   const onFinish = (values) => {
     // 라이센스 가지고 오기
     let ai_license = licenseCnt.find((item) => item.ai_type === values.AIType);
-    let total_license_cnt = ai_license.license_cnt;
+    let total_license_cnt = ai_license?.license_cnt || 0;
 
     // 현재 해당 유니크 코드로 등록된 라이선스 수량
     let used_license_cnt = 0;
@@ -80,11 +80,11 @@ const GenerateModal = (props) => {
 
     if (
       values.license_cnt < 0 &&
-      data?.license_cnt - data?.use_cnt < Math.abs(values.license_cnt)
+      total_license_cnt - used_license_cnt < Math.abs(values.license_cnt)
     ) {
       message.error(
         `You can't generate license more than ${
-          data?.license_cnt - data?.use_cnt
+          total_license_cnt - used_license_cnt
         }`
       );
       return;
