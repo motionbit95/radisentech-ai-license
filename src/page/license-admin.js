@@ -112,6 +112,7 @@ const License = (props) => {
     setLoading(true);
     try {
       const result = await AxiosGet("/license/list");
+      console.log(result);
       if (result.status === 200) {
         setList(
           result.data.data?.map((item) => ({
@@ -359,7 +360,10 @@ const License = (props) => {
         if (!text) return "";
 
         const utcTime = text; // UTC 시간
-        const formattedLocalTime = convertUTCToLocalTimeWithFormat(utcTime); // 브라우저의 타임존으로 시간 변환
+        // const formattedLocalTime = convertUTCToLocalTimeWithFormat(utcTime); // 브라우저의 타임존으로 시간 변환
+        const formattedLocalTime = formatDateToMMDDYYYYHHMMSS(
+          new Date(utcTime)
+        );
 
         return formattedLocalTime;
       },
@@ -489,7 +493,12 @@ const License = (props) => {
       fixed: "right",
       render: (text, record, index) => {
         const utcTime = text; // UTC 시간
-        const formattedLocalTime = convertUTCToLocalTimeWithFormat(utcTime); // 브라우저의 타임존으로 시간 변환
+        // const formattedLocalTime = convertUTCToLocalTimeWithFormat(utcTime); // 브라우저의 타임존으로 시간 변환
+        const formattedLocalTime = formatDateToMMDDYYYYHHMMSS(
+          new Date(utcTime)
+        );
+
+        // console.log("utcTime:", utcTime, "localTime:", formattedLocalTime);
 
         return (
           <UpdateHistoryModal

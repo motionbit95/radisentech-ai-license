@@ -746,15 +746,17 @@ router.put("/withdrawal-subscription/:pk", verifyToken, async (req, res) => {
       WHERE pk = ?
     `;
 
+    const nowDate = formatDateTime(new Date());
+
     // license_history 테이블에 데이터 삽입
     const insertHistoryQuery = `
       INSERT INTO license_history (license_pk, description, deleted, update_date)
-      VALUES (?, "Subscription withdrawn", 1, NOW());
+      VALUES (?, "Subscription withdrawn", 1, ?);
     `;
 
     // 업데이트 쿼리 실행
     await connection.execute(updateQuery, [pk]);
-    await connection.execute(insertHistoryQuery, [pk]);
+    await connection.execute(insertHistoryQuery, [pk, nowDate]);
 
     res.status(200).json({ message: "Subscription withdrawn successfully" });
   } catch (err) {

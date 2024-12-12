@@ -266,7 +266,10 @@ const License = (props) => {
         if (!text) return "";
 
         const utcTime = text; // UTC 시간
-        const formattedLocalTime = convertUTCToLocalTimeWithFormat(utcTime);
+        // const formattedLocalTime = convertUTCToLocalTimeWithFormat(utcTime);
+        const formattedLocalTime = formatDateToMMDDYYYYHHMMSS(
+          new Date(utcTime)
+        );
 
         return formattedLocalTime;
       },
