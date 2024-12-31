@@ -15,7 +15,7 @@ const swaggerOptions = {
   swaggerDefinition: {
     info: {
       title: "Radisen AI License API",
-      version: "1.0.0",
+      version: "1.1.0",
       description: `
 ### 테스트용 JWT 토큰
 아래의 JWT 토큰을 사용하여 테스트할 수 있습니다:
