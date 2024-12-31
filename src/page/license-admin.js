@@ -498,7 +498,20 @@ const License = (props) => {
           new Date(utcTime)
         );
 
-        // console.log("utcTime:", utcTime, "localTime:", formattedLocalTime);
+        // console.log(
+        //   "UTCActivateStartDate : ",
+        //   record.UTCActivateStartDate,
+        //   "\tUTCTerminateDate : ",
+        //   record.UTCTerminateDate,
+        //   "\tUTCUpdatedAt : ",
+        //   record.UTCUpdatedAt,
+        //   "\nActivateStartDate : ",
+        //   record.LocalActivateStartDate,
+        //   "\tTerminateDate : ",
+        //   record.LocalTerminateDate,
+        //   "\tUpdatedAt : ",
+        //   record.UpdatedAt
+        // );
 
         return (
           <UpdateHistoryModal

@@ -493,13 +493,14 @@ router.post("/add", verifyToken, async (req, res) => {
  */
 router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
   const { pk } = req.params;
-  const { ExpireDate, UniqueCode } = req.body;
+  const { localTime, utcTime, localExpireDate, utcExpireDate, UniqueCode } =
+    req.body;
 
-  // console.log("ExpireDate:", ExpireDate, "UniqueCode:", UniqueCode);
+  console.log(localTime, utcTime, localExpireDate, utcExpireDate, UniqueCode);
 
   // 요청 유효성 검사
-  if (!ExpireDate) {
-    return res.status(400).json({ error: "ExpireDate is required" });
+  if (!utcTime || !utcExpireDate || !UniqueCode) {
+    return res.status(400).json({ error: "Missing required fields" });
   }
 
   let connection;
@@ -509,17 +510,17 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
     connection = await getConnection();
 
     // ExpireDate 변환: LocalTerminateDate와 UTCTerminateDate 계산
-    const expireDateObj = new Date(ExpireDate);
-    const localTerminateDate = expireDateObj.toISOString().split("T")[0]; // Local 날짜
-    const utcTerminateDate = formatDateToYYYYMMDD(expireDateObj);
+    // const expireDateObj = new Date(ExpireDate);
+    // const localTerminateDate = expireDateObj.toISOString().split("T")[0]; // Local 날짜
+    // const utcTerminateDate = formatDateToYYYYMMDD(expireDateObj);
 
-    const nowDate = formatDateTime(new Date());
+    // const nowDate = formatDateTime(new Date());
 
     // UTC 기준 DateTime 계산
-    const utcNowDate = formatFromGMT(nowDate);
+    // const utcNowDate = formatFromGMT(nowDate);
 
-    console.log("LocalUpdateDate:", nowDate);
-    console.log("UTCUpdateDate:", utcNowDate);
+    // console.log("LocalUpdateDate:", nowDate);
+    // console.log("UTCUpdateDate:", utcNowDate);
 
     // 업데이트 쿼리 작성
     const updateQuery = `
@@ -546,8 +547,10 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
 
     const currentExpireDate = new Date(currentRows[0].UTCTerminateDate);
 
+    console.log(formatDateTime(currentExpireDate), utcExpireDate);
+
     // 이전과 새로운 ExpireDate 비교
-    if (formatDateToYYYYMMDD(currentExpireDate) === utcTerminateDate) {
+    if (formatDateTime(currentExpireDate) === utcExpireDate) {
       return res.status(402).json({
         error: "No changes made. ExpireDate is the same.",
       });
@@ -560,19 +563,19 @@ router.put("/update-subscription/:pk", verifyToken, async (req, res) => {
     `;
     await connection.execute(insertHistoryQuery, [
       pk,
-      formatDateToYYYYMMDD(currentExpireDate),
-      utcTerminateDate,
+      formatDateTime(currentExpireDate),
+      utcExpireDate,
       UniqueCode,
-      nowDate,
+      utcTime,
     ]);
 
     // 업데이트 쿼리 실행
     await connection.execute(updateQuery, [
-      localTerminateDate,
-      utcTerminateDate,
+      localExpireDate,
+      utcExpireDate,
       UniqueCode,
-      nowDate,
-      utcNowDate,
+      localTime,
+      utcTime,
       pk,
     ]);
 

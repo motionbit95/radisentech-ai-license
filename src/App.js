@@ -28,6 +28,10 @@ function App({ page, toggleTheme, isDarkMode }) {
   const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
 
   useEffect(() => {
+    localStorage.setItem(
+      "token",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE3MzU2MDcwOTIsImV4cCI6MTczNTYxMDY5Mn0.uTqGL29jrE02gxn9nxnofm6SFrOuOekOn8iQ8TmjVrk"
+    );
     const getUser = async () => {
       try {
         const response = await AxiosGet("/company/user-info");

@@ -49,8 +49,29 @@ const UpdateLicense = (props) => {
       const { expire_date } = values; // 폼에서 가져온 expire_date
       const pk = data.pk; // data에서 pk 가져오기
 
+      console.log({
+        localTime: dayjs().format("YYYY-MM-DD HH:mm:ss"), // 로컬 시간 (사용자의 현재 시간대 기준)
+        utcTime: dayjs().utc().format("YYYY-MM-DD HH:mm:ss"), // UTC 시간
+        localExpireDate: expire_date
+          .add(1, "day")
+          .format("YYYY-MM-DD HH:mm:ss"), // 로컬 시간
+        utcExpireDate: expire_date
+          .add(1, "day")
+          .utc()
+          .format("YYYY-MM-DD HH:mm:ss"), // UTC 시간
+        UniqueCode: data.UniqueCode,
+      });
+
       AxiosPut(`/license/update-subscription/${pk}`, {
-        ExpireDate: expire_date.format("YYYY-MM-DD HH:mm:ss"), // 원하는 형식으로 날짜를 전송
+        localTime: dayjs().format("YYYY-MM-DD HH:mm:ss"), // 로컬 시간 (사용자의 현재 시간대 기준)
+        utcTime: dayjs().utc().format("YYYY-MM-DD HH:mm:ss"), // UTC 시간
+        localExpireDate: expire_date
+          .add(1, "day")
+          .format("YYYY-MM-DD HH:mm:ss"), // 로컬 시간
+        utcExpireDate: expire_date
+          .utc()
+          .add(1, "day")
+          .format("YYYY-MM-DD HH:mm:ss"), // UTC 시간
         UniqueCode: data.UniqueCode,
       })
         .then((response) => {

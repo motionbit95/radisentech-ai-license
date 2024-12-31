@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import { Col, message, Spin } from "antd";
+import React, { useEffect, useState } from "react";
+// import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import GoogleLogin from "react-google-login";
+import { Button, Col, Image, message, Spin } from "antd";
 import { useNavigate } from "react-router-dom";
 import { AxiosPost } from "../../api";
 
@@ -71,7 +72,8 @@ function GoogleLoginButton() {
   };
 
   return (
-    <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+    // <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
+    <>
       <Spin
         size="large"
         spinning={loading}
@@ -91,15 +93,38 @@ function GoogleLoginButton() {
           display: "flex",
         }}
       >
-        <GoogleLogin
+        {/* <GoogleLogin
           auto_select={true}
           // useOneTap={false}
           locale="en"
           onSuccess={handleLoginSuccess}
           onError={() => console.error("로그인 오류")}
+        /> */}
+        <GoogleLogin
+          clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}
+          buttonText="Login with Google"
+          onSuccess={handleLoginSuccess}
+          onFailure={() => console.error("로그인 오류")}
+          cookiePolicy={"single_host_origin"}
+          render={(renderProps) => (
+            <Button
+              onClick={renderProps.onClick}
+              disabled={renderProps.disabled}
+              icon={
+                <Image
+                  width={20}
+                  preview={false}
+                  src={require("../../asset/pngwing.com.png")}
+                />
+              }
+            >
+              Sign in with Google
+            </Button>
+          )}
         />
       </Col>
-    </GoogleOAuthProvider>
+    </>
+    // </GoogleOAuthProvider>
   );
 }
 
