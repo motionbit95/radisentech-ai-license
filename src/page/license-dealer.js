@@ -510,6 +510,9 @@ const CompanyInfo = (props) => {
 };
 
 const AdvancedSearchForm = (props) => {
+  useEffect(() => {
+    console.log(props);
+  }, []);
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -528,7 +531,7 @@ const AdvancedSearchForm = (props) => {
     if (value.includes("all")) {
       if (value.length === 1) {
         // 'All'만 선택된 경우: 모든 항목을 선택
-        value = props.product?.map((item) => item.name);
+        value = props.product?.map((item) => item);
       } else {
         // 'All'과 다른 항목이 선택된 경우: 'All'을 제거
         value = value.filter((item) => item !== "all");
@@ -553,13 +556,11 @@ const AdvancedSearchForm = (props) => {
             allowClear
           >
             <Select.Option value={"all"}>All</Select.Option>
-            {props.product
-              ?.map((item) => item.name)
-              ?.map((item) => (
-                <Select.Option key={item} value={item}>
-                  {item}
-                </Select.Option>
-              ))}
+            {props.product?.map((item) => (
+              <Select.Option key={item} value={item}>
+                {item}
+              </Select.Option>
+            ))}
           </Select>
         </Form.Item>
       </Col>

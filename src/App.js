@@ -30,7 +30,7 @@ function App({ page, toggleTheme, isDarkMode }) {
   useEffect(() => {
     localStorage.setItem(
       "token",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJpYXQiOjE3MzU2MDcwOTIsImV4cCI6MTczNTYxMDY5Mn0.uTqGL29jrE02gxn9nxnofm6SFrOuOekOn8iQ8TmjVrk"
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1MiwiaWF0IjoxNzM1NjE4NDE0LCJleHAiOjE3MzU2MjIwMTR9.0lT4UlrRJKmWr_0Pd-U3kO2M-Q3oKoLwBPuGSLWAmPo"
     );
     const getUser = async () => {
       try {
